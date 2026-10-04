@@ -1,6 +1,6 @@
 # ADR-0017: The god's channels: signs, omens, a voice, scripture and prayer
 
-- **Status:** Proposed
+- **Status:** Accepted (creator, 2026-10-04)
 - **Date:** 2026-10-04
 - **Deciders:** creator (ideas from the creator, 2026-10-04; shaped by the planning review)
 - **Amends:** ADR-0008 (the five intervention channels)

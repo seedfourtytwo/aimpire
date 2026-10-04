@@ -1,6 +1,6 @@
 # ADR-0019: Emergence first: primitives, not institutions
 
-- **Status:** Proposed
+- **Status:** Accepted (creator, 2026-10-04)
 - **Date:** 2026-10-04
 - **Deciders:** creator (goal stated by the creator, 2026-10-04; rules proposed by the planning review)
 - **Replaces:** the unfiled "ADR-0012: Social systems" draft in research note 70 as the governing principle for M6 to M8. That note remains the reference for individual-level rule models and validation patterns.

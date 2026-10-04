@@ -1,6 +1,6 @@
 # ADR-0018: What the minds know: knowledge arms and native minds
 
-- **Status:** Proposed
+- **Status:** Accepted (creator, 2026-10-04)
 - **Date:** 2026-10-04
 - **Deciders:** creator (goal from the creator, 2026-10-04; shaped by the planning review)
 - **Extends:** the handoff specification, section 5 ("Discovery and pretrained knowledge")

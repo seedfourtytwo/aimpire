@@ -1,6 +1,6 @@
 # ADR-0011: Time, schedules and council cadence
 
-- **Status:** Proposed
+- **Status:** Accepted (creator, 2026-10-04)
 - **Date:** 2026-10-04
 - **Deciders:** creator (proposed by the planning review)
 - **Amends:** ADR-0008 (time section), ADR-0007 (units of rates)

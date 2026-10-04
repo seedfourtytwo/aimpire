@@ -1,6 +1,6 @@
 # ADR-0013: The mind interface: places, standing policy, uniform orders, journal
 
-- **Status:** Proposed
+- **Status:** Accepted (creator, 2026-10-04)
 - **Date:** 2026-10-04
 - **Deciders:** creator (proposed by the planning review)
 - **Amends:** ADR-0005 (proposal schema), ADR-0008 (how the action list is presented to models)

@@ -1,6 +1,6 @@
 # ADR-0016: Agent guard rails and model tiering
 
-- **Status:** Proposed
+- **Status:** Accepted (creator, 2026-10-04)
 - **Date:** 2026-10-04
 - **Deciders:** creator (proposed by the planning review)
 - **Amends:** ADR-0006 item 5 (review was opt-in; it becomes standard for `sim/`)

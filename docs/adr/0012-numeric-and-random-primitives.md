@@ -1,6 +1,6 @@
 # ADR-0012: Numeric and random primitives
 
-- **Status:** Proposed
+- **Status:** Accepted (creator, 2026-10-04)
 - **Date:** 2026-10-04
 - **Deciders:** creator (proposed by the planning review)
 - **Amends:** ADR-0007 (draw function, iteration order, rate units)

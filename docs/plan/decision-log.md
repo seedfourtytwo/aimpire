@@ -29,3 +29,4 @@ One line per decision or assumption: date, item, source. Architecturally signifi
 | 2026-10-04 | Ideal mind knows how to be a person and wants to live, but knows no technology or history; a pretrained model "pretending to be dumb" is the fallback (ADR-0018) | creator |
 | 2026-10-04 | Correction: a 10-tick cadence is 12 councils per civilization per year, not 36; per-year cost figures in ADR-0009 and research notes 30 and 70 are three times too high (ADR-0011) | review |
 | 2026-10-04 | `.github/workflows/` stays creator-only by design; agents are not given the Workflows permission (ADR-0016, proposed) | review |
+| 2026-10-04 | ADRs 0011–0014 and 0016–0019 accepted | creator |

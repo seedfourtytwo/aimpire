@@ -1,6 +1,6 @@
 # ADR-0014: Experiment protocol
 
-- **Status:** Proposed
+- **Status:** Accepted (creator, 2026-10-04)
 - **Date:** 2026-10-04
 - **Deciders:** creator (proposed by the planning review)
 - **Amends:** ADR-0005 (qualification and sampling assumptions)
