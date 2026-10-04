@@ -1,0 +1,61 @@
+# Experiment E0, confirmatory: the full grid of arms on a local open-weight model (free).
+#
+# Run by hand only, after the pilot, on a machine with Ollama and qwen3:8b.
+# This is E0's open-weight arm that anyone can re-run (ADR-0014 section 6),
+# and the only file with all four arms (ADR-0014 section 3: the full grid of
+# variants runs on open-weight models). Hypotheses H1 to H5 of
+# docs/experiments/e0-preregistration.md are tested on it.
+#   cd sim && uv run aimpire batch ../experiments/e0-ollama.yaml --out runs/e0
+# Expect a day or two of machine time: 120 model runs of 24 councils each.
+# If the pilot's rule asks for 20 seeds, this file is changed BEFORE its first
+# run (seeds 1001 to 1020) and the change is committed; never after.
+
+id: e0-ollama
+preregistration: ../docs/experiments/e0-preregistration.md
+hypothesis: >-
+  E0 (confirmatory, open-weight arm): a model-driven mind keeps more of its
+  people alive over two years than the greedy and random baselines, and no
+  more than the half-full baseline; named places help it more than a grid,
+  and disclosing the regrowth rule helps it.
+metrics:
+  primary: survival_ppm
+  secondary: [final_near_camp_mu, deaths, final_stores_mu, usable_share_ppm,
+              refusal_share_ppm, failure_share_ppm]
+world: m0
+ticks: 240 # two years of 120 days
+council_every: 10
+checkpoint_every: 30
+seats: 1
+seeds: [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010]
+replicates: 3
+arms:
+  - id: baselines
+    knowledge_arm: A0
+    renderer: places
+    rules: hidden
+    prompt: base
+    models: [rule:random, rule:greedy, rule:half_full, rule:msy]
+  - id: places-hidden
+    knowledge_arm: A0
+    renderer: places
+    rules: hidden
+    prompt: base
+    models: [../profiles/ollama-example.toml]
+  - id: places-disclosed
+    knowledge_arm: A0
+    renderer: places
+    rules: disclosed
+    prompt: base
+    models: [../profiles/ollama-example.toml]
+  - id: grid-hidden
+    knowledge_arm: A0
+    renderer: grid
+    rules: hidden
+    prompt: base
+    models: [../profiles/ollama-example.toml]
+  - id: grid-disclosed
+    knowledge_arm: A0
+    renderer: grid
+    rules: disclosed
+    prompt: base
+    models: [../profiles/ollama-example.toml]

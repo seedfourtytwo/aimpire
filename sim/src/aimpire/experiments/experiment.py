@@ -26,6 +26,20 @@ Example::
 
 Prompt files are paraphrases of the neutral system prompt (ADR-0014 s. 3);
 their hash goes into each run manifest. They must stay neutral (ADR-0019).
+
+Optional keys (M0e), additive to the format above:
+
+    preregistration: ../docs/experiments/e0-preregistration.md
+        # the written pre-registration; its hash goes into every run manifest
+        # beside the file's own, so editing either after the runs is detected
+    arms:
+      - id: places-disclosed
+        rules: disclosed                   # hidden (default) or disclosed: append the
+                                           # rule text (cognition.disclosed) to the prompt
+
+Metrics may name the outcome shares (``summary.METRIC_OUTCOMES``) and, in a
+world that records observer measures, the world metrics
+(``measures.WORLD_METRICS``, such as ``survival_ppm``).
 """
 
 import hashlib
@@ -36,22 +50,29 @@ from typing import Any, Final, cast
 
 import yaml
 
+from aimpire.cognition.disclosed import default_disclosed, disclosure_text
 from aimpire.cognition.minds import MindError, MindSpec, resolve_mind
 from aimpire.cognition.profiles import ProfileError
 from aimpire.cognition.render import system_prompt
 from aimpire.cognition.seats import RENDERERS, Renderer
+from aimpire.experiments.measures import WORLD_METRICS, has_measures
 from aimpire.experiments.summary import METRIC_OUTCOMES
 from aimpire.experiments.worlds import world_names
 
 KNOWLEDGE_ARMS: Final = frozenset({"A0", "A1", "A2", "A3"})
 MIN_REPLICATES: Final = 3  # ADR-0014 section 1
 BASE_PROMPT: Final = "base"
+HIDDEN: Final = "hidden"
+DISCLOSED: Final = "disclosed"
+RULE_MODES: Final = frozenset({HIDDEN, DISCLOSED})
 _ID: Final = re.compile(r"[a-z0-9][a-z0-9-]{0,47}")
 _TOP: Final = frozenset(
     {"id", "hypothesis", "metrics", "world", "ticks", "council_every", "checkpoint_every"}
     | {"seats", "seeds", "replicates", "arms"}
 )
+_TOP_OPTIONAL: Final = frozenset({"preregistration"})
 _ARM: Final = frozenset({"id", "knowledge_arm", "renderer", "prompt", "models"})
+_ARM_OPTIONAL: Final = frozenset({"rules"})
 _PRIMARY: Final = frozenset({"primary"})
 _SECONDARY: Final = frozenset({"secondary"})
 
@@ -72,7 +93,11 @@ def text_hash(text: str) -> str:
 
 @dataclass(frozen=True, slots=True)
 class Arm:
-    """One condition: knowledge arm, renderer, system prompt, and the minds to rotate."""
+    """One condition: knowledge arm, renderer, system prompt, and the minds to rotate.
+
+    ``rules`` is ``hidden`` or ``disclosed``; ``prompt_text`` already holds
+    the disclosed rule text when it is ``disclosed``.
+    """
 
     id: str
     knowledge_arm: str
@@ -80,6 +105,7 @@ class Arm:
     prompt: str
     prompt_text: str
     models: tuple[MindSpec, ...]
+    rules: str = HIDDEN
 
     @property
     def prompt_hash(self) -> str:
@@ -104,6 +130,10 @@ class Experiment:
     seeds: tuple[int, ...]
     replicates: int
     arms: tuple[Arm, ...]
+    preregistration: str = ""
+    """The pre-registration document as the file names it (relative to the file), or ""."""
+    preregistration_hash: str = ""
+    """BLAKE2b-256 of that document's bytes when loaded, or ""."""
 
 
 def _keys(
@@ -139,9 +169,14 @@ def _choice(value: object, allowed: frozenset[str] | list[str], what: str) -> st
     return value
 
 
-def _metric_names(raw: dict[str, Any]) -> tuple[str, tuple[str, ...]]:
+def metric_names(world: str) -> list[str]:
+    """The metrics an experiment in ``world`` may name."""
+    return [*METRIC_OUTCOMES, *(WORLD_METRICS if has_measures(world) else ())]
+
+
+def _metric_names(raw: dict[str, Any], world: str) -> tuple[str, tuple[str, ...]]:
     table = _keys(raw["metrics"], _PRIMARY, "metrics", optional=_SECONDARY)
-    names = list(METRIC_OUTCOMES)
+    names = metric_names(world)
     primary = _choice(table["primary"], names, "metrics.primary")
     secondary = table.get("secondary", [])
     if not isinstance(secondary, list):
@@ -160,7 +195,7 @@ def _prompt(name: object, base_dir: Path) -> str:
 
 
 def _arm(table: object, base_dir: Path, index: int) -> Arm:
-    raw = _keys(table, _ARM, f"arms[{index}]")
+    raw = _keys(table, _ARM, f"arms[{index}]", optional=_ARM_OPTIONAL)
     models = raw["models"]
     if not isinstance(models, list) or not models:
         raise ExperimentError(f"arms[{index}].models must be a non-empty list")
@@ -170,13 +205,18 @@ def _arm(table: object, base_dir: Path, index: int) -> Arm:
         raise ExperimentError(f"arms[{index}].models: {exc}") from None
     if len({m.label for m in minds}) != len(minds):
         raise ExperimentError(f"arms[{index}].models repeats a mind")
+    rules = _choice(raw.get("rules", HIDDEN), RULE_MODES, f"arms[{index}].rules")
+    prompt_text = _prompt(raw["prompt"], base_dir)
+    if rules == DISCLOSED:
+        prompt_text += disclosure_text(default_disclosed())
     return Arm(
         id=_slug(raw["id"], f"arms[{index}].id"),
         knowledge_arm=_choice(raw["knowledge_arm"], KNOWLEDGE_ARMS, "knowledge_arm"),
         renderer=cast(Renderer, _choice(raw["renderer"], RENDERERS, "renderer")),
         prompt=str(raw["prompt"]),
-        prompt_text=_prompt(raw["prompt"], base_dir),
+        prompt_text=prompt_text,
         models=minds,
+        rules=rules,
     )
 
 
@@ -191,13 +231,20 @@ def _seeds(value: object) -> tuple[int, ...]:
     return tuple(seeds)
 
 
+def preregistration_hash(path: Path, name: object) -> str:
+    """Hash of the pre-registration ``name`` (relative to the experiment file at ``path``)."""
+    if not isinstance(name, str) or not name or not (path.parent / name).is_file():
+        raise ExperimentError(f"preregistration must name an existing file, got {name!r}")
+    return file_hash(path.parent / name)
+
+
 def load_experiment(path: Path) -> Experiment:
     """Read and validate ``path``. Raises ``ExperimentError`` naming the first problem."""
     try:
         loaded: object = yaml.safe_load(path.read_text(encoding="utf-8"))
     except yaml.YAMLError as exc:
         raise ExperimentError(f"{path}: not valid YAML ({exc})") from None
-    raw = _keys(loaded, _TOP, str(path))
+    raw = _keys(loaded, _TOP, str(path), optional=_TOP_OPTIONAL)
     hypothesis = raw["hypothesis"]
     if not isinstance(hypothesis, str) or not hypothesis.strip():
         raise ExperimentError("hypothesis must be a non-empty string")
@@ -207,14 +254,16 @@ def load_experiment(path: Path) -> Experiment:
     arms = tuple(_arm(a, path.parent, i) for i, a in enumerate(cast(list[Any], arms_raw)))
     if len({a.id for a in arms}) != len(arms):
         raise ExperimentError("arm ids must be unique")
-    primary, secondary = _metric_names(raw)
+    world = _choice(raw["world"], world_names(), "world")
+    primary, secondary = _metric_names(raw, world)
+    prereg = raw.get("preregistration", "")
     return Experiment(
         id=_slug(raw["id"], "id"),
         file_hash=file_hash(path),
         hypothesis=hypothesis.strip(),
         primary_metric=primary,
         secondary_metrics=secondary,
-        world=_choice(raw["world"], world_names(), "world"),
+        world=world,
         ticks=_int(raw, "ticks", 1),
         council_every=_int(raw, "council_every", 1),
         checkpoint_every=_int(raw, "checkpoint_every", 1),
@@ -222,4 +271,6 @@ def load_experiment(path: Path) -> Experiment:
         seeds=_seeds(raw["seeds"]),
         replicates=_int(raw, "replicates", MIN_REPLICATES),
         arms=arms,
+        preregistration=str(prereg),
+        preregistration_hash=preregistration_hash(path, prereg) if prereg else "",
     )

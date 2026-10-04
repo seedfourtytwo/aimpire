@@ -3,15 +3,17 @@
 Why outcome shares: every decision ends in exactly one ADR-0013 outcome, and
 refusals and failures are counted, never replaced. The metrics an experiment
 may pre-register are shares of those outcomes per mind per run, in parts per
-million. World metrics (population, stores, stock) join when M0 records them.
+million, and, in a world with observer measures (``measures``), the world
+metrics of the seats a mind held: survival, deaths, stores and stock.
 
 Medians are the lower median of the integer values, so reports stay integer.
 """
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Final
+from typing import Any, Final
 
+from aimpire.experiments.measures import read_measures, series, world_metrics
 from aimpire.persistence.store import RunStore
 
 PPM: Final = 1_000_000
@@ -41,15 +43,29 @@ class RunSummary:
     decisions: tuple[tuple[int, str, str], ...]
     final_hash: str
     charged_micro_usd: int
+    measures: dict[str, Any] | None = None
+    """The observer measures (``measures.json``), or ``None`` in a world without them."""
 
     def minds(self) -> list[str]:
         """The minds seated in this run, sorted."""
         return sorted({mind for _, mind in self.seats})
 
+    def civs_of(self, mind: str) -> list[str]:
+        """The seats ``mind`` held in this run, in seat order."""
+        return [civ for civ, m in self.seats if m == mind]
+
     def metrics(self, mind: str) -> dict[str, int]:
-        """Every metric for ``mind`` in this run, in ppm of its decisions."""
+        """Every metric for ``mind`` in this run: outcome shares in ppm of its decisions,
+        and the world metrics of its seats when the run has measures."""
         outcomes = [o for _, m, o in self.decisions if m == mind]
-        return {name: share_ppm(outcomes, wanted) for name, wanted in METRIC_OUTCOMES.items()}
+        found = {name: share_ppm(outcomes, wanted) for name, wanted in METRIC_OUTCOMES.items()}
+        if self.measures is not None:
+            found |= world_metrics(self.measures, self.civs_of(mind))
+        return found
+
+    def series(self, mind: str) -> dict[str, list[int]] | None:
+        """Each measure of ``mind``'s seats at every checkpoint, or ``None`` without measures."""
+        return None if self.measures is None else series(self.measures, self.civs_of(mind))
 
 
 def share_ppm(outcomes: Sequence[str], wanted: frozenset[str]) -> int:
@@ -85,4 +101,5 @@ def summarize(store: RunStore) -> RunSummary:
         decisions=decisions,
         final_hash=store.checkpoints()[-1][2],
         charged_micro_usd=store.run_spent(),
+        measures=read_measures(store.run_dir),
     )

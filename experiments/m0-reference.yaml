@@ -1,0 +1,26 @@
+# M0 reference ensemble (backlog M0d, ADR-0014 section 1).
+#
+# The four M0 rule baselines on 200 world seeds for five game years. The
+# bands it gives (10th percentile, median, 90th percentile of people,
+# deaths, stores and wild food near the camp at every year boundary) are the
+# reference a mind is read against, and the tolerance source for baseline
+# tests. Free: rule minds only, nothing is called.
+#
+# Run it by hand from sim/ (about 20 minutes on two cores) and commit the output:
+#   uv run aimpire batch ../experiments/m0-reference.yaml --out ../docs/experiments --jobs 2
+# CI runs the first 10 seeds for one year (tests/acceptance/test_m0de_reference.py).
+#
+# Changing this file changes its hash; remake the committed page afterwards
+# (`--verify` tells whether the page was made from this exact file).
+
+kind: reference
+id: m0-reference
+purpose: >-
+  How the four M0 rule baselines fare on the petri dish over five years and
+  200 worlds: the bands a mind's result is read against.
+world: m0
+ticks: 600 # five years of 120 days (rules/v1/calendar.yaml)
+council_every: 10
+checkpoint_every: 120 # a band point at every year boundary
+seeds: {first: 1, count: 200}
+minds: [rule:random, rule:greedy, rule:half_full, rule:msy]

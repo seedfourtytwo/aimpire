@@ -33,6 +33,12 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Guide:
+      - Play M0: guide/play-m0.md
+  - Experiments:
+      - M0 reference bands: experiments/m0-reference.md
+      - E0 pre-registration: experiments/e0-preregistration.md
+      - E0 report template: experiments/e0-report-template.md
   - Specification: spec/original-handoff.md
   - Architecture: architecture/overview.md
   - Plan:

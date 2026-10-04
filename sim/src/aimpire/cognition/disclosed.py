@@ -79,3 +79,41 @@ def load_disclosed(rules_dir: Path) -> Disclosed:
 def default_disclosed() -> Disclosed:
     """The disclosure of the repository's current rules (``DEFAULT_RULES_DIR``), read once."""
     return load_disclosed(DEFAULT_RULES_DIR)
+
+
+def _decimal(value: Fraction) -> str:
+    """``value`` as an exact decimal when it has one (0.08, 0.001, 10), else as ``a/b``."""
+    den, twos, fives = value.denominator, 0, 0
+    while den % 2 == 0:
+        den, twos = den // 2, twos + 1
+    while den % 5 == 0:
+        den, fives = den // 5, fives + 1
+    if den != 1:
+        return f"{value.numerator}/{value.denominator}"
+    places = max(twos, fives)
+    whole, frac = divmod(abs(value.numerator) * 10**places // value.denominator, 10**places)
+    sign = "-" if value < 0 else ""
+    return f"{sign}{whole}.{frac:0{places}d}" if places else f"{sign}{whole}"
+
+
+def disclosure_text(d: Disclosed) -> str:
+    """The rule as the "disclosed" arm of experiment E0 is told it, appended to the system prompt.
+
+    It states exactly the fields of ``Disclosed`` (what the rule baselines
+    know) and nothing about any one world: no ceiling, no fertility, no
+    stock. It is physics, not advice (ADR-0019 section 4): it names no
+    target, no strategy and no institution. Food is in whole units, as the
+    observation shows it; rates are per day (one tick).
+    """
+    need = _decimal(d.need_mu / MILLI)
+    carry = _decimal(Fraction(d.carry_mu, MILLI))
+    r, s = _decimal(d.regrowth_r), _decimal(d.regrowth_s)
+    return (
+        "\nHow food works here (the same at every place):\n"
+        "- Wild food at a place grows back each day by r * F * (K - F) / K + s * (K - F), "
+        "where F is the food there now and K is the most that place can hold. "
+        f"r = {r} and s = {s} a day. K differs from place to place and is not told to you.\n"
+        f"- One person eats {need} unit of food a day on a full ration.\n"
+        f"- One worker gathering at a place d days away brings home {carry} / (1 + 2 * d) "
+        "units a day, while that much food is there.\n"
+    )
