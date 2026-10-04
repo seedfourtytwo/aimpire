@@ -1,5 +1,9 @@
 """One-file JSON replay export, format ``aimpire-replay-v1`` (F4b, ADR-0004, ADR-0010).
 
+``ReplayRecorder`` writes v1, the generic format any world can produce. M0 runs
+write ``aimpire-replay-v2`` (``aimpire.report.replay_m0``), which adds metrics,
+places and councils to the same frames. ``load_replay`` reads both.
+
 Why: the creator watches runs in a static Canvas2D page (``client/replay/``),
 on any device, with no server. So a replay is a single JSON file that holds
 everything the player draws: one tile layer and the entity dots per captured
@@ -30,6 +34,7 @@ from typing import Any
 
 from aimpire.report.frames import PALETTE, RAMP_HIGH, RAMP_LOW, default_scale, entity_pos
 from aimpire.report.replay_check import FORMAT, ReplayError, validate_replay
+from aimpire.report.replay_v2_check import validate_any
 from aimpire.sim.calendar import Calendar
 from aimpire.sim.hashing import state_hash
 from aimpire.sim.state import Entity, WorldState
@@ -47,6 +52,7 @@ __all__ = [
     "rle_decode",
     "rle_encode",
     "write_replay",
+    "write_replay_doc",
 ]
 
 Replay = dict[str, Any]
@@ -182,17 +188,23 @@ def write_replay(recorder: ReplayRecorder, path: Path) -> None:
     Path(path).write_bytes(dumps(replay).encode("ascii"))
 
 
+def write_replay_doc(replay: Replay, path: Path) -> None:
+    """Validate a replay document of any readable format and write it to ``path``."""
+    validate_any(replay)
+    Path(path).write_bytes(dumps(replay).encode("ascii"))
+
+
 def _no_floats(text: str) -> float:
     raise ReplayError(f"replays hold no floats, found {text}")
 
 
 def load_replay(path: Path) -> Replay:
-    """Read a replay file, reject floats, validate the header and every frame."""
+    """Read a v1 or v2 replay file, reject floats, validate the header and every frame."""
     try:
         data: object = json.loads(Path(path).read_text(encoding="utf-8"), parse_float=_no_floats)
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ReplayError(f"cannot read replay {path}: {exc}") from exc
-    return validate_replay(data)
+    return validate_any(data)
 
 
 def decode_layer(replay: Replay, index: int) -> list[list[int]]:

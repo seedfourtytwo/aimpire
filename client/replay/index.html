@@ -1,12 +1,14 @@
 <!doctype html>
 <!--
-  Aimpire replay player (F4b, ADR-0010). Static: no build step, no libraries.
-  Plays one aimpire-replay-v1 JSON file: a tile layer and entity dots per tick.
+  Aimpire replay player (F4b, F4d; ADR-0010). Static: no build step, no libraries.
+  Plays aimpire-replay-v2 files (an M0 run: map, charts and councils) and the
+  older aimpire-replay-v1 files (map only).
 
   Open it from any static server, for example from the repo root:
-      python3 -m http.server -d client/replay 8000   then visit http://127.0.0.1:8000/
-  ?src=<url> loads another replay; the default is fixtures/wander.json.
+      python3 -m http.server 8000   then visit http://127.0.0.1:8000/client/replay/
+  ?src=<url> loads another replay; the default is fixtures/m0.json.
   Opened straight from disk (file://), browsers block fetch: use the file picker.
+  Keys: space plays or pauses, the left and right arrows step one frame.
 -->
 <html lang="en">
 <head>
@@ -14,39 +16,126 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Aimpire replay</title>
 <style>
-  :root { color-scheme: light dark; --ink: #222; --muted: #777; --bg: #fbfbf8; }
-  @media (prefers-color-scheme: dark) {
-    :root { --ink: #ddd; --muted: #999; --bg: #151515; }
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfbf8; --ink: #1d1d1b; --muted: #6b6b66; --faint: #d9d8d2; --panel: #f3f2ec;
+    --accent: #a33b12; --bad: #b3261e; --warn: #8a5a00; --line: #1d1d1b;
   }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141413; --ink: #e6e5df; --muted: #9b9a93; --faint: #3a3a37; --panel: #1d1d1b;
+      --accent: #f08a5d; --bad: #f2948c; --warn: #e3b55c; --line: #e6e5df;
+    }
+  }
+  * { box-sizing: border-box; }
   body { margin: 0; padding: 16px; background: var(--bg); color: var(--ink);
-         font: 13px/1.5 system-ui, sans-serif; }
-  #view { display: block; margin: 8px 0; image-rendering: pixelated;
-          image-rendering: crisp-edges; }
-  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; max-width: 100%; }
-  .bar input[type=range] { flex: 1 1 160px; min-width: 120px; }
-  button, select, input { font: inherit; }
-  .muted { color: var(--muted); font-variant-numeric: tabular-nums; }
-  .swatch { display: inline-block; width: 8px; height: 8px; margin: 0 3px 0 8px; }
+         font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 15px; font-weight: 600; margin: 0; }
+  h2 { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+       color: var(--muted); margin: 18px 0 6px; }
+  button, select, input { font: inherit; color: inherit; }
+  button { background: var(--panel); border: 1px solid var(--faint); border-radius: 4px;
+           padding: 2px 10px; cursor: pointer; }
+  button:hover { border-color: var(--muted); }
+  .muted { color: var(--muted); }
+  .num { font-variant-numeric: tabular-nums; }
+  header { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline;
+           border-bottom: 1px solid var(--faint); padding-bottom: 8px; }
+  #meta { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; }
+  #meta b { font-weight: 600; }
+  .tag { border: 1px solid var(--accent); color: var(--accent); border-radius: 3px;
+         padding: 0 5px; font-size: 12px; }
+  #runid { font-size: 12px; width: 100%; overflow-wrap: anywhere; }
+  .open { margin-left: auto; font-size: 12px; }
+  .open input { max-width: 190px; }
+  main { display: grid; grid-template-columns: minmax(0, 560px) minmax(0, 1fr);
+         gap: 8px 32px; margin-top: 12px; }
+  @media (max-width: 860px) { main { grid-template-columns: minmax(0, 1fr); } }
+  #view { display: block; max-width: 100%; touch-action: none; }
+  .bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+  .bar input[type=range] { flex: 1 1 140px; min-width: 100px; accent-color: var(--ink); }
+  #status { margin-top: 4px; }
+  #key { font-size: 12px; margin-top: 4px; }
+  #key i { display: inline-block; width: 18px; height: 0; vertical-align: middle;
+           margin: 0 4px 0 10px; border-top: 2px solid; }
+  #key i:first-child { margin-left: 0; }
+  #work { margin-top: 6px; }
+  .spark { display: grid; grid-template-columns: 112px minmax(0, 1fr) 64px; align-items: center;
+           gap: 10px; min-height: 44px; }
+  .spark .label { font-size: 13px; line-height: 1.1; }
+  .spark .label small { display: block; color: var(--muted); font-size: 11px; }
+  .spark .value { text-align: right; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .spark .value small { display: block; color: var(--muted); font-size: 11px; }
+  .spark svg, #councilbar svg { display: block; width: 100%; height: 30px; overflow: visible;
+                                 cursor: crosshair; touch-action: none; }
+  #councilbar svg { height: 22px; cursor: pointer; }
+  svg .series { fill: none; stroke: var(--line); stroke-width: 1.25; }
+  svg .cursor { stroke: var(--accent); stroke-width: 1; }
+  svg .dot { fill: var(--accent); }
+  svg .base { stroke: var(--faint); stroke-width: 1; }
+  svg .mk { stroke: var(--muted); stroke-width: 2; }
+  svg .mk.PARTIAL { stroke: var(--warn); }
+  svg .mk.bad { stroke: var(--bad); }
+  svg .mk.sel { stroke: var(--ink); stroke-width: 3.5; }
+  svg .hit { fill: transparent; }
+  #council { background: var(--panel); border-radius: 6px; padding: 10px 14px 12px;
+             margin-top: 8px; }
+  #council .head { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+  #council .head b { font-size: 14px; }
+  #council h3 { font-size: 12px; font-weight: 600; color: var(--muted); margin: 10px 0 2px; }
+  .quote { margin: 2px 0; padding: 2px 0 2px 10px; border-left: 2px solid var(--muted);
+           white-space: pre-wrap; overflow-wrap: anywhere; font-family: ui-serif, Georgia, serif; }
+  .empty { color: var(--muted); font-style: italic; }
+  table { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  td { padding: 1px 12px 1px 0; vertical-align: top; }
+  td.r { text-align: right; }
+  .ACCEPTED { color: var(--ink); }
+  .REJECTED, .bad { color: var(--bad); }
+  .PARTIAL { color: var(--warn); }
+  code { font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+  code { display: block; }
+  .order { margin: 4px 0 8px; }
+  td { overflow-wrap: anywhere; }
+  main > section { min-width: 0; }
+  .nav { display: flex; gap: 6px; margin-left: auto; }
+  #frame-only { margin-top: 12px; }
 </style>
 </head>
 <body>
-<div id="meta" class="muted">loading…</div>
-<canvas id="view" width="1" height="1" aria-label="Replay frame"></canvas>
-<div class="bar">
-  <button id="play" type="button">Play</button>
-  <button id="back" type="button" aria-label="Step back">&lsaquo;</button>
-  <button id="step" type="button" aria-label="Step forward">&rsaquo;</button>
-  <input id="slider" type="range" min="0" max="0" value="0" aria-label="Frame">
-  <label class="muted">speed
-    <select id="speed">
-      <option value="2">2</option>
-      <option value="5">5</option>
-      <option value="10" selected>10</option>
-      <option value="30">30</option>
-    </select> ticks/s</label>
-  <label class="muted">open <input id="file" type="file" accept=".json,application/json"></label>
-</div>
-<div id="status" class="muted"></div>
+<header>
+  <h1>Aimpire replay</h1>
+  <div id="meta" class="muted">loading…</div>
+  <label class="open muted">open <input id="file" type="file" accept=".json,application/json"></label>
+  <div id="runid" class="muted"></div>
+</header>
+<main>
+  <section aria-label="Map">
+    <canvas id="view" width="1" height="1" aria-label="Map of the current frame"></canvas>
+    <div id="key" class="muted"></div>
+    <div class="bar">
+      <button id="play" type="button">Play</button>
+      <button id="back" type="button" aria-label="Step back">&lsaquo;</button>
+      <button id="step" type="button" aria-label="Step forward">&rsaquo;</button>
+      <input id="slider" type="range" min="0" max="0" value="0" aria-label="Frame">
+      <label class="muted">speed
+        <select id="speed">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="5" selected>5</option>
+          <option value="10">10</option>
+          <option value="30">30</option>
+        </select> frames/s</label>
+    </div>
+    <div id="status" class="muted num"></div>
+    <div id="work" class="num"></div>
+  </section>
+  <section aria-label="Run over time and councils">
+    <div id="charts"></div>
+    <div id="council" hidden></div>
+  </section>
+</main>
+<script src="map.js"></script>
+<script src="panels.js"></script>
 <script src="player.js"></script>
 </body>
 </html>

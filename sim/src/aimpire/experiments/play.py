@@ -13,8 +13,9 @@ Order of work, so that nothing is spent or written before it is safe:
    overwrite it);
 5. run every tick with councils on cadence through the budget gate,
    recording metrics each tick and a replay frame every ``frame_every``;
-6. write ``metrics.csv``, ``replay.json`` (open it in ``client/replay/``) and
-   ``notebook.md``, and print the summary.
+6. write ``metrics.csv``, ``replay.json`` (format ``aimpire-replay-v2``, with
+   each council's decision taken from the run store; open it in
+   ``client/replay/``) and ``notebook.md``, and print the summary.
 
 Same arguments, same hashes: every checkpoint hash, the replay and the
 notebook are byte-identical between two runs into different folders.
@@ -46,7 +47,8 @@ from aimpire.persistence.store import RunStore
 from aimpire.report.m0_run import CIV_KIND, camp_dot, m0_measures, summary_lines
 from aimpire.report.metrics import MetricsRecorder
 from aimpire.report.notebook import RunInfo, write_notebook
-from aimpire.report.replay import ReplayRecorder, write_replay
+from aimpire.report.replay import write_replay_doc
+from aimpire.report.replay_m0 import M0ReplayRecorder, councils_section, run_section
 from aimpire.sim.presets import PRESETS
 from aimpire.sim.state import WorldState
 from aimpire.sim.systems.tribe import population
@@ -117,7 +119,7 @@ class _Watch:
     def __init__(self, world: World, opts: PlayOptions, start_people: int) -> None:
         self.frame_every = opts.frame_every
         self.metrics = MetricsRecorder(m0_measures(world.civs[0][1], start_people))
-        self.replay = ReplayRecorder(FOOD, [CIV_KIND], world.calendar, locate=camp_dot)
+        self.replay = M0ReplayRecorder(FOOD, [CIV_KIND], world.calendar, locate=camp_dot)
         self.metrics.record(world.state)
         self.replay.capture(world.state)
 
@@ -127,12 +129,22 @@ class _Watch:
             self.replay.capture(state)
 
     def close(self, state: WorldState) -> None:
-        if self.replay.frames[-1]["tick"] != state.tick:
+        if self.replay.last_tick != state.tick:
             self.replay.capture(state)
 
 
-def play(opts: PlayOptions, *, month: str | None = None, echo: Echo = print) -> PlayResult:
-    """Run one game as described by ``opts`` (module docstring for the order of work)."""
+def play(
+    opts: PlayOptions,
+    *,
+    month: str | None = None,
+    echo: Echo = print,
+    provider: Provider | None = None,
+) -> PlayResult:
+    """Run one game as described by ``opts`` (module docstring for the order of work).
+
+    ``provider`` replaces the one the mind names; for offline test doubles only
+    (the fixture replay's scripted mind), never to change a mind's price.
+    """
     if opts.world not in WORLDS:
         raise ValueError(f"unknown world {opts.world!r}; aimpire run plays {list(WORLDS)}")
     if opts.ticks < 1 or opts.council_every < 1 or opts.frame_every < 1:
@@ -149,7 +161,7 @@ def play(opts: PlayOptions, *, month: str | None = None, echo: Echo = print) -> 
         month=month,
         echo=echo,
     )
-    provider = _provider(mind, opts.rules_dir)
+    provider = provider or _provider(mind, opts.rules_dir)
     run_id = run_id_for(opts, mind, resolved)
     if resolved.tags:
         echo(f"tags: {', '.join(resolved.tags)}")
@@ -174,9 +186,16 @@ def play(opts: PlayOptions, *, month: str | None = None, echo: Echo = print) -> 
             watch=watch,
             spent_month=spent_month,
         )
-        outcomes = Counter(str(row["outcome"]) for row in store.decisions())
+        decisions = store.decisions()
+        outcomes = Counter(str(row["outcome"]) for row in decisions)
         charged, final_hash = store.run_spent(), store.checkpoints()[-1][2]
+        replay = watch.replay.to_dict(
+            watch.metrics,
+            councils_section(decisions, store.blobs.get),
+            run_section(store.manifest()),
+        )
     run_dir = opts.out_root / run_id
+    write_replay_doc(replay, run_dir / "replay.json")
     _write_outputs(run_dir, opts, world, watch, outcomes)
     footer = (
         f"cost charged {usd(charged)} (worst case {usd(worst)})",
@@ -226,7 +245,6 @@ def _write_outputs(
     run_dir: Path, opts: PlayOptions, world: World, watch: _Watch, outcomes: Counter[str]
 ) -> None:
     watch.metrics.write_csv(run_dir / "metrics.csv")
-    write_replay(watch.replay, run_dir / "replay.json")
     info = RunInfo(
         run_id=run_dir.name,
         seed=opts.seed,

@@ -1,4 +1,11 @@
-"""Generate (or check) the fixture replay the static player opens by default (F4b).
+"""Generate (or check) the fixture replays of the static player (F4b, F4d).
+
+Two fixtures, both written only by this script:
+
+* ``fixtures/m0.json`` (``aimpire-replay-v2``): a short M0 run with a scripted
+  mock mind (``m0_fixture.py``); the player opens it by default;
+* ``fixtures/wander.json`` (``aimpire-replay-v1``): the demo world below, kept
+  so the player is tested on the older format too.
 
 Usage, from ``sim/``::
 
@@ -6,7 +13,7 @@ Usage, from ``sim/``::
     uv run python scripts/make_fixture_replay.py --check  # fail if it is stale or invalid
     uv run python scripts/make_fixture_replay.py --frame-sha256  # for the player smoke test
 
-The world here is a TEST DOUBLE for the viewer, not simulation rules: a
+The wander world is a TEST DOUBLE for the viewer, not simulation rules: a
 fertile band of food, eight dots that wander by counter draws and eat, and
 food that regrows toward each tile's fertility. Every food change is recorded
 in the ledger and checked (F3), so even the demo obeys the invariants.
@@ -20,6 +27,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+from m0_fixture import m0_fixture_text
 
 from aimpire.report.frames import frame_array
 from aimpire.report.replay import ReplayRecorder, dumps, load_replay
@@ -31,6 +39,7 @@ from aimpire.sim.state import WorldState
 
 REPO = Path(__file__).resolve().parents[2]
 FIXTURE = REPO / "client" / "replay" / "fixtures" / "wander.json"
+M0_FIXTURE = REPO / "client" / "replay" / "fixtures" / "m0.json"
 SEED, ROWS, COLS, TICKS = 42, 16, 24, 60
 CAL = Calendar(ticks_per_season=15, seasons_per_year=4)
 STEPS = ((0, 0), (-1, 0), (1, 0), (0, -1), (0, 1))
@@ -129,16 +138,21 @@ def main(argv: list[str] | None = None) -> int:
         frame = frame_array(final, "food", ("person",), scale_max=1000)
         print(hashlib.sha256(frame.tobytes()).hexdigest())
         return 0
+    fixtures = ((FIXTURE, text), (M0_FIXTURE, m0_fixture_text()))
     if args.check:
-        load_replay(FIXTURE)  # raises ReplayError if invalid
-        if FIXTURE.read_text(encoding="ascii") != text:
-            print(f"{FIXTURE} is stale: run scripts/make_fixture_replay.py", file=sys.stderr)
-            return 1
-        print(f"fixture replay ok: {FIXTURE.relative_to(REPO)}")
-        return 0
-    FIXTURE.parent.mkdir(parents=True, exist_ok=True)
-    FIXTURE.write_bytes(text.encode("ascii"))
-    print(f"wrote {FIXTURE.relative_to(REPO)} ({len(text)} bytes)")
+        stale = 0
+        for path, expected in fixtures:
+            load_replay(path)  # raises ReplayError if invalid
+            if path.read_text(encoding="ascii") != expected:
+                print(f"{path} is stale: run scripts/make_fixture_replay.py", file=sys.stderr)
+                stale += 1
+            else:
+                print(f"fixture replay ok: {path.relative_to(REPO)}")
+        return 1 if stale else 0
+    for path, expected in fixtures:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(expected.encode("ascii"))
+        print(f"wrote {path.relative_to(REPO)} ({len(expected)} bytes)")
     return 0
 
 

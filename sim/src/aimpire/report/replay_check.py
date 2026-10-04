@@ -1,10 +1,13 @@
-"""Validation of ``aimpire-replay-v1`` documents (F4b).
+"""Validation of ``aimpire-replay-v1`` documents and of the base every later format shares (F4b).
 
 Why separate: the player trusts what it loads, so every file is checked
 before use, both when written and when read. Unknown keys, floats, booleans in
 place of ints, frames that go back in time, layer data that does not fill the
 grid, and dots of unknown kinds or off the grid are all errors. Kept apart from
 ``replay.py`` so each module stays small.
+
+``check_base`` is the shared part: ``aimpire-replay-v2`` (``replay_v2_check``)
+is v1 plus extra header and frame keys, so it reuses every check here.
 """
 
 from typing import Any, Final, cast
@@ -61,9 +64,11 @@ def _check_keys(data: dict[str, object], expected: set[str], where: str) -> None
     )
 
 
-def _check_header(data: dict[str, object]) -> tuple[int, int, list[str]]:
-    _require(data.get("format") == FORMAT, f"format must be {FORMAT!r}")
-    _check_keys(data, set(_HEADER), "replay")
+def _check_header(
+    data: dict[str, object], fmt: str, extra: frozenset[str]
+) -> tuple[int, int, list[str]]:
+    _require(data.get("format") == fmt, f"format must be {fmt!r}")
+    _check_keys(data, set(_HEADER) | extra, "replay")
     _require(_is_int(data["run_seed"]), "run_seed must be a non-negative int")
     for key in ("rules_version", "rules_hash", "layer"):
         _require(isinstance(data[key], str), f"{key} must be a string")
@@ -101,10 +106,13 @@ def _check_header(data: dict[str, object]) -> tuple[int, int, list[str]]:
     return rows, cols, cast(list[str], kinds)
 
 
-def _check_frame(frame: object, i: int, rows: int, cols: int, kinds: list[str]) -> int:
+def _check_frame(
+    frame: object, i: int, grid: tuple[int, int], kinds: list[str], extra: frozenset[str]
+) -> int:
+    rows, cols = grid
     _require(isinstance(frame, dict), f"frame {i} must be an object")
     f = cast(dict[str, object], frame)
-    _check_keys(f, set(_FRAME), f"frame {i}")
+    _check_keys(f, set(_FRAME) | extra, f"frame {i}")
     _require(_is_int(f["tick"]), f"frame {i}: tick must be a non-negative int")
     digest = f["hash"]
     _require(
@@ -129,16 +137,30 @@ def _check_frame(frame: object, i: int, rows: int, cols: int, kinds: list[str]) 
     return cast(int, f["tick"])
 
 
-def validate_replay(data: object) -> dict[str, Any]:
-    """Check a parsed replay document; return it unchanged or raise ``ReplayError``."""
+def check_base(
+    data: object,
+    fmt: str = FORMAT,
+    header_extra: frozenset[str] = frozenset(),
+    frame_extra: frozenset[str] = frozenset(),
+) -> tuple[int, int]:
+    """Check everything v1 defines, allowing ``*_extra`` keys; return the grid ``(rows, cols)``.
+
+    The extra keys must be present (the caller checks their content).
+    """
     _require(isinstance(data, dict), "a replay must be a JSON object")
     doc = cast(dict[str, object], data)
-    rows, cols, kinds = _check_header(doc)
+    rows, cols, kinds = _check_header(doc, fmt, header_extra)
     frames = doc["frames"]
     _require(isinstance(frames, list) and len(cast(list[object], frames)) > 0, "no frames")
     last_tick = -1
     for i, frame in enumerate(cast(list[object], frames)):
-        tick = _check_frame(frame, i, rows, cols, kinds)
+        tick = _check_frame(frame, i, (rows, cols), kinds, frame_extra)
         _require(tick > last_tick, f"frame {i}: ticks must strictly increase")
         last_tick = tick
-    return cast(dict[str, Any], doc)
+    return rows, cols
+
+
+def validate_replay(data: object) -> dict[str, Any]:
+    """Check a parsed ``aimpire-replay-v1`` document; return it or raise ``ReplayError``."""
+    check_base(data)
+    return cast(dict[str, Any], data)
