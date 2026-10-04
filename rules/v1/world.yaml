@@ -1,0 +1,25 @@
+# World constants, rules v1 (ADR-0020, W0). Earth is the reference.
+#
+# These are fundamental constants, not rates. Systems never read them: the
+# rules loader derives every physical rate from them by the scaling laws in
+# aimpire.rules.physics (walking speed, carry load, tree height, season
+# strength, plant ceiling, ...). At these Earth values every derived rate is
+# exactly 1_000_000 ppm, the identity.
+#
+# Integers only (ADR-0012): ppm of the Earth value, or milli-degrees.
+# The Lab changes them per run with `--set world.<name>=<value>`; the knob
+# registry (aimpire.lab.knobs) gives each one's allowed and validated range.
+# Changing a value here changes every run: bump the rules version and
+# regenerate golden fixtures.
+
+# Surface gravity, ppm of Earth g (9.81 m/s^2).
+gravity: 1_000_000
+
+# Mean sunlight at the surface, ppm of the Earth mean.
+sunlight: 1_000_000
+
+# Rainfall, ppm of the reference climate.
+rain: 1_000_000
+
+# Axial tilt, milli-degrees (Earth: 23.44 degrees).
+tilt: 23_440
