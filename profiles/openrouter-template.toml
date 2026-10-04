@@ -1,0 +1,29 @@
+# OpenRouter template (ADR-0005, backlog F6a). The loader refuses it until filled in.
+#
+# Endpoint and request shape checked 2026-10-04:
+#   https://openrouter.ai/docs/guides/features/structured-outputs   (response_format json_schema)
+#   https://openrouter.ai/docs/guides/administration/usage-accounting (usage on every response)
+#
+# To use it, copy this file, then from the model's page on https://openrouter.ai/models:
+#   1. set `model` to the exact id (check "structured_outputs" is a supported parameter);
+#   2. set both prices in micro-dollars per million tokens ($0.10 / MTok = 100_000);
+#   3. write the page URL and today's date in [price].
+# No model id is given here: none was verified for this template.
+
+kind = "openai_compat"
+model = "REPLACE_WITH_VERIFIED_MODEL_ID"
+base_url = "https://openrouter.ai/api/v1"
+api_key_env = "OPENROUTER_API_KEY"
+structured_output = "json_schema"
+timeout_s = 120.0
+max_output_tokens = 4096
+
+[price]
+input_micro_usd_per_mtok = 0
+output_micro_usd_per_mtok = 0
+source = "REPLACE_WITH_MODEL_PAGE_URL"
+as_of = "REPLACE_WITH_DATE"
+
+[budget]
+max_input_tokens_per_call = 8000
+run_cap_micro_usd = 2_000_000

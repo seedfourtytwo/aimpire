@@ -5,8 +5,10 @@
 * ``offline``  — ``MockProvider``, ``RuleProvider``, ``RecordedProvider``;
 * ``recording`` — record and JSON Lines format for recorded results.
 
-Live adapters (Anthropic, OpenAI-compatible) arrive in F6 and implement the
-same protocol. Nothing here performs network I/O.
+Live adapters implement the same protocol and live in their own modules, so
+importing this one never loads an HTTP client: ``openai_compat``,
+``anthropic_provider``, and ``live.provider_from_profile`` to build either
+from a ``profiles`` TOML file. Nothing here performs network I/O.
 """
 
 from aimpire.cognition.offline import (

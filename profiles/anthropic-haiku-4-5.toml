@@ -1,0 +1,28 @@
+# Claude Haiku 4.5 through the Messages API and the official SDK (ADR-0005, backlog F6b).
+#
+# Model id and price checked 2026-10-04:
+#   https://platform.claude.com/docs/en/about-claude/models/overview  (id claude-haiku-4-5-20251001)
+#   https://platform.claude.com/docs/en/about-claude/pricing          ($1 / MTok in, $5 / MTok out)
+# Structured outputs (output_config.format, json_schema) list Haiku 4.5 as supported:
+#   https://platform.claude.com/docs/en/build-with-claude/structured-outputs
+# Re-check both pages before a research run; models retire on 60 days' notice (ADR-0014).
+#
+# The key is read at call time from the variable named here, never from this file.
+
+kind = "anthropic"
+model = "claude-haiku-4-5-20251001"
+api_key_env = "ANTHROPIC_API_KEY"
+timeout_s = 120.0
+max_output_tokens = 4096
+# temperature and effort are left unset: nothing is sent, so the model's defaults apply.
+
+[price]
+input_micro_usd_per_mtok = 1_000_000
+output_micro_usd_per_mtok = 5_000_000
+source = "https://platform.claude.com/docs/en/about-claude/pricing"
+as_of = "2026-10-04"
+
+[budget]
+max_input_tokens_per_call = 8000
+# A run with this profile may spend at most 2 dollars (the default; set lower to tighten).
+run_cap_micro_usd = 2_000_000
