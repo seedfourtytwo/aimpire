@@ -56,7 +56,8 @@ def test_import_rules_configured() -> None:
     contract = cfg["importlinter:contract:sim-is-pure"]
     assert contract["type"] == "forbidden"
     assert contract["source_modules"].split() == ["aimpire.sim"]
-    assert set(contract["forbidden_modules"].split()) == {
+    # At least these; later packages that do I/O (such as aimpire.rules) are added.
+    assert set(contract["forbidden_modules"].split()) >= {
         "aimpire.cognition",
         "aimpire.persistence",
         "aimpire.api",

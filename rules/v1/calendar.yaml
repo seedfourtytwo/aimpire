@@ -1,0 +1,5 @@
+# Calendar, rules v1 (ADR-0011). One tick is one game day.
+# Changing these values changes every run: bump the rules version and
+# regenerate golden fixtures.
+ticks_per_season: 30
+seasons_per_year: 4

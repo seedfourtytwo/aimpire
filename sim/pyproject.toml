@@ -8,6 +8,7 @@ requires-python = ">=3.14,<3.15"
 dependencies = [
     "numpy>=2.5.3,<3",
     "pydantic>=2.13.5,<3",
+    "pyyaml>=6.0.3,<7",
 ]
 
 [project.scripts]
@@ -21,6 +22,7 @@ dev = [
     "ruff>=0.16.10,<0.17",
     "pyright[nodejs]>=1.1.414,<1.2",
     "import-linter>=2.15,<3",
+    "types-pyyaml>=6.0.12.20260906",
 ]
 
 [build-system]

@@ -3,7 +3,7 @@
 root_package = aimpire
 
 [importlinter:contract:sim-is-pure]
-name = The simulation package imports no cognition, persistence, api or cli code
+name = The simulation package imports no cognition, persistence, api, cli or rules-loading code
 type = forbidden
 source_modules =
     aimpire.sim
@@ -12,3 +12,4 @@ forbidden_modules =
     aimpire.persistence
     aimpire.api
     aimpire.cli
+    aimpire.rules
