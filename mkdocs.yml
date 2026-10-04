@@ -1,0 +1,64 @@
+site_name: Aimpire
+site_description: Retro civilization research simulator with AI civilizations and god-game interventions
+repo_url: https://github.com/seedfourtytwo/aimpire
+edit_uri: edit/main/docs/
+docs_dir: docs
+strict: true
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: deep orange
+      toggle: { icon: material/brightness-4, name: Light mode }
+    - scheme: default
+      primary: deep orange
+      toggle: { icon: material/brightness-7, name: Dark mode }
+  features:
+    - navigation.sections
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc: { permalink: true }
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: index.md
+  - Specification: spec/original-handoff.md
+  - Architecture: architecture/overview.md
+  - Plan:
+      - Roadmap: plan/roadmap.md
+      - Open questions: plan/open-questions.md
+      - Decision log: plan/decision-log.md
+  - ADRs:
+      - Index: adr/README.md
+      - "0000 Template": adr/0000-template.md
+      - "0001 Record decisions": adr/0001-record-architecture-decisions.md
+      - "0002 Visual client": adr/0002-visual-client-stack.md
+      - "0003 Backend runtime": adr/0003-backend-runtime-and-tooling.md
+      - "0004 Persistence & replay": adr/0004-persistence-and-replay.md
+      - "0005 Model providers": adr/0005-model-provider-layer.md
+      - "0006 Repo, CI/CD, agents": adr/0006-repository-cicd-agent-workflow.md
+      - "0007 Determinism & RNG": adr/0007-determinism-and-rng.md
+      - "0008 First-slice scope": adr/0008-first-slice-simulation-scope.md
+      - "0009 Funding": adr/0009-funding-development-vs-cognition.md
+  - Research:
+      - Brief: research/00-brief.md
+      - Client & rendering: research/10-client-rendering.md
+      - Backend & data: research/20-backend-data.md
+      - Model layer: research/30-model-layer.md
+      - CI/CD & workflow: research/40-cicd-workflow.md
+      - Simulation design: research/50-simulation-design.md
+  - Agents:
+      - Status: agents/STATUS.md
+      - Workflow: agents/workflow.md
+      - Handoff template: agents/handoff-template.md

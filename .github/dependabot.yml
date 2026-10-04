@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci(deps)"
+  # Added by E1 / client prototype:
+  # - package-ecosystem: uv   (directory: /sim)
+  # - package-ecosystem: npm  (directory: /client/web)

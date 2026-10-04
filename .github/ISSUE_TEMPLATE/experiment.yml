@@ -1,0 +1,25 @@
+name: Experiment
+description: A research run or sweep with a hypothesis, controls and a budget
+labels: [experiment]
+body:
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis
+    validations: { required: true }
+  - type: textarea
+    id: design
+    attributes:
+      label: Design
+      description: Scenario, seeds, profiles per civ (with position rotation), interventions, ablations, baseline.
+    validations: { required: true }
+  - type: textarea
+    id: metrics
+    attributes:
+      label: Metrics & confounders
+  - type: input
+    id: budget
+    attributes:
+      label: Budget cap (USD / tokens)
+      placeholder: "$5 per run, $20 total — or 'local/mock only'"
+    validations: { required: true }

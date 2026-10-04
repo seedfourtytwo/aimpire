@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.hypothesis/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+
+# Node / web client
+node_modules/
+client/web/dist/
+playwright-report/
+test-results/
+
+# Docs
+site/
+
+# Runs & local data (never commit run outputs or secrets)
+runs/
+*.db
+*.db-wal
+*.db-shm
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Claude Code local settings
+.claude/settings.local.json

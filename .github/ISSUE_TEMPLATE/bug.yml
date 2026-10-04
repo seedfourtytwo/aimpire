@@ -1,0 +1,26 @@
+name: Bug
+description: Something behaves incorrectly — include what's needed to reproduce deterministically
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened vs. what you expected
+    validations: { required: true }
+  - type: input
+    id: seed
+    attributes:
+      label: Seed, scenario, rules version, git SHA
+      placeholder: "seed=42 scenario=shared_river rules=v1 sha=abc1234"
+    validations: { required: true }
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Command, run id / exported run, tick where it diverges, profiles used.
+    validations: { required: true }
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / hashes (redact any keys)
+      render: text

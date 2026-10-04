@@ -1,0 +1,9 @@
+# Protected paths: changes need creator review.
+/sim/src/aimpire/sim/   @seedfourtytwo
+/schema/                @seedfourtytwo
+/rules/                 @seedfourtytwo
+/fixtures/golden/       @seedfourtytwo
+/docs/adr/              @seedfourtytwo
+/.github/               @seedfourtytwo
+/.claude/               @seedfourtytwo
+/CLAUDE.md              @seedfourtytwo

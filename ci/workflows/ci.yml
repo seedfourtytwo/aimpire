@@ -1,0 +1,126 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  merge_group:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Default CI must never call real model providers (ADR-0005/0009).
+  AIMPIRE_PROVIDERS: mock,rule,recorded
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      sim: ${{ steps.filter.outputs.sim }}
+      client: ${{ steps.filter.outputs.client }}
+      docs: ${{ steps.filter.outputs.docs }}
+      workflows: ${{ steps.filter.outputs.workflows }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: filter
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          filters: |
+            sim:
+              - 'sim/**'
+              - 'schema/**'
+              - 'rules/**'
+              - 'scenarios/**'
+              - 'fixtures/**'
+              - 'justfile'
+            client:
+              - 'client/**'
+              - 'schema/**'
+            docs:
+              - 'docs/**'
+              - 'mkdocs.yml'
+              - 'justfile'
+            workflows:
+              - '.github/**'
+
+  docs:
+    needs: changes
+    if: needs.changes.outputs.docs == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - run: uvx --from rust-just just docs
+
+  workflows-lint:
+    needs: changes
+    if: needs.changes.outputs.workflows == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - run: uvx --from rust-just just lint-workflows
+
+  # Activates automatically once sim/ exists (epic E1). Recipes are defined in the justfile by E1.
+  python:
+    needs: changes
+    if: needs.changes.outputs.sim == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: true
+      - run: uvx --from rust-just just check-sim # lint, typecheck, test, golden replay, schema drift
+
+  # Activates once client/ exists (client prototype). Add setup-node + Playwright container here then.
+  client:
+    needs: changes
+    if: needs.changes.outputs.client == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - run: uvx --from rust-just just check-client
+
+  # The ONLY required status check for branch protection.
+  ci-ok:
+    if: always()
+    needs: [changes, docs, workflows-lint, python, client]
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: All required jobs passed or were skipped
+        env:
+          FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: test "$FAILED" = "false"
