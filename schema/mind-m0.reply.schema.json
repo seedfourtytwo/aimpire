@@ -1,0 +1,275 @@
+{
+  "$defs": {
+    "Allocation": {
+      "additionalProperties": false,
+      "description": "A standing share of the workers given to one activity at one place.",
+      "properties": {
+        "activity": {
+          "description": "One of: FORAGE, SCOUT.",
+          "title": "Activity",
+          "type": "string"
+        },
+        "place": {
+          "description": "A place id from the observation, such as PL07.",
+          "title": "Place",
+          "type": "string"
+        },
+        "share": {
+          "description": "Permille of workers, 0 to 1000.",
+          "title": "Share",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "activity",
+        "place",
+        "share"
+      ],
+      "title": "Allocation",
+      "type": "object"
+    },
+    "Belief": {
+      "additionalProperties": false,
+      "description": "A statement and the evidence ids that support it.",
+      "properties": {
+        "evidence": {
+          "description": "Event ids from the observation, such as EV0450.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "statement": {
+          "description": "The belief, in a sentence.",
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "statement",
+        "evidence"
+      ],
+      "title": "Belief",
+      "type": "object"
+    },
+    "Commitment": {
+      "additionalProperties": false,
+      "description": "A promise the world can check by a given council.",
+      "properties": {
+        "by_council": {
+          "description": "Council number by which it should hold.",
+          "title": "By Council",
+          "type": "integer"
+        },
+        "kind": {
+          "description": "One of: BE_AT, STOCK_AT_LEAST.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "place": {
+          "description": "A place id, or empty when not used.",
+          "title": "Place",
+          "type": "string"
+        },
+        "qty": {
+          "description": "Amount in whole units, or 0 when not used.",
+          "title": "Qty",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "place",
+        "qty",
+        "by_council"
+      ],
+      "title": "Commitment",
+      "type": "object"
+    },
+    "Message": {
+      "additionalProperties": false,
+      "description": "Text sent out of the council.",
+      "properties": {
+        "text": {
+          "description": "The message text.",
+          "title": "Text",
+          "type": "string"
+        },
+        "to": {
+          "description": "Another civilization's id, or VOICE.",
+          "title": "To",
+          "type": "string"
+        }
+      },
+      "required": [
+        "to",
+        "text"
+      ],
+      "title": "Message",
+      "type": "object"
+    },
+    "Name": {
+      "additionalProperties": false,
+      "description": "A name the civilization gives to something it knows.",
+      "properties": {
+        "id": {
+          "description": "A place id from the observation.",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "description": "The name.",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Name",
+      "type": "object"
+    },
+    "Order": {
+      "additionalProperties": false,
+      "description": "A one-off task.",
+      "properties": {
+        "kind": {
+          "description": "One of: FORAGE, MOVE_CAMP, SCOUT.",
+          "title": "Kind",
+          "type": "string"
+        },
+        "place": {
+          "description": "A place id from the observation.",
+          "title": "Place",
+          "type": "string"
+        },
+        "qty": {
+          "description": "Number of people, or 0 when not used.",
+          "title": "Qty",
+          "type": "integer"
+        },
+        "target": {
+          "description": "An entity id, or empty when not used.",
+          "title": "Target",
+          "type": "string"
+        },
+        "text": {
+          "description": "A short note, or empty.",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "place",
+        "target",
+        "qty",
+        "text"
+      ],
+      "title": "Order",
+      "type": "object"
+    },
+    "Policy": {
+      "additionalProperties": false,
+      "description": "Standing policy, in force until replaced. No allocations and ration 0 keep it as is.",
+      "properties": {
+        "allocations": {
+          "description": "Shares must sum to at most 1000.",
+          "items": {
+            "$ref": "#/$defs/Allocation"
+          },
+          "title": "Allocations",
+          "type": "array"
+        },
+        "ration": {
+          "description": "Daily ration in permille of a full ration; 1000 is full.",
+          "title": "Ration",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "allocations",
+        "ration"
+      ],
+      "title": "Policy",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One council's reply. Every field is required; empty means not used.",
+  "properties": {
+    "annal": {
+      "description": "One line for the chronicle; at most 200 characters.",
+      "title": "Annal",
+      "type": "string"
+    },
+    "beliefs": {
+      "description": "At most 3.",
+      "items": {
+        "$ref": "#/$defs/Belief"
+      },
+      "title": "Beliefs",
+      "type": "array"
+    },
+    "commitments": {
+      "description": "At most 3.",
+      "items": {
+        "$ref": "#/$defs/Commitment"
+      },
+      "title": "Commitments",
+      "type": "array"
+    },
+    "decision_id": {
+      "description": "Copy the decision id from the observation.",
+      "title": "Decision Id",
+      "type": "string"
+    },
+    "journal": {
+      "description": "Your notes for the next council; at most 1200 characters.",
+      "title": "Journal",
+      "type": "string"
+    },
+    "messages": {
+      "description": "At most 3.",
+      "items": {
+        "$ref": "#/$defs/Message"
+      },
+      "title": "Messages",
+      "type": "array"
+    },
+    "names": {
+      "description": "Names for places; at most 8.",
+      "items": {
+        "$ref": "#/$defs/Name"
+      },
+      "title": "Names",
+      "type": "array"
+    },
+    "orders": {
+      "description": "At most 8.",
+      "items": {
+        "$ref": "#/$defs/Order"
+      },
+      "title": "Orders",
+      "type": "array"
+    },
+    "policy": {
+      "$ref": "#/$defs/Policy"
+    }
+  },
+  "required": [
+    "decision_id",
+    "policy",
+    "orders",
+    "messages",
+    "commitments",
+    "beliefs",
+    "names",
+    "journal",
+    "annal"
+  ],
+  "title": "MindReply",
+  "type": "object"
+}
