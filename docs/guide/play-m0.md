@@ -74,7 +74,7 @@ Each game writes a folder in `sim/runs/`, named after its settings, for example
 | `notebook.md` | the lab notebook: settings, a table of every measure, small charts, where the food went, how each council's decision ended, and the command that repeats the game |
 | `chart-*.svg` | the notebook's charts (open them in a browser) |
 | `metrics.csv` | every measure on every day, for a spreadsheet |
-| `replay.json` | the game as frames, for the replay player |
+| `replay.json` | the game as frames, daily measures and every council's decision, for the replay player |
 | `run.db` | the complete record (every decision and checkpoint), for audits |
 
 Open `notebook.md` in any Markdown viewer (VS Code, GitHub, Obsidian). The **Ledger** table
@@ -83,23 +83,57 @@ decision ended (`VALID` is good; refusals and errors are counted, never hidden).
 
 ## 4. Watch the replay
 
-The replay player is a web page. Browsers only let it load a file through a small local web
-server, so start one **from the repository root** (one folder up from `sim`):
+The replay player is a web page. As an example, play three years of `greedy` on seed 7 (in the
+`sim` folder):
+
+```bash
+uv run aimpire run m0 --mind rule:greedy --seed 7 --years 3
+```
+
+Browsers only let the page load a file through a small local web server, so start one **from
+the repository root** (one folder up from `sim`):
 
 ```bash
 cd ..
 python3 -m http.server 8000
 ```
 
-Then open this address in your browser, with your run's folder name in it:
+Then open this address in your browser. The part after `src=` is your run's folder, as the run
+printed it on its last line:
 
 ```text
-http://127.0.0.1:8000/client/replay/?src=/sim/runs/m0-rule-greedy-s1-t600-places-c10-vf4788ac6/replay.json
+http://127.0.0.1:8000/client/replay/?src=/sim/runs/m0-rule-greedy-s7-t360-places-c10-vf4788ac6/replay.json
 ```
 
-The background colour shows how much wild food each tile holds, and the single dot is the
-camp. Use Play, the arrows or the slider; the line under the map gives the day, year and season. Press Ctrl+C in the terminal to stop the server, and `cd sim` to go back. The player
-also has a file picker if you prefer to choose `replay.json` by hand.
+Without `?src=` the page opens a short test game (`fixtures/m0.json`) played by a scripted
+stand-in mind whose texts all say "Fixture": useful to see every panel, but not a real mind.
+
+What you see:
+
+- **The header:** the mind, the seed, the rules version (with the start of the rules hash), any
+  `--set` change such as `world.gravity=950000`, and an `exploratory` tag when there is one.
+- **The map:** green is wild food on each tile (pale means eaten). Faint lines are the borders
+  of the places (`PL01` ... `PL16`); a name the group gave a place appears under its id. The
+  red dot is the camp. Thin lines go from the camp to where today's workers went, blue for
+  foragers and orange for scouts, with the number of people at the end. A dashed purple line
+  is a one-off trip the mind ordered. The line under the map gives the day, year and season,
+  and how today's people are split.
+- **Over time:** small charts of people alive, food in the stores, wild food near the camp and
+  deaths so far, all on the same time axis. The number on the right is the value at the
+  current day; the red line is the cursor. Click or drag on a chart to jump there.
+- **Councils:** one tick mark per council (grey: valid; amber: partly refused; red: refused or
+  failed). Click a mark to read that council.
+- **The council panel:** the council whose decision is at work on the map. A council decides
+  on one day and its policy acts from the next, so on day 120 you read the council of day 110.
+  It shows the mind's journal and messages exactly as the mind wrote them, its standing policy
+  (shares of the workers in permille: 500‰ is half), and its orders, each `ACCEPTED` or
+  `REJECTED` with the reason the simulation gave. A rejected order is shown as the mind wrote
+  it. The rule minds write little or no journal; a model writes one every council.
+
+Keys: **space** plays or pauses, the **left and right arrows** step one frame. Each frame is 10
+days (`--frame-every` changes that); the charts have every day. The page works on a phone and
+follows your system's dark mode. Press Ctrl+C in the terminal to stop the server, and `cd sim`
+to go back. The player also has a file picker if you prefer to choose `replay.json` by hand.
 
 ## 5. The Lab: change the world
 

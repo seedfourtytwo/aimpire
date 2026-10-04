@@ -59,15 +59,17 @@ check-sim: lint typecheck test schema-check
 
 # --- Static replay player (client/replay/) ----------------------------------
 
-# Regenerate the fixture replay the player opens by default
+# Regenerate the player's fixture replays (fixtures/m0.json and fixtures/wander.json)
 fixture-replay: sync
     cd sim && uv run python scripts/make_fixture_replay.py
 
-# Client checks: fixture valid and current; player.js syntax and headless smoke test (Node)
+# Client checks: fixtures valid and current; player syntax and headless smoke test (Node)
 check-client: sync
     cd sim && uv run python scripts/make_fixture_replay.py --check
     @if command -v node >/dev/null 2>&1; then \
         node --check client/replay/player.js && \
+        node --check client/replay/panels.js && \
+        node --check client/replay/map.js && \
         node client/replay/smoke-test.cjs "$(cd sim && uv run python scripts/make_fixture_replay.py --frame-sha256)"; \
     else \
         echo "node not found: skipped the player.js syntax check and smoke test (fixture still validated)"; \
