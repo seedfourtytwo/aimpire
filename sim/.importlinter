@@ -1,0 +1,14 @@
+# Protected file (ADR-0016). Architecture rules from ADR-0003 and CLAUDE.md.
+[importlinter]
+root_package = aimpire
+
+[importlinter:contract:sim-is-pure]
+name = The simulation package imports no cognition, persistence, api or cli code
+type = forbidden
+source_modules =
+    aimpire.sim
+forbidden_modules =
+    aimpire.cognition
+    aimpire.persistence
+    aimpire.api
+    aimpire.cli

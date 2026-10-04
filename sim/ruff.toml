@@ -1,0 +1,26 @@
+# Protected file (ADR-0016). Lint rules that encode project invariants.
+target-version = "py314"
+line-length = 100
+src = ["src", "tests"]
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "TID", "RUF", "PL", "N"]
+ignore = ["PLR2004"]  # magic numbers are normal in tests and unit constants
+
+[lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+# Determinism (ADR-0007, ADR-0012, CLAUDE.md): no hidden randomness or
+# wall-clock time inside the simulation package.
+[lint.flake8-tidy-imports.banned-api]
+"random".msg = "sim/ is deterministic: use aimpire.sim.rng counter draws (ADR-0012)."
+"secrets".msg = "sim/ is deterministic: use aimpire.sim.rng counter draws (ADR-0012)."
+"numpy.random".msg = "sim/ is deterministic: use aimpire.sim.rng counter draws (ADR-0012)."
+"uuid".msg = "sim/ ids come from the per-run allocator in state (ADR-0007)."
+"time".msg = "sim/ never reads the clock; world time is the tick (ADR-0007)."
+"datetime".msg = "sim/ never reads the clock; world time is the tick (ADR-0007)."
+
+[lint.per-file-ignores]
+# The bans apply only inside the simulation package.
+"!src/aimpire/sim/**" = ["TID251"]
+"tests/**" = ["PLR0913", "S101"]
