@@ -12,7 +12,15 @@ import numpy as np
 import pytest
 
 from aimpire.sim.hashing import diff_parts, state_hash
-from aimpire.sim.places import grid_blocks, place_of, places_by_id, set_name, travel_ticks
+from aimpire.sim.places import (
+    grid_blocks,
+    lower_bound_ticks,
+    place_of,
+    places_by_id,
+    set_civ_name,
+    travel_ticks,
+    travel_ticks_within,
+)
 from aimpire.sim.state import WorldState
 
 pytestmark = pytest.mark.acceptance
@@ -165,13 +173,45 @@ def test_errors() -> None:
         grid_blocks(twice, 2, 2)
 
 
-def test_names_start_empty_and_touch_only_place_entities() -> None:
+def _civ(civ_id: str) -> dict[str, object]:
+    return {"civ_id": civ_id, "names": {}}
+
+
+def test_place_names_are_per_civ() -> None:
+    """A place entity has no name; each civ keeps its own names (decision log, F5c fix)."""
     s = build()  # type: ignore[operator]
-    assert all(p.name == "" for p in places_by_id(s).values())
-    named = build()  # type: ignore[operator]
-    set_name(named, "PL02", "Riverbend")
-    assert places_by_id(named)["PL02"].name == "Riverbend"
-    assert diff_parts(s, named) == ["entities:place"]
-    assert travel_ticks(named, "PL01", "PL04") == travel_ticks(s, "PL01", "PL04")
+    for place in places_by_id(s).values():
+        assert "name" not in s.entities[place.entity_id]
+    a = s.add_entity("civ", _civ("C01"))  # type: ignore[arg-type]
+    b = s.add_entity("civ", _civ("C02"))  # type: ignore[arg-type]
+    before = build()  # type: ignore[operator]
+    before.add_entity("civ", _civ("C01"))  # type: ignore[arg-type]
+    before.add_entity("civ", _civ("C02"))  # type: ignore[arg-type]
+
+    set_civ_name(s, "C02", "PL02", "Riverbend")
+    assert s.entities[b]["names"] == {"PL02": "Riverbend"}
+    assert s.entities[a]["names"] == {}, "one civ's name reached another civ"
+    assert diff_parts(before, s) == ["entities:civ"], "naming touched more than the civ"
+    assert travel_ticks(s, "PL01", "PL04") == travel_ticks(before, "PL01", "PL04")
     with pytest.raises(KeyError):
-        set_name(named, "PL99", "Nowhere")
+        set_civ_name(s, "C01", "PL99", "Nowhere")
+    with pytest.raises(KeyError):
+        set_civ_name(s, "C09", "PL01", "Nowhere")
+
+
+def test_travel_within_known_places() -> None:
+    """2 by 3 blocks: PL01 PL02 PL03 / PL04 PL05 PL06, step 2 between neighbours."""
+    s = _empty(4, 6)
+    grid_blocks(s, 2, 2)
+    everywhere = set(places_by_id(s))
+    assert travel_ticks_within(s, "PL01", "PL03", everywhere) == travel_ticks(s, "PL01", "PL03")
+    detour = {"PL01", "PL04", "PL05", "PL06", "PL03"}  # PL02, the shortcut, is unknown
+    assert travel_ticks(s, "PL01", "PL03") == 4
+    assert travel_ticks_within(s, "PL01", "PL03", detour) == 8
+    assert travel_ticks_within(s, "PL01", "PL03", {"PL01", "PL03"}) is None
+    assert lower_bound_ticks(s, "PL01", "PL03") == 4
+    assert lower_bound_ticks(s, "PL01", "PL06") <= travel_ticks(s, "PL01", "PL06")
+    with pytest.raises(ValueError):
+        travel_ticks_within(s, "PL01", "PL03", {"PL01"})
+    with pytest.raises(KeyError):
+        travel_ticks_within(s, "PL01", "PL99", {"PL01", "PL99"})
