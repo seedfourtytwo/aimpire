@@ -19,10 +19,13 @@ so the adapter removes the value it actually used.
 """
 
 import json
+import math
 import time
 from collections.abc import Mapping
+from decimal import Decimal
 from typing import Any, Final
 
+from aimpire.cognition.budget import MICRO_USD_PER_USD
 from aimpire.cognition.profiles import Profile
 from aimpire.cognition.protocol import (
     NO_USAGE,
@@ -99,6 +102,21 @@ def as_int(value: object) -> int:
     if isinstance(value, float) and value.is_integer():
         return int(value)
     return 0
+
+
+def reported_cost_micro_usd(value: object) -> int | None:
+    """A provider-reported cost in US dollars as whole micro-dollars, rounded up; else None.
+
+    The amount arrives as a JSON number (OpenRouter's ``usage.cost``, in
+    credits of one dollar). It is read through ``Decimal`` from its text so
+    the conversion is exact; a missing, negative or non-numeric value is None.
+    """
+    if type(value) not in (int, float):
+        return None
+    amount = Decimal(str(value))
+    if not amount.is_finite() or amount < 0:
+        return None
+    return math.ceil(amount * MICRO_USD_PER_USD)
 
 
 def scrub(text: str, secret: str | None) -> str:

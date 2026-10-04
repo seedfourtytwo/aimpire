@@ -1,0 +1,15 @@
+# Pass marks for `aimpire qualify` (backlog F6c). Versioned: a change of any mark is a new file
+# and a new `version`, so every qualify report names the marks it was judged against.
+#
+# Rates are parts per million (ppm) of the cases or orders; latency is wall-clock milliseconds.
+# Provisional until the first pilot (ADR-0014: revisit thresholds after the first pilot).
+
+version = "qualify-thresholds-v1"
+
+# Share of replies that parse as one m0 MindReply.
+min_schema_adherence_ppm = 900_000
+# Share of proposed orders (in parseable replies) that the validator accepts.
+min_order_validity_ppm = 800_000
+# Median and slowest single call.
+max_latency_p50_ms = 60_000
+max_latency_max_ms = 300_000

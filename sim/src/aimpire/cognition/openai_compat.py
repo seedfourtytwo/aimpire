@@ -24,6 +24,8 @@ Usage: ``prompt_tokens`` and ``completion_tokens``, with
 ``completion_tokens_details.reasoning_tokens`` as the reasoning part of the
 completion (OpenRouter returns usage on every response). Cost is
 ``profile.price`` applied to that usage by the council (``Price.cost``).
+When the server also states the cost (OpenRouter's ``usage.cost``), it is
+kept as ``reported_cost_micro_usd`` for ``aimpire qualify`` to compare.
 
 HTTP goes through ``httpx2``, the maintained continuation of httpx that the
 Anthropic SDK is built on, so both adapters share one HTTP stack. Tests pass
@@ -33,6 +35,7 @@ a key are given and ``complete`` is awaited.
 
 import json
 import time
+from dataclasses import replace
 from typing import Any
 
 import httpx2
@@ -44,6 +47,7 @@ from aimpire.cognition.live_common import (
     failed,
     fallback_usage,
     max_output_tokens,
+    reported_cost_micro_usd,
     schema_text,
     scrub,
     split_usage,
@@ -60,6 +64,12 @@ from aimpire.cognition.protocol import (
 )
 
 SCHEMA_NAME = "mind_reply"
+
+
+def _reported_cost(envelope: dict[str, Any]) -> int | None:
+    """OpenRouter's own figure for the call (``usage.cost``), when the server sends one."""
+    usage = envelope.get("usage")
+    return reported_cost_micro_usd(usage.get("cost")) if isinstance(usage, dict) else None  # pyright: ignore[reportUnknownMemberType]
 
 
 class OpenAICompatProvider:
@@ -183,16 +193,18 @@ class OpenAICompatProvider:
         finish = choice.get("finish_reason")
         if (isinstance(refusal, str) and refusal) or finish == "content_filter":
             reason = refusal if isinstance(refusal, str) and refusal else content
-            return failed("refusal", model, start, scrub(reason, key), usage)
-        if finish == "length":
-            return failed("truncated", model, start, content, usage)
-        parsed, status = parse_reply(content)
-        return CognitionResult(
-            raw_text=content,
-            parsed=parsed,
-            status=status,
-            usage=usage,
-            model_reported=model,
-            latency_ms=elapsed_ms(start, time.perf_counter_ns()),
-            attempts=1,
-        )
+            result = failed("refusal", model, start, scrub(reason, key), usage)
+        elif finish == "length":
+            result = failed("truncated", model, start, content, usage)
+        else:
+            parsed, status = parse_reply(content)
+            result = CognitionResult(
+                raw_text=content,
+                parsed=parsed,
+                status=status,
+                usage=usage,
+                model_reported=model,
+                latency_ms=elapsed_ms(start, time.perf_counter_ns()),
+                attempts=1,
+            )
+        return replace(result, reported_cost_micro_usd=_reported_cost(envelope))
