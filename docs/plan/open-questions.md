@@ -5,7 +5,6 @@ Defaults are applied until answered. Answers go into `decision-log.md`, and into
 ## Open
 | # | Question | Recommended answer | Blocks |
 |---|---|---|---|
-| Q4 | **Keys and caps.** An OpenRouter key as a hidden cloud credential, and an Anthropic Console key in the gated `live-eval` environment? What cap? | OpenRouter with a 20-dollar monthly cap for iteration; a per-run cap for Anthropic | F6 |
 | Q15 | **Headline research question.** | How models treat an unseen voice; conduct toward rivals under scarcity second | First experiment |
 | Q16 | **Public replays.** Publish replays with model text on the Pages site? | Yes, with a content note and fictional peoples only | M1 demo |
 | Q8 | **Historical parallels:** label patterns only, or also seed scenarios from real geographies (a Nile-like basin)? | Label only, generic geography (ADR-0019) | Observer layer |
@@ -13,6 +12,8 @@ Defaults are applied until answered. Answers go into `decision-log.md`, and into
 | Q17 | **Name.** AIMPIRE is a registered US trademark for consumer electronics, and the word sounds like "Empire AI". | Keep it for the repo; get a clearance check before any store release | A store release |
 
 ## Answered
+
+- **Q4 (2026-10-04):** 20 dollars a month in total for in-game AI. Providers: OpenRouter, an Anthropic API key and local Ollama. See `decision-log.md` and the budget rules under F6 in `backlog.md`.
 | # | Question | Answer |
 |---|---|---|
 | Q1 | Product name | Aimpire; "Great Filter" is an in-game challenge |

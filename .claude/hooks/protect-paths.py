@@ -36,14 +36,38 @@ PROTECTED_FILES = {"sim/ruff.toml", "sim/pyrightconfig.json", "sim/.importlinter
 NEW_FILE_OK = re.compile(r"^docs/adr/\d{4}-[a-z0-9-]+\.md$")
 
 
-def repo_root() -> Path:
+def _git_toplevel(cwd: Path) -> Path | None:
+    out = subprocess.run(
+        ["git", "-C", str(cwd), "rev-parse", "--show-toplevel"],
+        capture_output=True, text=True, check=False,
+    )
+    top = out.stdout.strip()
+    return Path(top).resolve() if out.returncode == 0 and top else None
+
+
+def repo_root(near: str | None = None) -> Path:
+    """The checkout that contains ``near`` (a file path or directory).
+
+    Why not just CLAUDE_PROJECT_DIR: agent worktrees live under
+    ``.claude/worktrees/<id>/`` inside the main checkout, while
+    CLAUDE_PROJECT_DIR still names the main checkout. Measured from there,
+    every worktree file starts with ``.claude/`` and would be blocked. So the
+    root is found from the target's own nearest existing directory first.
+    """
+    if near:
+        d = Path(near)
+        if not d.is_absolute():
+            d = Path(os.environ.get("CLAUDE_PROJECT_DIR") or ".") / d
+        d = d.resolve()
+        while not d.is_dir() and d != d.parent:
+            d = d.parent
+        top = _git_toplevel(d)
+        if top:
+            return top
     env = os.environ.get("CLAUDE_PROJECT_DIR")
     if env:
         return Path(env).resolve()
-    out = subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True, check=False
-    )
-    return Path(out.stdout.strip() or ".").resolve()
+    return _git_toplevel(Path.cwd()) or Path(".").resolve()
 
 
 def relative(path: str, root: Path) -> str | None:
@@ -68,7 +92,7 @@ def pre(payload: dict) -> int:
     target = tool_input.get("file_path") or tool_input.get("notebook_path")
     if not target:
         return 0
-    root = repo_root()
+    root = repo_root(target)
     rel = relative(target, root)
     if rel is None or not is_protected(rel):
         return 0
@@ -96,8 +120,8 @@ def changed_files(root: Path) -> set[str]:
     return files
 
 
-def stop(_payload: dict) -> int:
-    root = repo_root()
+def stop(payload: dict) -> int:
+    root = repo_root(payload.get("cwd") or os.getcwd())
     touched = sorted(f for f in changed_files(root) if is_protected(f))
     if touched:
         msg = "Protected paths changed on this branch: " + ", ".join(touched)
