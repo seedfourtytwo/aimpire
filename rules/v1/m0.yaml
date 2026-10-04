@@ -1,0 +1,92 @@
+# M0 petri dish, rules v1 (docs/plan/backlog.md, section M0).
+#
+# One tribe on a flat map with one regrowing food. Read by
+# aimpire.rules.load_m0_rules into the typed record aimpire.sim.world.M0Rules.
+#
+# Units (ADR-0012), integers only:
+#   * food and stores in milli-units (mu). 1 food unit = 1_000 mu = what one
+#     person eats in one tick. A tick is a game day (ADR-0011): with a
+#     120-tick year it stands for about three calendar days, so a "ration"
+#     here is a game-day ration, not a calendar-day one.
+#   * rates and chances in ppm with their period: {ppm: N, per: tick|season|year}.
+#     A rate is linear over its period, not compounded (ADR-0011).
+#   * flows of an amount in mu with their period: {mu: N, per: tick|season|year}.
+#   * "at Earth" means before the W0 multipliers (aimpire.sim.derived): a
+#     system scales these base values by the derived rates, never by the raw
+#     world constants.
+#
+# Changing a value here changes the rules hash and every run: bump the rules
+# version and regenerate golden fixtures once they exist.
+
+map:
+  # Map size in tiles (the petri dish of ADR-0013).
+  rows: 64
+  cols: 64
+  # Places are grid_blocks of this many tiles a side: 64 / 16 = 4 x 4 = 16
+  # places, inside the 12 to 30 target of ADR-0013.
+  place_block: 16
+
+food:
+  # Food ceiling of one tile at Earth and full fertility, in mu: 10 food units.
+  # The tile ceiling is K = ceiling x W0 plant_ceiling x fertility (both ppm).
+  # A 16 x 16 place at mean fertility (650_000 ppm) holds about 1_660 units;
+  # at the logistic optimum it yields about 33 units a tick, about what the
+  # 30 starting people eat, so one place alone barely feeds the tribe and
+  # where to forage matters.
+  ceiling: 10_000
+  # Food on every tile at worldgen, in ppm of its ceiling: the dish starts full.
+  initial: 1_000_000
+
+fertility:
+  # Fertility of a tile in ppm, from integer value noise on the WORLDGEN
+  # stream: corner values drawn uniformly in [min, max] on a lattice with
+  # this cell size in tiles, bilinearly interpolated between them. The
+  # poorest tile holds 30 % of the richest; one cell is one place block, so
+  # places differ from one another while each is smooth inside.
+  min: 300_000
+  max: 1_000_000
+  cell: 16
+
+regrowth:
+  # Logistic regrowth with a seed term (ADR-0012, "no absorbing zero"):
+  #   dF = r F (K - F) / K + s (K - F)   per tick, never above K.
+  # r = 2_400_000 ppm a season is 8 % a tick at low density (30-tick season).
+  # s = 30_000 ppm a season is 0.1 % of the gap a tick: an emptied tile
+  # restarts from seed blown in from its surroundings.
+  # With these values a tile goes from 10 % to 99 % of K in about three
+  # seasons (continuous solution: ln(802) / (0.08 + 0.001) = 83 ticks), and
+  # the steady yield under constant harvest peaks at a stock of
+  # (1 - s / r) / 2 = 49.4 % of K.
+  rate: {ppm: 2_400_000, per: season}
+  seed: {ppm: 30_000, per: season}
+
+people:
+  # What one person eats: one food unit a tick (by definition of the unit).
+  need: {mu: 1_000, per: tick}
+  # Starting tribe: 30 people (research note 50) and 30 ticks of food for them.
+  start: 30
+  start_stores: 900_000
+  # Chance that a person who goes unfed dies, per tick of shortfall: 5 % a
+  # tick, so a person without food dies in about 20 ticks (two calendar months)
+  # on average. Drawn per person from the LIFE stream (M0b).
+  starvation_death: {ppm: 50_000, per: tick}
+
+stores:
+  # Spoilage of open stores: 20 permille a tick in research note 50, written
+  # here with its period (ADR-0011): 30 ticks x 20_000 ppm = 600_000 a season.
+  spoilage: {ppm: 600_000, per: season}
+
+forage:
+  # Food one forager brings back in one trip at Earth gravity, in mu. Scaled
+  # by W0 carry_load. M0b: a forager gathers carry / (1 + 2 x travel ticks)
+  # a tick, so a forager on the camp's own place gathers 10 units a tick.
+  carry_per_trip: 10_000
+  # Extra food a walking person burns, at Earth gravity, scaled by W0
+  # walk_energy: half a ration per tick of walking.
+  walk_energy: {mu: 500, per: tick}
+
+scout:
+  # A scout at a place sees every place whose centroid lies within this
+  # Manhattan distance, in tiles, of its own centroid. 16 = the four places
+  # next to it on the 16-tile grid (diagonals are 32 away).
+  sight: 16

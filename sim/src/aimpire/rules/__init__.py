@@ -3,7 +3,8 @@
 File reading lives here, outside ``aimpire.sim``, which does no I/O. The
 loader parses and validates; the simulation receives plain typed objects:
 ``Calendar`` from ``calendar.yaml`` and, through ``physics.derive_world``,
-``DerivedWorld`` rates from the constants in ``world.yaml``.
+``DerivedWorld`` rates from the constants in ``world.yaml``, and ``M0Rules``
+from ``m0.yaml``.
 
 No ``/`` operator anywhere in this package, not even to join paths
 (``joinpath`` instead): the W0 acceptance test bans true division here, so a
@@ -14,11 +15,12 @@ from pathlib import Path
 
 from aimpire.rules.digest import rules_hash
 from aimpire.rules.errors import RulesError
+from aimpire.rules.m0 import load_m0_rules
 from aimpire.rules.world import load_world
 from aimpire.rules.yaml_io import read_mapping
 from aimpire.sim.calendar import Calendar
 
-__all__ = ["RulesError", "load_calendar", "load_world", "rules_hash"]
+__all__ = ["RulesError", "load_calendar", "load_m0_rules", "load_world", "rules_hash"]
 
 
 def load_calendar(rules_dir: Path) -> Calendar:
