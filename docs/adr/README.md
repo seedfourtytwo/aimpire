@@ -29,5 +29,6 @@ We use MADR-lite records: one file per decision, `NNNN-kebab-title.md`, copied f
 | [0017](0017-the-gods-channels.md) | The god's channels: signs, omens, a voice, scripture, prayer | Accepted |
 | [0018](0018-what-the-minds-know.md) | What the minds know: knowledge arms and native minds | Accepted |
 | [0019](0019-emergence-first.md) | Emergence first: primitives, not institutions | Accepted |
+| [0020](0020-tinkering-lab-and-world-constants.md) | The Tinkering Lab and world constants | Proposed |
 
 Background research for each decision lives in `docs/research/` (listed on the [docs home page](../index.md)).

@@ -62,6 +62,7 @@ nav:
       - "0017 The god's channels": adr/0017-the-gods-channels.md
       - "0018 What the minds know": adr/0018-what-the-minds-know.md
       - "0019 Emergence first": adr/0019-emergence-first.md
+      - "0020 Tinkering Lab": adr/0020-tinkering-lab-and-world-constants.md
   - Research:
       - Brief: research/00-brief.md
       - Client & rendering: research/10-client-rendering.md
@@ -71,6 +72,7 @@ nav:
       - Simulation design: research/50-simulation-design.md
       - Social systems: research/70-social-systems.md
       - Planning review: research/80-plan-review-2026-10-04.md
+      - Tinkering Lab & world physics: research/90-tinkering-lab-and-world-physics.md
   - Agents:
       - Status: agents/STATUS.md
       - Workflow: agents/workflow.md

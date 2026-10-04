@@ -32,3 +32,5 @@ One line per decision or assumption: date, item, source. Architecturally signifi
 | 2026-10-04 | ADRs 0011–0014 and 0016–0019 accepted | creator |
 | 2026-10-04 | **Spending (Q4):** in-game AI is capped at 20 dollars a month in total. Providers: OpenRouter, an Anthropic API key, local Ollama (free). Keys are added by the creator as secrets, never in chat, code or logs | creator |
 | 2026-10-04 | Remove the admin bypass on the `main` ruleset, so CI must pass before every merge; the creator changes it in GitHub settings (the session cannot) | creator |
+| 2026-10-04 | **Tinkering Lab** requested: a workshop to tweak world, rules, minds, tribes and physics. Planned as a Lab track with world constants and derived scaling laws (ADR-0020, proposed; research note 90) | creator |
+| 2026-10-04 | Place names are per civilization only; travel times shown to a mind use only routes through places it knows | planning (creator: "use your best judgment") |
