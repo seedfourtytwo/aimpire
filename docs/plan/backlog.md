@@ -19,7 +19,7 @@ Verification for every item is `just check`, plus the named tests.
 | G1c | S | `sim/tests/acceptance/README.md` (the read-only rule and the expected-failure convention). |
 | G1d | C | Optional: a pull-request review workflow or routine pinned to a stronger model, using the checklist in [`review-checklist.md`](../agents/review-checklist.md). |
 
-Protected paths: `sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, and the `[tool.ruff]`, `[tool.pyright]` and `[tool.importlinter]` tables of `sim/pyproject.toml`.
+Protected paths: `sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, and the config files `sim/ruff.toml`, `sim/pyrightconfig.json` and `sim/.importlinter`. They are kept out of `pyproject.toml` so that dependency changes stay unprotected.
 
 Sketch for G1a (the creator adapts and pushes it; agents do not edit workflows):
 
@@ -41,7 +41,7 @@ Sketch for G1a (the creator adapts and pushes it; agents do not edit workflows):
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
-          pattern='^(sim/tests/acceptance/|fixtures/golden/|\.github/|\.claude/|docs/adr/|CLAUDE\.md$)'
+          pattern='^(sim/tests/acceptance/|fixtures/golden/|\.github/|\.claude/|docs/adr/|CLAUDE\.md$|sim/ruff\.toml$|sim/pyrightconfig\.json$|sim/\.importlinter$)'
           if git diff --name-only "$BASE" "$HEAD" | grep -Eq "$pattern"; then
             echo "touched=true" >> "$GITHUB_OUTPUT"
           else

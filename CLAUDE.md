@@ -36,7 +36,8 @@ Start with `docs/plan/roadmap.md`. The full intent is in `docs/spec/original-han
 - **Credentials never go in** saves, run dbs, blobs, exports, logs, fixtures or this repo.
 
 ## Protected paths (ADR-0016)
-`sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, and the lint, type-check and import-rule settings.
+`sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, and the lint, type-check and import-rule settings (`sim/ruff.toml`, `sim/pyrightconfig.json`, `sim/.importlinter`).
+- Sessions meant to edit them (planning and review sessions, the creator) start Claude Code with `AIMPIRE_ALLOW_PROTECTED=1`.
 - Implementing sessions do not change these. A new **Proposed** ADR is the one exception.
 - **If a test seems to contradict the issue or an ADR: stop. Do not edit the test. Report it in the pull request.**
 
