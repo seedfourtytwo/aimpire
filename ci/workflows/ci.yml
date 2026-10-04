@@ -52,6 +52,20 @@ jobs:
               - 'justfile'
             workflows:
               - '.github/**'
+              - 'ci/**'
+
+  # Always runs: repo hygiene (sizes, line limits, forbidden files) + tooling/hook lint and tests.
+  repo:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - run: uvx --from rust-just just check-repo
 
   docs:
     needs: changes
@@ -116,7 +130,7 @@ jobs:
   # The ONLY required status check for branch protection.
   ci-ok:
     if: always()
-    needs: [changes, docs, workflows-lint, python, client]
+    needs: [changes, repo, docs, workflows-lint, python, client]
     runs-on: ubuntu-latest
     permissions: {}
     steps:

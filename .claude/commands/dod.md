@@ -1,14 +1,17 @@
 ---
 description: Check the current branch against the Definition of Done
 ---
-Check the current branch against the Definition of Done in `docs/agents/workflow.md`:
+Check the current branch against the Definition of Done in AGENTS.md §5.4 (canonical). For each
+item report **pass** or **fail** with evidence (command output, file:line, test name):
 
-- `just check` passes.
-- Tests are added. Invariant-bearing code has property tests.
-- The determinism impact is declared, and golden hashes are unchanged or justified.
-- The schema is regenerated and the client updated, if contracts changed.
-- No network call is added to default or test paths. No credentials appear anywhere.
-- Docs and ADRs are updated, and `STATUS.md` is updated.
-- CLAUDE.md invariants are respected: sim purity, no `random` or `time` in `sim/`, integer state, sorted iteration.
+- Tests written first, red observed, suite green; `just check` passes (run it now).
+- Lint, format, types, shape limits and repo hygiene pass.
+- Determinism impact declared; golden hashes unchanged or justified.
+- Schema regenerated and client updated if contracts changed.
+- No network in default/test paths; no secrets, large files or generated artifacts.
+- Provenance labels on new output paths.
+- Docstrings, domain docs, ADRs, glossary, limitations updated as relevant.
+- Fresh-context review done for risky areas (`/fresh-review`).
+- What was not validated is listed; `STATUS.md` updated.
 
-Report each item as pass or fail with evidence. Fix what you can, then report what remains.
+Fix what you can (through the right subagent), then report what remains.

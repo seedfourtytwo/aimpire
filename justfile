@@ -18,5 +18,25 @@ docs-serve:
 lint-workflows:
     uvx zizmor --offline $(ls .github/workflows/*.yml ci/workflows/*.yml 2>/dev/null)
 
+# Repo hygiene: file sizes, source line limits, forbidden artifacts (AGENTS.md §4.1)
+hygiene:
+    python3 tools/checks/repo_hygiene.py
+
+# Lint + format-check repo tooling and Claude Code hooks (limits from ruff.toml)
+lint-tools:
+    uvx ruff check tools .claude/hooks
+    uvx ruff format --check tools .claude/hooks
+
+# Tests for repo tooling and Claude Code hooks
+test-tools:
+    uvx pytest -q tools/tests
+
+# Install local git hooks (prek, pre-commit compatible)
+hooks-install:
+    uvx prek install
+
+# Repo-wide gates that run on every PR regardless of paths
+check-repo: hygiene lint-tools test-tools
+
 # Everything CI checks (grows as code lands)
-check: docs lint-workflows
+check: check-repo docs lint-workflows

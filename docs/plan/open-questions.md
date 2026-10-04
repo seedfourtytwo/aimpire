@@ -13,3 +13,4 @@ Defaults are applied until answered. Answers go into `decision-log.md`, and into
 | Q7 | Should **GitHub Pages** (Source: GitHub Actions) be enabled for the docs and demo site? | `pages.yml` runs on manual dispatch only until enabled | Phone demo |
 | Q8 | **Historical parallels:** should the observer only *tag* analogues (ADR-0008), or should scenarios be seeded from real geographies (e.g. a Nile-like or Mesopotamia-like basin)? | Tag only, with generic geography | E15 |
 | Q9 | **Local model server:** will your CPU or Ollama server be reachable (e.g. over Tailscale) for runs launched from the cloud? | Local models are laptop-only, launched by you | Optional |
+| Q10 | **Accept ADR-0010** (standards and agent model routing)? Is Opus for planning/review and Sonnet for coding the right usage trade-off for your plan? | Proposed; agents follow it | — |

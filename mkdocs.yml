@@ -35,6 +35,9 @@ nav:
   - Home: index.md
   - Specification: spec/original-handoff.md
   - Architecture: architecture/overview.md
+  - Glossary: glossary.md
+  - Known limitations: limitations.md
+  - References: references.md
   - Plan:
       - Roadmap: plan/roadmap.md
       - Open questions: plan/open-questions.md
@@ -51,6 +54,7 @@ nav:
       - "0007 Determinism & RNG": adr/0007-determinism-and-rng.md
       - "0008 First-slice scope": adr/0008-first-slice-simulation-scope.md
       - "0009 Funding": adr/0009-funding-development-vs-cognition.md
+      - "0010 Standards & agent routing": adr/0010-engineering-standards-and-agent-routing.md
   - Research:
       - Brief: research/00-brief.md
       - Client & rendering: research/10-client-rendering.md
@@ -61,4 +65,6 @@ nav:
   - Agents:
       - Status: agents/STATUS.md
       - Workflow: agents/workflow.md
+      - Agent team & models: agents/agent-team.md
+      - UI rules: agents/ui-rules.md
       - Handoff template: agents/handoff-template.md

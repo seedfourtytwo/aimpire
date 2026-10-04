@@ -1,7 +1,7 @@
 # Agent & contributor workflow
 
 ## Session lifecycle
-1. **Read:** `CLAUDE.md`, then `docs/agents/STATUS.md`, then the issue, then the relevant ADRs.
+1. **Read:** `AGENTS.md` (Claude Code loads it via `CLAUDE.md`), then `docs/agents/STATUS.md`, then the issue, then the relevant ADRs.
 2. **Claim:** assign the issue, add the `in-progress` label, and create the branch `agent/<issue#>-<slug>` (or `feat/…`, `fix/…`).
 3. **Work** in your own worktree. Keep PRs small: under about 400 changed lines, excluding generated files.
 4. **Check:** run `just check`, which is exactly what CI runs.
@@ -21,13 +21,9 @@
 - **Rebase on `main` before opening a PR.** Never force-push to `main`.
 
 ## Definition of done
-- [ ] `just check` passes.
-- [ ] Tests are added: unit tests, plus property tests for anything that bears an invariant.
-- [ ] Determinism impact is declared. Golden hashes are unchanged, or the regeneration is justified.
-- [ ] The schema is regenerated if contracts changed, and the client is updated.
-- [ ] No network call is added to any default or test path.
-- [ ] Docs are updated: domain rules, ADR, README as relevant.
-- [ ] `STATUS.md` is updated.
+The canonical checklist is [AGENTS.md §5.4](https://github.com/seedfourtytwo/aimpire/blob/main/AGENTS.md#54-definition-of-done-canonical--the-pr-template-and-dod-mirror-this).
+Run `/dod` to check a branch against it. For how work is split between agents and models, see
+[agent-team.md](agent-team.md).
 
 ## Recommended repo settings (needs admin; see open-questions Q6–Q7)
 **Ruleset on `main`:**

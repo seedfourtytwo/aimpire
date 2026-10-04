@@ -19,5 +19,6 @@ We use MADR-lite records: one file per decision, `NNNN-kebab-title.md`, copied f
 | [0007](0007-determinism-and-rng.md) | Determinism, RNG and hashing | Proposed |
 | [0008](0008-first-slice-simulation-scope.md) | First-slice simulation scope (rules v1) | Proposed |
 | [0009](0009-funding-development-vs-cognition.md) | Funding: subscription builds, API keys think | Proposed |
+| [0010](0010-engineering-standards-and-agent-routing.md) | Engineering standards and agent model routing | Proposed |
 
 Background research for each decision lives in `docs/research/` (listed on the [docs home page](../index.md)).

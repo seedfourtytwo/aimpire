@@ -1,0 +1,43 @@
+# Repository-wide ruff config: the single source of code-shape limits (AGENTS.md §4.1).
+# sub-projects (sim/pyproject.toml) inherit with:  [tool.ruff] extend = "../ruff.toml"
+# Verified against ruff docs, 2026-10-04: https://docs.astral.sh/ruff/settings/
+
+line-length = 100
+target-version = "py313"   # tooling runs on system python; sim/ overrides to py314 (ADR-0003)
+
+[lint]
+select = [
+  "E", "W", "F",      # pycodestyle, pyflakes
+  "I",                # import order
+  "B",                # bugbear
+  "UP",               # pyupgrade
+  "SIM",              # simplify
+  "C90",              # mccabe complexity
+  "PLR0911", "PLR0912", "PLR0913", "PLR0915",  # returns, branches, args, statements
+  # nesting depth (PLR1702) is preview-only in ruff; enforced in review until stable
+  "D",                # docstrings (Google convention)
+  "ERA",              # no commented-out code
+  "T20",              # no print() outside CLIs
+  "S",                # bandit security checks
+]
+ignore = [
+  "D105", "D107",     # magic methods / __init__ documented on the class
+  "D203", "D213",     # Google style: summary on first line
+]
+
+[lint.mccabe]
+max-complexity = 12          # hard limit; target ≤ 8
+
+[lint.pylint]
+max-args = 6                 # beyond this, pass a params model
+max-statements = 40          # ≈ 60-line hard limit per function
+max-branches = 12
+max-returns = 6
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.per-file-ignores]
+"**/tests/**" = ["D", "S101", "PLR2004"]      # asserts and literal numbers are fine in tests
+"tools/checks/*.py" = ["T20", "S603", "S607"]  # CLI output; fixed git argv, no shell
+".claude/hooks/*.py" = ["S603", "S607"]        # fixed argv, no shell

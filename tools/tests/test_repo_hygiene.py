@@ -1,0 +1,83 @@
+"""Tests for the repository hygiene gate (AGENTS.md §4.1 size and file rules)."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import repo_hygiene as rh
+
+
+def _write(root: Path, rel: str, content: str | bytes) -> Path:
+    path = root / rel
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if isinstance(content, bytes):
+        path.write_bytes(content)
+    else:
+        path.write_text(content, encoding="utf-8")
+    return path
+
+
+def _rules(violations: list[rh.Violation]) -> set[str]:
+    return {v.rule for v in violations}
+
+
+def test_small_source_file_has_no_violations(tmp_path: Path) -> None:
+    _write(tmp_path, "sim/a.py", "x = 1\n" * 10)
+    assert rh.check_paths(tmp_path, ["sim/a.py"]) == []
+
+
+def test_source_file_over_hard_line_limit_is_an_error(tmp_path: Path) -> None:
+    _write(tmp_path, "sim/big.py", "x = 1\n" * (rh.SOURCE_LINE_HARD_LIMIT + 1))
+    violations = rh.check_paths(tmp_path, ["sim/big.py"])
+    assert _rules(violations) == {"source-too-long"}
+    assert violations[0].is_error
+
+
+def test_source_file_over_target_is_only_a_warning(tmp_path: Path) -> None:
+    _write(tmp_path, "client/web/src/a.ts", "let a = 1;\n" * (rh.SOURCE_LINE_TARGET + 1))
+    violations = rh.check_paths(tmp_path, ["client/web/src/a.ts"])
+    assert _rules(violations) == {"source-over-target"}
+    assert not violations[0].is_error
+
+
+def test_markdown_is_not_line_limited(tmp_path: Path) -> None:
+    _write(tmp_path, "docs/long.md", "line\n" * 2000)
+    assert rh.check_paths(tmp_path, ["docs/long.md"]) == []
+
+
+def test_generated_contract_code_is_exempt_from_line_limits(tmp_path: Path) -> None:
+    _write(tmp_path, "client/web/src/contract/types.ts", "x;\n" * 2000)
+    assert rh.check_paths(tmp_path, ["client/web/src/contract/types.ts"]) == []
+
+
+def test_large_binary_is_an_error(tmp_path: Path) -> None:
+    _write(tmp_path, "client/web/public/big.png", b"\0" * (rh.MAX_FILE_BYTES + 1))
+    assert _rules(rh.check_paths(tmp_path, ["client/web/public/big.png"])) == {"file-too-large"}
+
+
+def test_lockfiles_are_allowed_to_be_large(tmp_path: Path) -> None:
+    _write(tmp_path, "sim/uv.lock", "a\n" * (rh.MAX_FILE_BYTES // 2 + 10))
+    assert rh.check_paths(tmp_path, ["sim/uv.lock"]) == []
+
+
+def test_forbidden_artifacts_are_errors(tmp_path: Path) -> None:
+    for rel in ("runs/r1.db", "model.gguf", ".env", "weights.safetensors"):
+        _write(tmp_path, rel, "x")
+        assert _rules(rh.check_paths(tmp_path, [rel])) == {"forbidden-file"}, rel
+
+
+def test_env_example_is_allowed(tmp_path: Path) -> None:
+    _write(tmp_path, ".env.example", "ANTHROPIC_API_KEY=\n")
+    assert rh.check_paths(tmp_path, [".env.example"]) == []
+
+
+def test_missing_paths_are_ignored(tmp_path: Path) -> None:
+    # Deleted-but-listed files must not crash the gate.
+    assert rh.check_paths(tmp_path, ["gone.py"]) == []
+
+
+def test_main_returns_nonzero_only_on_errors(tmp_path: Path) -> None:
+    _write(tmp_path, "ok.py", "x = 1\n")
+    assert rh.main(["--root", str(tmp_path), "ok.py"]) == 0
+    _write(tmp_path, "bad.py", "x = 1\n" * (rh.SOURCE_LINE_HARD_LIMIT + 1))
+    assert rh.main(["--root", str(tmp_path), "bad.py"]) == 1

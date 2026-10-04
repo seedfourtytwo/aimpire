@@ -18,3 +18,8 @@ One line per decision or assumption: date, item, source. Architecturally signifi
 | 2026-10-04 | LiteLLM optional only, due to 2026-03 PyPI compromise (ADR-0005) | research |
 | 2026-10-04 | Top-down orthogonal 16 px tiles for v1; isometric later | research 10 |
 | 2026-10-04 | No LICENSE file added yet — awaiting creator choice | open (Q2) |
+| 2026-10-04 | AGENTS.md is the canonical rulebook; CLAUDE.md imports it (ADR-0010) | creator request |
+| 2026-10-04 | Mandatory TDD with separate test-writer / implementer agents; hook blocks implementer from editing tests (ADR-0010) | creator request |
+| 2026-10-04 | Model routing: Opus (high/xhigh) plans and reviews, Sonnet implements, Haiku does doc chores (ADR-0010) | creator request |
+| 2026-10-04 | Shape limits: files ≤ 500 lines (target 300), ≤ 500 KB; functions ≤ 40 statements, complexity ≤ 12, ≤ 6 args; enforced by `repo_hygiene.py`, `ruff.toml`, CI job `repo` | creator request |
+| 2026-10-04 | UI follows Tufte rules, Okabe–Ito/viridis palettes and WCAG 2.2 AA (`docs/agents/ui-rules.md`) | creator request |

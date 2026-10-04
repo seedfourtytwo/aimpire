@@ -10,7 +10,8 @@ A retro civilization **research simulator** with god-game interactions. Autonomo
 - [Roadmap](plan/roadmap.md): milestones and epics.
 - [Open questions](plan/open-questions.md): what the creator still needs to decide.
 - [Decision log](plan/decision-log.md) and [ADRs](adr/README.md).
-- [Agent workflow](agents/workflow.md) and [current status](agents/STATUS.md).
+- [Agent workflow](agents/workflow.md), [agent team & models](agents/agent-team.md) and [current status](agents/STATUS.md).
+- [UI rules](agents/ui-rules.md), [glossary](glossary.md), [known limitations](limitations.md), [references](references.md).
 
 ## Research notes (2026-10-04)
 - [Condensed brief](research/00-brief.md)

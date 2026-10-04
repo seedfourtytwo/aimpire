@@ -1,48 +1,78 @@
-# CLAUDE.md — guidance for Claude Code sessions (and humans)
+# CLAUDE.md — Claude Code specifics
 
-## First, every session
-1. Read `docs/agents/STATUS.md` (current phase, what's in flight).
-2. Read the issue you're working on and the ADRs it touches (`docs/adr/`).
-3. At the end: update `STATUS.md`; if work remains, write `docs/agents/handoff-<branch>.md`.
+@AGENTS.md
 
-## What this project is
-Aimpire is a deterministic civilization research simulator. AI models control civilizations by *proposing* typed actions, and the simulation validates and executes them. The full intent is in `docs/spec/original-handoff.md` and the design in `docs/research/50-simulation-design.md`.
+`AGENTS.md` (imported above) is the canonical rulebook. This file adds only what is specific to
+Claude Code. Do not restate rules here; change `AGENTS.md` instead.
 
-## Non-negotiable invariants (never violate; ask if a task seems to require it)
-- **Authoritative sim.** Model output never mutates state directly. Only validated actions do, through `sim/actions/`.
-- **Truth / evidence / belief separation.** Observation types structurally exclude `hidden_cause`, other civs' private data and unseen tile truth. Never add a field that leaks them.
-- **Determinism** (ADR-0007):
-  - No `random`, no numpy `Generator`, no `time`/`datetime.now()` inside `sim/`. Use `aimpire.sim.rng` counter draws only.
-  - Integers only in authoritative state: milli-units, permille. No floats stored or hashed.
-  - Iterate entities in sorted id order. Never depend on set iteration order.
-- **The sim package is pure.** `sim/` imports nothing from `cognition/`, `persistence/` or `api/`. It does no I/O.
-- **Speech and visions are data.** They appear quoted inside observations, never in system prompts.
-- **No network in default paths.** Tests and CI use mock, rule and recorded providers only. Live calls need explicit profiles plus budgets.
-- **Credentials never go in** saves, run dbs, blobs, exports, logs, fixtures or this repo.
-- **No fabricated emergence.** Never hardcode outcomes or fake events in the UI or demos.
+## How a session runs
 
-## Repo layout
-Planned; created as epics land.
-```
-sim/            Python uv project → src/aimpire/{sim,cognition,persistence,contracts,api,cli}
-schema/         generated contracts (JSON Schema/OpenAPI) — never hand-edit
-client/web/     Vite + React + PixiJS client; src/contract is generated
-rules/v1/       authored transformation rules (versioned data)
-scenarios/      scenario YAML (shared_river.yaml)
-profiles/       model profile TOML (no secrets — api_key_env names only)
-fixtures/golden recorded runs + expected checkpoint hashes
-evals/          live-model eval configs (manual workflow only)
-docs/           spec, research, adr, architecture, plan, agents
-```
+You are the **orchestrator**. The project default is Opus at `high` effort (`.claude/settings.json`)
+so planning, decomposition and judgement get the strongest reasoning. Hand bulk work to the
+cheaper subagents below and keep your own context for decisions.
+
+For each issue, run the loop (or use `/tdd <issue>`):
+
+1. **Plan** — for anything beyond a one-file change, delegate to `architect` (Opus, `xhigh`). Use
+   plan mode for schema, rules-version, determinism or cross-module changes. Get back: behaviours
+   to test, file map, ordered steps that each fit one PR, invariants touched.
+2. **Red** — delegate to `test-writer` (Sonnet). Confirm it reports the failing run and that each
+   test fails for the expected reason.
+3. **Green** — delegate to `implementer` (Sonnet). A hook blocks it from editing tests/fixtures; if
+   it reports a test is wrong, decide yourself (or ask `architect`) before anything changes.
+4. **Review** — delegate to `reviewer` (Opus, fresh context) for every PR; add `ui-auditor` for
+   client changes. Fix blocking findings via `implementer`, then re-review.
+5. **Wrap up** — run `just check` yourself and read the real output; delegate STATUS/handoff
+   chores to `scribe` (Haiku); open the PR.
+
+Other delegation: `researcher` for any version, API, price or model-ID question (with URLs and
+dates); the built-in `Explore` agent for broad code searches. Run independent subagents in
+parallel; never let two agents edit the same file. Small, obvious edits (a typo, one-line fix) you
+may do directly — still test-first.
+
+## Agent team (`.claude/agents/`) — details in `docs/agents/agent-team.md`
+
+| Agent | Model / effort | Writes code? |
+|---|---|---|
+| `architect` | opus / xhigh | docs and ADR drafts only |
+| `test-writer` | sonnet / medium | tests + interface stubs |
+| `implementer` | sonnet / medium | production code (tests blocked by hook) |
+| `reviewer` | opus / high | no — read-only findings |
+| `ui-auditor` | sonnet / medium | no — read-only findings |
+| `researcher` | sonnet / medium | no — cited findings |
+| `scribe` | haiku / low | docs, STATUS, handoffs, changelog |
+
+Unnamed subagents default to Sonnet (`CLAUDE_CODE_SUBAGENT_MODEL`).
 
 ## Commands
-Run `just --list` to see them all. Use `just check` before every PR; it is exactly what CI runs.
-- `just docs` builds the docs site (strict). `just docs-serve` previews it.
-- Python and client recipes arrive with E1 and the client prototype: `lint`, `typecheck`, `test`, `golden`, `schema-check`, `client-*`.
 
-## Working rules
-- One issue, one branch (`agent/<issue>-<slug>`), one small PR. Conventional Commit titles with scope `sim|rules|cognition|schema|client|docs|ci|evals`.
-- **Hot files, each in its own PR:** `schema/`, lockfiles, `fixtures/golden/` (label `golden-update` plus a rules version bump), `rules/`.
-- **Architecture changes** need a Proposed ADR (`/adr`). The creator accepts it.
-- **Verify versions and APIs** against current primary docs before adding dependencies. Never invent model IDs.
-- **Prefer small, tested increments.** Never mark a partial feature complete.
+- `/tdd <issue>` — full plan → red → green → review loop
+- `/fresh-review` — fresh-context review of the current branch (built-in `/review` is different)
+- `/ui-review` — Tufte/accessibility audit of client changes
+- `/adr <title>` — draft a Proposed ADR
+- `/dod` — check the branch against the Definition of Done
+- `/handoff` — end-of-session STATUS update and handoff note
+
+`just --list` shows all recipes; `just check` is exactly what CI runs.
+
+## Path-scoped rules (`.claude/rules/`)
+
+Loaded automatically when you read or edit matching files: `sim-core.md` (sim, rules, goldens),
+`client-ui.md` (client), `tests.md` (any test file). They condense the relevant AGENTS.md sections.
+
+## Hooks (`.claude/hooks/`, tested in `tools/tests/`)
+
+- **SessionStart** — injects the branch, the session routine and the head of `STATUS.md`.
+- **PreToolUse(Bash)** — `guard_bash.py` blocks force-push, pushes to `main`, `--no-verify`,
+  destructive git, reading `.env`, literal keys, releases and visibility changes.
+- **PostToolUse(Edit|Write)** — formats Python with ruff (if installed) and flags files over the
+  500-line limit.
+- **Stop** — reminds once per session to update `STATUS.md` when code changed.
+
+Hooks require `python3` on PATH. If a hook blocks something the creator has explicitly approved in
+this conversation, say so and ask the creator to run it.
+
+## Reporting back
+
+Lead with what works and how it was verified (real command output). List what was not validated.
+Keep it short; the PR and `STATUS.md` hold the detail.
