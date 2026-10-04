@@ -7,10 +7,10 @@
 
 ## Current state
 - **Strategy (ADR-0010):** logic first. Start with simple physics plus an AI in the loop, then climb the complexity ladder L0–L8. Graphics are dots for now.
-- **Repo contents:** docs, accepted ADRs 0001–0010, CI workflows (parked in `ci/workflows/` until activated) and agent conventions. There is no code yet.
+- **Repo contents:** docs, accepted ADRs 0001–0010, active CI, and agent conventions. There is no code yet.
+- **Repo settings:** `main` is protected (PR required, `ci-ok` required, squash only, linear history). Pages source is GitHub Actions. Workflow token is read-only.
 
 ## Next up
-- [ ] Creator: activate CI workflows (move `ci/workflows` → `.github/workflows`, see `ci/README.md`). Enable Pages. Turn on branch protection.
 - [ ] F1: repo bootstrap. Create the `sim/` uv project and the justfile `check-sim` recipe.
 - [ ] F2: deterministic core and the plug-in system scheduler.
 - [ ] F4: dot viewer, metrics and lab notebook.
@@ -21,5 +21,5 @@
 _None._
 
 ## Known blockers
-- CI workflows are inactive until moved. The Claude GitHub app can't write workflow files.
+- The Claude GitHub app can't create or edit files in `.github/workflows/`. Workflow changes need the creator to push them, or need the app's *Workflows* permission.
 - No API keys yet. Live AI runs need a provider key or a local model; this is expected.

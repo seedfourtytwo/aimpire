@@ -16,7 +16,15 @@ docs-serve:
 
 # Lint GitHub workflows for security issues
 lint-workflows:
-    uvx zizmor --offline $(ls .github/workflows/*.yml ci/workflows/*.yml 2>/dev/null)
+    uvx zizmor --offline .github/workflows
 
 # Everything CI checks (grows as code lands)
 check: docs lint-workflows
+
+# Python sim checks: lint, typecheck, test, golden, schema (filled in by F1)
+check-sim:
+    @if [ -d sim ]; then echo "sim/ exists but check-sim is not implemented yet (F1)"; exit 1; else echo "no sim/ yet: nothing to check"; fi
+
+# Web client checks (filled in by the client work)
+check-client:
+    @if [ -d client ]; then echo "client/ exists but check-client is not implemented yet"; exit 1; else echo "no client/ yet: nothing to check"; fi
