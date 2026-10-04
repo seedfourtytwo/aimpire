@@ -1,5 +1,5 @@
 # Aimpire task runner — CI calls ONLY these recipes, so local == CI.
-# Python/client recipes (lint, typecheck, test, golden, schema-check, client-*) are added in F1 / client prototype.
+# Client recipes (client-*) arrive with the replay player and console.
 
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
@@ -19,11 +19,36 @@ lint-workflows:
     uvx zizmor --offline .github/workflows
 
 # Everything CI checks (grows as code lands)
-check: docs lint-workflows
+check: docs lint-workflows check-sim
 
-# Python sim checks: lint, typecheck, test, golden, schema (filled in by F1)
-check-sim:
-    @if [ -d sim ]; then echo "sim/ exists but check-sim is not implemented yet (F1)"; exit 1; else echo "no sim/ yet: nothing to check"; fi
+# --- Python simulation (sim/) ---------------------------------------------
+
+# Install the locked environment
+sync:
+    cd sim && uv sync --locked
+
+# Format check and lint (ruff; config in sim/ruff.toml)
+lint: sync
+    cd sim && uv run ruff format --check . && uv run ruff check .
+
+# Apply formatting and safe lint fixes
+fmt: sync
+    cd sim && uv run ruff format . && uv run ruff check --fix .
+
+# Type check (pyright: strict on aimpire.sim) and architecture rules (import-linter)
+typecheck: sync
+    cd sim && uv run pyright && uv run lint-imports
+
+# Full test suite
+test: sync
+    cd sim && uv run pytest
+
+# Quick, quiet tests: stop at the first failure
+test-fast: sync
+    cd sim && uv run pytest -q -x --no-header -p no:cacheprovider
+
+# Python sim checks: what the CI python job runs (golden and schema checks join later)
+check-sim: lint typecheck test
 
 # Web client checks (filled in by the client work)
 check-client:

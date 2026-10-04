@@ -8,14 +8,14 @@
 ## Current state
 - **Goal:** emergence. See what civilizations, political orders and beliefs arise when the models decide for themselves (ADR-0019).
 - **Order (ADR-0015, accepted):** foundation F1–F6, then M0 petri dish, M1 seasons and a voice, M2 two tribes, M3 generations, M4 living world, M5 knowledge, M6–M8 society. This replaces the L0–L8 ladder order.
-- **Repo contents:** docs, ADRs 0001–0019, active CI, agent conventions, the backlog. There is no code yet.
+- **Repo contents:** docs, ADRs 0001–0019, active CI, agent conventions, the backlog, and the `sim/` Python project skeleton (F1). No simulation logic yet.
 - **ADR status:** 0001–0019 are all accepted (0011–0019 on 2026-10-04).
 - **Repo settings:** `main` is protected (PR required, `ci-ok` required, squash only, linear history). Pages source is GitHub Actions. Workflow token is read-only.
 
 ## Next up
 - [ ] Creator: answer the remaining items in `docs/plan/open-questions.md`; push G1a (CI path check).
 - [ ] G1: guard rails (protected-path hook and CI check, acceptance-test folder). G1a needs the creator.
-- [ ] F1: bootstrap the `sim/` uv project. Does not depend on the proposed ADRs.
+- [x] F1: `sim/` uv project, package skeleton, CLI, guard-rail config and acceptance tests (PR #4).
 - [ ] F2: deterministic core (ADR-0011, ADR-0012).
 - [ ] F3, then F4 and F5 in parallel, then F6.
 
