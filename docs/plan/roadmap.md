@@ -1,42 +1,40 @@
 # Roadmap
 
-The spec's milestones A–F are broken into 15 epics (E1–E15). Full acceptance criteria are in [`../research/50-simulation-design.md`](../research/50-simulation-design.md) §10. Each epic becomes a GitHub issue labelled `epic`. Its child issues each fit one agent session and one PR.
+Strategy (ADR-0010): **logic first, simple physics, AI in the loop from day one, then add one layer of complexity at a time.** Graphics are dots until the logic earns better.
 
-## Phase 0 — Planning (this PR) ✅
-Spec captured, five research tracks, ADRs 0001–0009, CI skeleton, agent conventions.
+## Phase 0 — Planning ✅
+Spec, research, ADRs 0001–0010, CI skeleton, agent conventions.
 
-## Milestone B — Deterministic core, headless demo
-| Epic | Deliverable | Parallelisable with |
+## Phase 1 — Engine foundation (needed before L0)
+| Epic | Deliverable | Tests (written first) |
 |---|---|---|
-| **E1** Repo bootstrap | `sim/` uv project, justfile recipes live, `rules/v1` loader + schema, decisions log | — (first) |
-| **E2** Deterministic core | counter RNG, fixed-point, canonical hash, phase-ordered tick loop; 360 empty ticks hash-stable | — (after E1) |
-| **E3** World gen + environment | Shared River map from seed; seasons, moisture, regrowth, river lag, fire, spoilage | E4 |
-| **E4** People, needs, movement | hunger/health/death, deterministic A*, routine policy, ledger conservation | E3 |
-| **E5** Action contract | 13 action schemas, validator with all rejection reasons, task executor, idempotency | after E2 |
-| **E6** Baseline + headless demo | `aimpire run --scenario shared_river --ticks 360 --headless` with metrics, no credentials | after E3–E5 |
-| **E7** Persistence, replay, branching | SQLite run db, checkpoints, recorded replay hash-identical, branch provenance; golden fixtures in CI | after E6 |
+| **F1** Repo bootstrap | `sim/` uv project; justfile recipes `lint`, `typecheck`, `test`, `check-sim`; CI python job goes live | CI green on an empty package |
+| **F2** Deterministic core | counter RNG, fixed-point helpers, canonical hash, plug-in system scheduler (ordered systems, per-system rate, on/off via config) | same seed → same hash; permuted registration order → error, not drift |
+| **F3** Ledger & invariants | conserved-quantity ledger, debug-mode invariant checks per system | no negatives; sources − sinks balance every tick |
+| **F4** Run output & viewer | metrics time-series, PNG/GIF frame renderer (dots), Markdown "lab notebook" per run, replay export + static Canvas2D player | golden image hash for a seeded 10-tick run |
 
-## Milestone C — Cognition
-| **E8** Observation projection | visibility, witnesses, communication network; leakage + hidden-cause tests | E9 |
-| **E9** Scheduler + providers | barrier, budgets, mock/rule/recorded, Anthropic + OpenAI-compat adapters, profiles, `qualify` | E8 |
+## Phase 2 — The ladder (ADR-0010)
+Each level is done only when: its physics tests pass, the rule baseline runs, and an AI experiment report is written (`docs/experiments/`).
 
-## Milestone D — Knowledge & gods
-| **E10** Knowledge model | claims, carriers, teaching distortion, records, loss, artifact hints, cross-civ transmission | E11 |
-| **E11** Experiment system | rule matcher, NOTHING path, usability threshold, practice, abstract naming | E10 |
-| **E12** Interventions | RAIN/DROUGHT/STRIKE/VISION/SPEECH with evidence geography; drought → executed-behaviour test | after E10 |
+| Level | Physics & rules | AI hook | Validation |
+|---|---|---|---|
+| **L0 Petri dish** | grid, regrowing food, agents with energy: move, eat, starve | action contract (move/forage/stay) + mock + one real-model profile | food regrowth curve; energy conservation; random vs greedy vs LLM foraging |
+| **L1 Life cycle** | birth, aging, death; inheritance | ration / disperse allocations | emergent carrying capacity; logistic-like growth |
+| **L2 Terrain & weather** | elevation, river, moisture, seasons, rain/drought interventions | observation of weather; store/move decisions | seasonal cycles; drought → measurable behaviour change |
+| **L3 Ecology & disease** | prey, predators, hunting; SEIR contagion | avoid/quarantine/hunt decisions | Lotka–Volterra oscillation; SIR curve shape |
+| **L4 Groups & conflict** | 2+ groups, territory, contact, combat | raid / defend / negotiate | Lanchester sanity; permutation-invariant resolution |
+| **L5 Trade** | goods, barter, specialisation | trade offers | price convergence; inequality (Gini) emerges |
+| **L6 Knowledge** | experiments, teaching, records, loss | experiment / teach / record | carrier-loss blocks process; records restore it |
+| **L7 Belief & religion** | visions, speech, beliefs, rituals, sects | belief updates cite evidence | speech can't bypass validation; sect fission under drift |
+| **L8 Politics** | leaders, factions, institutions, fission | minds per polity (+ role minds later) | group fission at size thresholds; legitimacy dynamics |
 
-## Milestone E — Contact & interface
-| **E13** Contact, trade, conflict | first contact, matched trades, agreements, combat ordering | E14 |
-| **E14** Research API + web client | FastAPI on loopback; web client: map, inspector, link tracer, timeline, interventions, branch | E13 |
+Persistence (save, replay, branch) arrives with F4 as replay export, and fully alongside L1 (ADR-0004).
+The research API and live interventions UI arrive alongside L2.
+The PixiJS/React client (ADR-0002) is deferred.
 
-The client prototype (ADR-0002 §"first de-risking prototype") **can start right after E1**, using a fake replay bundle. It does not depend on the sim.
+## First sprint (parallel agent sessions)
+1. **Agent A:** F1 → F2 (core + scheduler).
+2. **Agent B:** F4 viewer + metrics, against a stub world. It can start once F1 lands.
+3. **Agent C:** after F2, the L0 physics: food field, energy agents, rule baselines.
 
-## Milestone F — Experiments
-| **E15** Batch + exports + benchmark | `aimpire batch` over seeds × profiles with position rotation, ablations, CSV/JSONL, Pages replay demos, historical-parallel tags |
-
-## Suggested first sprint (parallel agent sessions)
-1. **Agent A:** E1 then E2 (sim core).
-2. **Agent B:** client prototype with procedural art, fake replay, Pages deploy (ADR-0002 exit criteria).
-3. **Agent C:** after E1 lands, E3 (world gen + environment).
-
-Each agent works in its own branch and worktree, and ends by updating [`../agents/STATUS.md`](../agents/STATUS.md).
+Then L0's AI experiment: an LLM group-mind vs rules, on matched seeds.

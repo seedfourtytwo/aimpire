@@ -51,6 +51,7 @@ nav:
       - "0007 Determinism & RNG": adr/0007-determinism-and-rng.md
       - "0008 First-slice scope": adr/0008-first-slice-simulation-scope.md
       - "0009 Funding": adr/0009-funding-development-vs-cognition.md
+      - "0010 Complexity ladder": adr/0010-complexity-ladder.md
   - Research:
       - Brief: research/00-brief.md
       - Client & rendering: research/10-client-rendering.md
@@ -58,6 +59,7 @@ nav:
       - Model layer: research/30-model-layer.md
       - CI/CD & workflow: research/40-cicd-workflow.md
       - Simulation design: research/50-simulation-design.md
+      - Social systems: research/70-social-systems.md
   - Agents:
       - Status: agents/STATUS.md
       - Workflow: agents/workflow.md

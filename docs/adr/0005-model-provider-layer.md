@@ -1,6 +1,6 @@
 # ADR-0005: Model provider layer
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-04
 - **Research:** [`docs/research/30-model-layer.md`](../research/30-model-layer.md)
 

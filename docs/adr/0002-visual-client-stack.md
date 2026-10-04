@@ -1,6 +1,6 @@
 # ADR-0002: Visual client stack — web (PixiJS 8 + React 19)
 
-- **Status:** Proposed
+- **Status:** Accepted — amended by ADR-0010
 - **Date:** 2026-10-04
 - **Deciders:** creator + client lead
 - **Research:** [`docs/research/10-client-rendering.md`](../research/10-client-rendering.md)

@@ -1,6 +1,6 @@
 # Aimpire
 
-Working title from the spec: *Great Filter*.
+*The Great Filter* is one of the challenges civilizations must overcome in the long campaign, not the name of the game.
 
 A retro civilization **research simulator** with god-game interactions. Autonomous AI civilizations, each driven by its own selectable model (cloud or local), share one deterministic world. They gather, farm, teach, forget, trade and fight. You are a god who can send rain, drought, lightning, visions and words, but never commands. They may misunderstand you, worship you, or ignore you.
 
@@ -39,4 +39,4 @@ just docs-serve   # needs uv + just
 Read [`CLAUDE.md`](CLAUDE.md) (also for humans) and [`docs/agents/workflow.md`](docs/agents/workflow.md). PR titles follow Conventional Commits.
 
 ## License
-Not yet chosen (see open question Q2). Until a license is added, all rights are reserved.
+[Apache-2.0](LICENSE).

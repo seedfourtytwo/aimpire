@@ -40,6 +40,16 @@ Run `just --list` to see them all. Use `just check` before every PR; it is exact
 - `just docs` builds the docs site (strict). `just docs-serve` previews it.
 - Python and client recipes arrive with E1 and the client prototype: `lint`, `typecheck`, `test`, `golden`, `schema-check`, `client-*`.
 
+## Engineering standards (creator)
+- **Test-driven.** Write the test first, or with the code. Every physics or rule change has a test that would fail without it.
+- **Clean, modular, reusable, commented.** Docstrings explain *why* and the units used (milli-units, permille).
+- **Small files.** Keep a soft cap of about 300 lines per module; split by responsibility before you hit it.
+- **Logic before graphics (ADR-0010).**
+  - Climb the complexity ladder one level at a time.
+  - Every new layer is a config-switchable system with validation tests and an AI-behaviour experiment.
+  - Visuals are dots plus charts until the logic earns more.
+- **Tufte-style output.** Charts and UI use high data-ink, small multiples and direct labels, with no chart junk.
+
 ## Working rules
 - One issue, one branch (`agent/<issue>-<slug>`), one small PR. Conventional Commit titles with scope `sim|rules|cognition|schema|client|docs|ci|evals`.
 - **Hot files, each in its own PR:** `schema/`, lockfiles, `fixtures/golden/` (label `golden-update` plus a rules version bump), `rules/`.

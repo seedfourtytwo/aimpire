@@ -1,6 +1,6 @@
 # ADR-0003: Backend runtime & tooling
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-04
 - **Research:** [`docs/research/20-backend-data.md`](../research/20-backend-data.md)
 

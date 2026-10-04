@@ -1,6 +1,6 @@
 # ADR-0008: First-slice simulation scope (rules v1)
 
-- **Status:** Proposed
+- **Status:** Accepted — amended by ADR-0010
 - **Date:** 2026-10-04
 - **Research:** [`docs/research/50-simulation-design.md`](../research/50-simulation-design.md) is the full design.
 

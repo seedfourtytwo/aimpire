@@ -1,6 +1,6 @@
 # ADR-0007: Determinism, RNG and hashing
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-04
 - **Research:** [`20-backend-data.md`](../research/20-backend-data.md) §4, [`50-simulation-design.md`](../research/50-simulation-design.md) §0
 - **Reconciles:** a conflict between those two reports. Report 20 proposed numpy `SeedSequence`/PCG64 streams; report 50 proposed counter-based hash draws.

@@ -1,6 +1,6 @@
 # Aimpire
 
-Working title from the spec: *Great Filter*.
+*The Great Filter* is one of the challenges civilizations must overcome in the long campaign, not the name of the game.
 
 A retro civilization **research simulator** with god-game interactions. Autonomous AI civilizations share one deterministic world. You influence them through weather, visions and speech, never commands. Every consequence can be traced back to the evidence that caused it.
 
@@ -19,3 +19,4 @@ A retro civilization **research simulator** with god-game interactions. Autonomo
 - [Model provider layer](research/30-model-layer.md)
 - [CI/CD & agent workflow](research/40-cicd-workflow.md)
 - [Simulation design (first slice)](research/50-simulation-design.md)
+- [Social systems: trade, religion, politics, conflict](research/70-social-systems.md)

@@ -1,6 +1,6 @@
 # ADR-0004: Persistence & replay
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-04
 - **Research:** [`docs/research/20-backend-data.md`](../research/20-backend-data.md) §5
 

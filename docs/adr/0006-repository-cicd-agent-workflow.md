@@ -1,6 +1,6 @@
 # ADR-0006: Repository, CI/CD and agent workflow
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-04
 - **Research:** [`docs/research/40-cicd-workflow.md`](../research/40-cicd-workflow.md)
 

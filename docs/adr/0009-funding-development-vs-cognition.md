@@ -1,6 +1,6 @@
 # ADR-0009: Funding — the subscription builds, API keys think
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-04
 - **Research:** [`docs/research/30-model-layer.md`](../research/30-model-layer.md) §1, §4
 
