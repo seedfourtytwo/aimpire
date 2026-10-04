@@ -78,11 +78,7 @@ class Rate:
 
     def resolve(self, calendar: Calendar) -> tuple[int, int]:
         """Return ``(ppm, per_ticks)`` for ``apply_rate`` under ``calendar``."""
-        if self.per == "tick":
-            return self.ppm, 1
-        if self.per == "season":
-            return self.ppm, calendar.ticks_per_season
-        return self.ppm, calendar.ticks_per_year
+        return self.ppm, _period_ticks(self.per, calendar)
 
     @classmethod
     def from_mapping(cls, data: Mapping[str, object]) -> Rate:
@@ -94,6 +90,49 @@ class Rate:
         if per not in _PERIODS:
             raise ValueError(f"per must be one of {_PERIODS}, got {per!r}")
         return cls(ppm=ppm, per=per)  # pyright: ignore[reportArgumentType]
+
+
+@dataclass(frozen=True, slots=True)
+class Flow:
+    """An amount in milli-units over a stated period, such as a ration per tick.
+
+    The amount counterpart of ``Rate``: rules state ``{mu: 1000, per: tick}``.
+    ``resolve`` gives ``(mu, per_ticks)``; a system spreads the amount over
+    ``per_ticks`` ticks with ``fixed.apply_rate(mu * count, PPM, per_ticks, carry)``
+    so that nothing is lost to rounding.
+    """
+
+    mu: int
+    per: Period
+
+    def __post_init__(self) -> None:
+        if type(self.mu) is not int or self.mu < 0:
+            raise ValueError(f"mu must be a non-negative int, got {self.mu!r}")
+        if self.per not in _PERIODS:
+            raise ValueError(f"per must be one of {_PERIODS}, got {self.per!r}")
+
+    def resolve(self, calendar: Calendar) -> tuple[int, int]:
+        """Return ``(mu, per_ticks)`` under ``calendar``."""
+        return self.mu, _period_ticks(self.per, calendar)
+
+    @classmethod
+    def from_mapping(cls, data: Mapping[str, object]) -> Flow:
+        """Build from rules data such as ``{mu: 1000, per: tick}``."""
+        _check_keys(data, {"mu", "per"})
+        mu, per = data["mu"], data["per"]
+        if type(mu) is not int:
+            raise ValueError(f"mu must be an int, got {mu!r}")
+        if per not in _PERIODS:
+            raise ValueError(f"per must be one of {_PERIODS}, got {per!r}")
+        return cls(mu=mu, per=per)  # pyright: ignore[reportArgumentType]
+
+
+def _period_ticks(per: Period, calendar: Calendar) -> int:
+    if per == "tick":
+        return 1
+    if per == "season":
+        return calendar.ticks_per_season
+    return calendar.ticks_per_year
 
 
 def _check_tick(tick: int) -> None:
