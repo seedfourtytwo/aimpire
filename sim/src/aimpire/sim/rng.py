@@ -64,6 +64,7 @@ SITES: Final[dict[str, tuple[Stream, int]]] = {
     # Every place in the code that draws registers a unique (stream, n) pair
     # here. Two sites sharing a pair would receive identical numbers.
     "turn_order": (Stream.ORDER, 0),
+    "m0_fertility": (Stream.WORLDGEN, 0),
 }
 
 

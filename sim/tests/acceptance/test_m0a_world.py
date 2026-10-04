@@ -87,9 +87,7 @@ def _scheduler(extra: tuple[_Harvest, ...] = (), checked: bool = False) -> Sched
         registry[system.name] = lambda _params, s=system: s
         names.append(system.name)
     preset = Preset("m0-test", [SystemSpec(n) for n in names])
-    return Scheduler(
-        preset, registry, CALENDAR, quantities=m0_quantities() if checked else None
-    )
+    return Scheduler(preset, registry, CALENDAR, quantities=m0_quantities() if checked else None)
 
 
 def test_m0_preset_is_registered() -> None:
