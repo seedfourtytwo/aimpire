@@ -35,6 +35,10 @@ milli-units, 1000 mu = one unit, and one unit of food = one person-day):
     ``last_council``  ``{"council", "tick", "population", "stores"}``: the
                       snapshot taken at the previous council (``tick`` -1 if none)
 
+The M0 systems also keep engine-only fields on the entity (``carries``,
+``task_times``, ``work``; see ``aimpire.sim.systems.tribe``). They are hashed
+state but never read here, so they never reach an observation.
+
 ``evidence``: ``civ``, ``tick``, ``place``, ``text``, ``witnesses`` (person ids).
 ``message``:  ``civ``, ``tick``, ``delivered_by`` (person id), ``route``, ``text``.
 

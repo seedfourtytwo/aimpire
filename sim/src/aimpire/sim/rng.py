@@ -65,6 +65,8 @@ SITES: Final[dict[str, tuple[Stream, int]]] = {
     # here. Two sites sharing a pair would receive identical numbers.
     "turn_order": (Stream.ORDER, 0),
     "m0_fertility": (Stream.WORLDGEN, 0),
+    "m0_camp": (Stream.WORLDGEN, 1),
+    "m0_starvation": (Stream.LIFE, 0),
 }
 
 
