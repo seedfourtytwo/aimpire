@@ -19,9 +19,10 @@
 - [x] F2: deterministic core: `fixed` (F2a), `rng` (F2b), `calendar` and `rules` loader (F2c), `state` and `hashing` (F2d), `scheduler` (F2e). PRs #5–#9.
 - [x] F3: ledger and per-system invariant checks (`aimpire.sim.ledger`; scheduler checked mode).
 - [ ] F4 and F5 in parallel, then F6.
+  - F5c second half (observation builder `cognition/observe.py`, reader `cognition/civ_record.py`, `places` and `grid` renderers `cognition/render.py`): PR open on `agent/f5c-observe-render`. It fixes the m0 layout of `civ`, `evidence` and `message` entities (documented in `civ_record.py`); M0b writes them.
 
 ## In flight
-_None._
+- `agent/f5c-observe-render`: awaiting review (protected path: new `sim/tests/acceptance/test_f5c_observe.py`).
 
 ## Known blockers
 - `.github/workflows/` is the creator's alone, by design (ADR-0016). Workflow changes are pushed by the creator.
