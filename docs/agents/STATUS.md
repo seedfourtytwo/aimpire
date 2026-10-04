@@ -21,6 +21,7 @@
 - [x] F4: watch tools: metrics, dot frames, PNG and SVG charts (F4a), replay export and Canvas2D player (F4b), lab notebook (F4c). PRs #12, #15, #16.
 - [x] F5: mind interface: contracts and schema (F5a), providers (F5b), places, observation builder and renderers (F5c), validator and decision log (F5d), council barrier, budgets and SQLite run store (F5e). PRs #11, #13, #14, #17, #19, #20. The m0 layout of `civ`, `evidence` and `message` entities is documented in `cognition/civ_record.py`; M0b writes them. Leak fixes (branch `agent/f5c-fix-leaks`): place names are per civilization only (`set_civ_name`), and observed travel times use only known places (`travel_ticks_within`, `lower_bound_ticks`).
 - [ ] F6: live adapters (OpenAI-compatible for Ollama and OpenRouter; Anthropic), `aimpire qualify`, `aimpire batch`. Budget rules are under F6 in `backlog.md` (20 dollars a month).
+  - F6a/F6b (branch `agent/f6ab-live-adapters`): `OpenAICompatProvider` and `AnthropicProvider` in `cognition/`, profile loader `cognition/profiles.py`, `profiles/*.toml` (Ollama example, Claude Haiku 4.5, OpenRouter template that the loader refuses until filled), `provider_from_profile` in `cognition/live.py`. Tests block real sockets (`sim/tests/conftest.py`). HTTP is `httpx2`, the httpx continuation the `anthropic` SDK now requires.
 
 ## In flight
 _None._

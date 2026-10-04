@@ -1,0 +1,28 @@
+# Ollama on this machine, through its OpenAI-compatible endpoint (ADR-0005, backlog F6a).
+#
+# Base URL and behaviour checked 2026-10-04 at https://docs.ollama.com/api/openai-compatibility
+# ("http://localhost:11434/v1/"; an API key is "required but ignored" by the OpenAI client
+# library, so this profile sends none). Model tag qwen3:8b checked 2026-10-04 at
+# https://ollama.com/library/qwen3. Pull it first: `ollama pull qwen3:8b`.
+#
+# Keys never go in a profile. api_key_env names an environment variable; "" means no key.
+
+kind = "openai_compat"
+model = "qwen3:8b"
+base_url = "http://localhost:11434/v1"
+api_key_env = ""
+# json_schema, or json_object / prompt (the schema goes in the system message instead).
+structured_output = "json_schema"
+timeout_s = 300.0
+max_output_tokens = 4096
+# effort is not sent by the openai_compat adapter; temperature is sent only when set here.
+
+[price]
+input_micro_usd_per_mtok = 0
+output_micro_usd_per_mtok = 0
+source = "local model: no charge"
+as_of = "2026-10-04"
+
+[budget]
+# Planning worst case per call for `aimpire qualify` and `aimpire batch`.
+max_input_tokens_per_call = 8000
