@@ -22,6 +22,7 @@ _INK: Final = "#333"
 _MUTED: Final = "#888"
 _FONT: Final = 'font-family="sans-serif" font-size="9"'
 _LEFT, _RIGHT, _TOP, _BOTTOM = 6, 110, 12, 24
+_EDGE: Final = 12  # px: closer than this to a side, a value label is anchored inward
 
 
 def _fmt(x: float) -> str:
@@ -50,15 +51,21 @@ def line_chart_svg(
     def y(value: int) -> float:
         return _TOP + (plot_h * (hi - value) / (hi - lo) if hi != lo else plot_h / 2)
 
+    def anchor(cx: float) -> str:
+        """Keep a value label inside the plot when its point sits near either edge."""
+        if cx - _LEFT < _EDGE:
+            return "start"
+        return "end" if _LEFT + plot_w - cx < _EDGE else "middle"
+
     points = " ".join(f"{_fmt(x(t))},{_fmt(y(v))}" for t, v in zip(ticks, values, strict=True))
-    i_max, i_min = values.index(hi), values.index(lo)
+    max_x, min_x = x(ticks[values.index(hi)]), x(ticks[values.index(lo)])
     end_x, end_y = x(t1), y(values[-1])
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
         f'viewBox="0 0 {width} {height}">',
         f'<polyline fill="none" stroke="{_INK}" stroke-width="1" points="{points}"/>',
-        _marker(x(ticks[i_max]), y(hi), hi, dy=-3),
-        _marker(x(ticks[i_min]), y(lo), lo, dy=10) if hi != lo else "",
+        _marker(max_x, y(hi), hi, dy=-3, anchor=anchor(max_x)),
+        _marker(min_x, y(lo), lo, dy=10, anchor=anchor(min_x)) if hi != lo else "",
         f'<text x="{_fmt(end_x + 4)}" y="{_fmt(end_y + 3)}" {_FONT} fill="{_INK}">'
         f"{escape(label)} {values[-1]}</text>",
         f'<text x="{_LEFT}" y="{height - 3}" {_FONT} fill="{_MUTED}">{t0}</text>',
@@ -71,10 +78,10 @@ def line_chart_svg(
     return "\n".join(p for p in parts if p) + "\n"
 
 
-def _marker(cx: float, cy: float, value: int, dy: int) -> str:
+def _marker(cx: float, cy: float, value: int, dy: int, anchor: str) -> str:
     """A small dot with its value just above (max) or below (min)."""
     return (
         f'<circle cx="{_fmt(cx)}" cy="{_fmt(cy)}" r="1.5" fill="{_INK}"/>'
         f'<text x="{_fmt(cx)}" y="{_fmt(cy + dy)}" {_FONT} fill="{_MUTED}" '
-        f'text-anchor="middle">{value}</text>'
+        f'text-anchor="{anchor}">{value}</text>'
     )
