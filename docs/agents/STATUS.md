@@ -2,42 +2,67 @@
 
 > Every agent session reads this first and updates it last.
 
-**Phase:** Phase 1, foundation. F1–F3 are done; next are F4 (watch) and F5 (mind interface) in parallel. See `docs/plan/roadmap.md` and `docs/plan/backlog.md`.
-**Last updated:** 2026-10-04 by the M0a session (petri dish rules, worldgen, regrowth, preset `m0`).
+**Phase:** foundation done (F1–F6). M0 "petri dish" is built and playable with rule minds; next is running experiment E0 with real models, then M1.
+**Last updated:** 2026-10-04 by the planning session (end of day). Handoff: [`handoff-2026-10-04.md`](handoff-2026-10-04.md).
 
 ## Current state
 - **Goal:** emergence. See what civilizations, political orders and beliefs arise when the models decide for themselves (ADR-0019).
-- **Order (ADR-0015, accepted):** foundation F1–F6, then M0 petri dish, M1 seasons and a voice, M2 two tribes, M3 generations, M4 living world, M5 knowledge, M6–M8 society. This replaces the L0–L8 ladder order.
-- **Repo contents:** docs, ADRs 0001–0019, active CI, agent conventions, the backlog, the `sim/` Python project (F1) and the deterministic core (F2). No world rules yet.
-- **ADR status:** 0001–0019 are all accepted (0011–0019 on 2026-10-04).
-- **Repo settings:** `main` is protected (PR required, `ci-ok` required, squash only, linear history). Pages source is GitHub Actions. Workflow token is read-only.
+- **Order (ADR-0015):** F1–F6, then M0 petri dish, M1 seasons and a voice, M2 two tribes, M3 generations, M4 living world, M5 knowledge, M6–M8 society. Side tracks: the **Lab** (ADR-0020) and **native minds** (ADR-0021).
+- **ADR status:** 0001–0019 accepted. **0020 (Tinkering Lab) and 0021 (native minds) are Proposed** and await the creator, though W0, LAB0 and LAB1 were built at his request.
+- **Tests:** about 470, all green; `just check` is what CI runs (about 2 minutes).
+- **Repo settings:** `main` is protected (PR required, `ci-ok` required, squash only). The admin bypass and the `protected-change` environment still need the creator (see Known blockers).
+
+## How to play
+[`docs/guide/play-m0.md`](../guide/play-m0.md) has the full guide. In short:
+```
+cd sim && uv sync
+uv run aimpire run m0 --mind rule:half_full --seed 1 --years 5 --out ../runs
+uv run aimpire run m0 --mind rule:greedy --seed 1 --years 5 --set world.gravity=950000 --out ../runs
+uv run aimpire lab twin m0 --set world.gravity=900000 --mind rule:half_full --seeds 1-3 --years 2 --out ../runs/lab
+cd .. && python3 -m http.server 8000   # then open client/replay/index.html?src=/runs/<run>/replay.json
+```
+Minds: `rule:random|greedy|half_full|msy`, `mock`, or a profile (`profiles/ollama-example.toml`, `profiles/anthropic-haiku-4-5*.toml`, the OpenRouter template). Run `aimpire qualify <profile>` before spending money.
+
+## Done
+- [x] **F1–F3:** bootstrap, deterministic core, ledger and invariants.
+- [x] **F4:** metrics, frames, charts, replay and notebook (#12, #15, #16). F4d playable replay: charts, map overlay, council panel with the mind's verbatim journal (#37).
+- [x] **F5:** contracts, providers, places, observation and renderers, validator, council barrier, budgets, run store (#11, #13, #14, #17, #19, #20). Leak fixes: per-civ names; travel through known places only (#22).
+- [x] **F6:**
+  - live adapters: OpenAI-compatible for Ollama and OpenRouter, and Anthropic, with profiles (#23);
+  - `aimpire qualify` and `aimpire batch` (#28).
+- [x] **Lab:**
+  - W0 world constants and integer physics laws, and LAB0 knob registry and `--set` (#26, #27);
+  - LAB1 `aimpire lab twin`; observed travel days follow W0 walking speed (#35);
+  - the prototype page is an artifact, not in the repo.
+- [x] **M0:**
+  - M0a world and regrowth (#30, #31);
+  - M0b tribe, work, scouting, hunger (#32);
+  - M0c calibration: 1 km tiles, neighbours 1 day apart; baselines; `aimpire run` (#33, #34);
+  - M0d reference bands over 200 seeds, and M0e E0 pre-registration (#36).
+- [x] **Plans:**
+  - Tinkering Lab (#21);
+  - native minds (#24);
+  - M0 spec (#25);
+  - spending: $20 a month, providers OpenRouter, Anthropic and Ollama (#18).
 
 ## Next up
-- [ ] Creator: answer the remaining items in `docs/plan/open-questions.md`; push G1a (CI path check).
-- [ ] G1: guard rails (protected-path hook and CI check, acceptance-test folder). G1a needs the creator.
-- [x] F1: `sim/` uv project, package skeleton, CLI, guard-rail config and acceptance tests (PR #4).
-- [x] F2: deterministic core: `fixed` (F2a), `rng` (F2b), `calendar` and `rules` loader (F2c), `state` and `hashing` (F2d), `scheduler` (F2e). PRs #5–#9.
-- [x] F3: ledger and per-system invariant checks (`aimpire.sim.ledger`; scheduler checked mode).
-- [x] F4: watch tools: metrics, dot frames, PNG and SVG charts (F4a), replay export and Canvas2D player (F4b), lab notebook (F4c). PRs #12, #15, #16.
-- [x] F5: mind interface: contracts and schema (F5a), providers (F5b), places, observation builder and renderers (F5c), validator and decision log (F5d), council barrier, budgets and SQLite run store (F5e). PRs #11, #13, #14, #17, #19, #20. The m0 layout of `civ`, `evidence` and `message` entities is documented in `cognition/civ_record.py`; M0b writes them. Leak fixes (branch `agent/f5c-fix-leaks`): place names are per civilization only (`set_civ_name`), and observed travel times use only known places (`travel_ticks_within`, `lower_bound_ticks`).
-- [ ] F6: live adapters (OpenAI-compatible for Ollama and OpenRouter; Anthropic), `aimpire qualify`, `aimpire batch`. Budget rules are under F6 in `backlog.md` (20 dollars a month).
-  - F6a/F6b (branch `agent/f6ab-live-adapters`): `OpenAICompatProvider` and `AnthropicProvider` in `cognition/`, profile loader `cognition/profiles.py`, `profiles/*.toml` (Ollama example, Claude Haiku 4.5, OpenRouter template that the loader refuses until filled), `provider_from_profile` in `cognition/live.py`. Tests block real sockets (`sim/tests/conftest.py`). HTTP is `httpx2`, the httpx continuation the `anthropic` SDK now requires.
-  - F6c/F6d (branch `agent/f6cd-qualify-batch`): new package `aimpire.experiments`. `aimpire qualify <profile.toml | mock | rule[:name]>` runs the frozen cases in `experiments/data/qualify-cases-v1.json` through the council barrier into a run store and judges them against `qualify-thresholds-v1.toml`; `aimpire batch <experiment.yaml> [--verify]` runs a pre-registered experiment (paired seeds, at least 3 replicates, cyclic seat rotation, renderer and prompt variants, knowledge arm), one run store per run with the file hash in the manifest, and one report with small-multiple charts. Both print the worst case first and refuse over budget (exit 3). Worlds are preset factories (`experiments/worlds.py`); `stub` is a placeholder that M0 replaces by registering `m0`. Rule baselines `hold` and `forage_nearest` live in `cognition/baselines.py`; M0c adds its own there. OpenRouter's `usage.cost` is kept as `reported_cost_micro_usd` on results (not yet stored in the run store).
-
-- [ ] Lab track W0 and LAB0 (ADR-0020, proposed), in review:
-  - `rules/v1/world.yaml` (gravity, sunlight, rain, tilt), branch `agent/w0-world-rules`;
-  - code, branch `agent/w0-lab0-physics-knobs` (based on it): integer laws in `aimpire.rules.physics` (helpers in `rules/intmath.py`), `DerivedWorld` in `aimpire.sim.derived`, `load_world` and `rules_hash` in `aimpire.rules` (the hash covers every `*.yaml` in the rules dir plus world/rules/tribe overrides), `aimpire.lab` (knobs, overrides, variant, schema), `schema/lab-knobs.schema.json`.
-  - No run command exists yet, so `--set` is not on the CLI. M0c calls `aimpire.lab.variant.resolve_variant(rules_dir, args.set)` and `aimpire.lab.overrides.add_set_option(parser)`.
-
-- [ ] M0a (in review), two PRs:
-  - `rules/v1/m0.yaml` plus `aimpire.rules.load_m0_rules(rules_dir, calendar)` returning `aimpire.sim.world.M0Rules`; new `Flow` (an amount in mu per period) beside `Rate` in `sim/calendar.py`. Branch `agent/m0a-rules`.
-  - Code, branch `agent/m0a-world-regrowth` (based on it): `aimpire.sim.world.m0.build_m0_world(seed, rules, derived, rules_version=, rules_hash=)` with layers `fertility` (ppm), `ceiling` (K, mu) and `food` (mu) and `grid_blocks` places; integer value noise in `sim/world/noise.py` (site `m0_fertility` = WORLDGEN, n 0); `aimpire.sim.systems.regrowth` (logistic plus seed term through the new `fixed.apply_fraction_array`, ledger `REGROWTH` on material `food`); `aimpire.sim.presets` (`PRESETS["m0"]`, `system_registry(rules, derived=...)`, `m0_quantities()`). Acceptance tests `sim/tests/acceptance/test_m0a_world.py`.
-  - Next: M0b appends its systems to `presets.M0` and its materials to `m0_quantities`, and reads the M0b fields of `M0Rules` (need, start, starvation, spoilage, carry, walk energy, scout sight).
+- [ ] **Creator:** see the handoff note: accept or amend ADR-0020 and ADR-0021; the GitHub settings; add keys; decide the open items.
+- [ ] **E0 pilot:**
+  - qualify Ollama `qwen3:8b` on the creator's laptop, then the Ollama pilot file (free);
+  - then Haiku, about $5 realistic and under $12 worst case, per `docs/experiments/e0-preregistration.md`.
+- [ ] **Small fixes found on the way** (any session):
+  - cache place data per tick; about 60 % of run time goes to rebuilding it;
+  - guard against two runs writing to the same `--out` folder at once (the spend scan reads a half-created db);
+  - `qualify` order-validity is undefined for minds that send no orders, so `rule:half_full` shows FAIL;
+  - move protected tests off the `stub` world and the `hold` / `forage_nearest` placeholder rules, then delete them;
+  - store OpenRouter's reported cost in the run store, and request usage accounting.
+- [ ] **M1:** seasons and a voice (backlog to be specified after E0's pilot). **LAB2** sweeps with M0d machinery. **Native minds** N0–N1 can start now (M0 transcripts exist).
 
 ## In flight
 _None._
 
 ## Known blockers
-- `.github/workflows/` is the creator's alone, by design (ADR-0016). Workflow changes are pushed by the creator.
-- No API keys yet. Live AI runs need a provider key or a local model; nothing before F6 needs one.
-- `ci.yml`, `dependabot.yml` and the feature issue template still mention the old epic names "E1" and "E5" in comments. The creator can rename them to F1 when next editing those files.
+- `.github/workflows/` is the creator's alone (ADR-0016). The G1a protected-path CI job is ready as a file; the creator adds it after creating the `protected-change` environment.
+- The `main` ruleset admin bypass must be removed by the creator in GitHub settings.
+- No API keys yet. Live runs need `ANTHROPIC_API_KEY` or `OPENROUTER_API_KEY` as environment variables, or a local Ollama.
+- `ci.yml`, `dependabot.yml` and the feature issue template still say "E1" and "E5" in comments.
