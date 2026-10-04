@@ -43,6 +43,20 @@ M2 and M3 do not depend on each other. M2 comes first by default; swap them if p
 
 M6 to M8 are designed in detail when M5 closes, around primitives and not named institutions.
 
+## Lab track — the Tinkering Lab (ADR-0020, proposed)
+A workshop for "what if" questions: change one thing (gravity, rain, a mind's settings, a tribe's size) and compare against the same world on the same seeds. World rates are derived from a few fundamental constants, so a small change in gravity moves walking speed, carry load, river speed and tree height together. Design: [`research/90`](../research/90-tinkering-lab-and-world-physics.md).
+
+| Step | Lands with | Deliverable |
+|---|---|---|
+| **W0** World constants | M0a | `rules/v1/world.yaml`; integer scaling laws; identity at Earth |
+| **LAB0** Knobs | M0a | knob registry, schema export, `--set`, `beyond-model` tag |
+| **LAB1** Twin worlds | M0b | `aimpire lab twin` with a first-divergence report |
+| **LAB2** Sweeps | M0d | `aimpire lab sweep`, phase-diagram small multiples |
+| **LAB3** Forks and world events | M1 | branch from a checkpoint; scheduled knob changes |
+| **LAB4** Workshop page | M1 web console | sliders, derived-value preview, run queue, gallery |
+
+Lab runs are exploratory. A finding counts only after a pre-registered re-run (ADR-0014).
+
 ## Side tracks
 | Track | Starts | What |
 |---|---|---|

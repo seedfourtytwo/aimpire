@@ -213,3 +213,16 @@ Live calls run only from an explicit profile with a budget. CI never calls a pro
 | M0c | Baselines: random, greedy, and the harvest policy that holds stock near half full |
 | M0d | Ensemble validation: the reference bands from several hundred seeds |
 | M0e | Experiment E0: pre-registration, run, report |
+
+---
+
+## Lab track (ADR-0020, proposed; outline)
+
+| Id | Work | Acceptance |
+|---|---|---|
+| W0 | `rules/v1/world.yaml` (gravity, sunlight, rain, tilt in ppm or milli-degrees); `aimpire.rules.physics` integer laws: walk ∝ √g, carry ∝ 1/g, walk energy ∝ g, water ∝ √g, tree ∝ g^(−1/3), fall ∝ g, throw ∝ 1/g, season from tilt, growth ceiling = min(sunlight, water) | `test_earth_constants_are_identity`; `test_laws_are_monotonic` (Hypothesis); `test_derivation_uses_no_floats`; `test_beyond_validated_range_is_flagged` |
+| LAB0 | `aimpire.lab.knobs` registry and schema export; `--set path=value`; overrides in the manifest and rules hash | `test_unknown_knob_refused`; `test_out_of_allowed_range_refused`; `test_world_override_changes_rules_hash`; `test_mind_override_does_not`; `test_no_outcome_knobs` (name lint) |
+| LAB1 | `aimpire lab twin`: paired seeds; first divergence tick and part; small-multiple report | `test_twin_with_no_override_never_diverges` |
+| LAB2 | `aimpire lab sweep`: 1-D and 2-D; free providers by default | `test_sweep_is_reproducible` |
+| LAB3 | forks from checkpoints; world events as recorded data | `test_fork_replays_exactly` |
+| LAB4 | workshop page in the web console | — |
