@@ -47,8 +47,16 @@ test: sync
 test-fast: sync
     cd sim && uv run pytest -q -x --no-header -p no:cacheprovider
 
-# Python sim checks: what the CI python job runs (golden and schema checks join later)
-check-sim: lint typecheck test
+# Regenerate the contract JSON schemas into schema/ (generated files: never hand-edit)
+schema-export: sync
+    cd sim && uv run python -m aimpire.contracts.export ../schema
+
+# Fail if schema/ differs from what the contracts generate (regenerates to a temp dir and diffs)
+schema-check: sync
+    cd sim && uv run python -m aimpire.contracts.export --check ../schema
+
+# Python sim checks: what the CI python job runs (golden checks join later)
+check-sim: lint typecheck test schema-check
 
 # Web client checks (filled in by the client work)
 check-client:
