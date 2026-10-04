@@ -1,0 +1,206 @@
+# Backlog: first issues
+
+Work items for the foundation and the first milestone, in build order. Each becomes one GitHub issue, one branch and one pull request (see [`task-template.md`](../agents/task-template.md)).
+
+**Tiers** (ADR-0016): **S** = strongest model, writes the acceptance tests and reviews. **I** = implementing model. **C** = creator only.
+
+**Rule for every item:** the S-tier session writes the acceptance tests first, under `sim/tests/acceptance/`, marked as expected failures. The I-tier session makes them pass and removes the mark. It never edits the tests. If a test seems wrong, stop and report.
+
+Verification for every item is `just check`, plus the named tests.
+
+---
+
+## G1 — Guard rails (before any feature work)
+
+| Id | Tier | Work |
+|---|---|---|
+| G1a | C | Add the protected-path check to `ci.yml` (sketch below), create the GitHub environment `protected-change` with yourself as required reviewer, and add both jobs to `ci-ok.needs`. Confirm you are not on the `main` ruleset's bypass list. |
+| G1b | S | `.claude/hooks/protect-paths.sh` and a `PreToolUse` hook on the Edit and Write tools in `.claude/settings.json`. The script exits 2 with a clear message when the target matches a protected path, unless `AIMPIRE_ALLOW_PROTECTED=1`. Add a `Stop` hook that lists protected files changed in the working tree. |
+| G1c | S | `sim/tests/acceptance/README.md` (the read-only rule and the expected-failure convention). |
+| G1d | C | Optional: a pull-request review workflow or routine pinned to a stronger model, using the checklist in [`review-checklist.md`](../agents/review-checklist.md). |
+
+Protected paths: `sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, and the `[tool.ruff]`, `[tool.pyright]` and `[tool.importlinter]` tables of `sim/pyproject.toml`.
+
+Sketch for G1a (the creator adapts and pushes it; agents do not edit workflows):
+
+```yaml
+  protected-paths:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      touched: ${{ steps.diff.outputs.touched }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - id: diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          pattern='^(sim/tests/acceptance/|fixtures/golden/|\.github/|\.claude/|docs/adr/|CLAUDE\.md$)'
+          if git diff --name-only "$BASE" "$HEAD" | grep -Eq "$pattern"; then
+            echo "touched=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "touched=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  protected-approval:
+    needs: protected-paths
+    if: needs.protected-paths.outputs.touched == 'true'
+    runs-on: ubuntu-latest
+    environment: protected-change   # required reviewer: the creator
+    permissions: {}
+    steps:
+      - run: echo "Protected paths changed and the creator approved."
+```
+
+---
+
+## F1 — Bootstrap
+
+**Tier:** S for the tests, I for the rest. **Depends on:** G1b, G1c. **ADRs:** 0003, 0006, 0016.
+
+Files:
+
+```
+sim/pyproject.toml          name "aimpire"; requires-python ">=3.14,<3.15"
+                            deps: numpy, pydantic (v2)
+                            dev: pytest, hypothesis, ruff, pyright, import-linter
+sim/.python-version         3.14
+sim/uv.lock                 committed; CI uses `uv sync --locked`
+sim/src/aimpire/__init__.py                 __version__
+sim/src/aimpire/{sim,cognition,persistence,contracts,api,cli}/__init__.py
+sim/src/aimpire/cli/main.py                 entry points `aimpire` and `aim`; `--version`
+sim/tests/unit/test_smoke.py
+justfile                    lint, fmt, typecheck, test, test-fast, check-sim; `check` runs check-sim
+```
+
+Configuration that must exist:
+
+- **Import rules** (import-linter): `aimpire.sim` may not import `aimpire.cognition`, `aimpire.persistence`, `aimpire.api` or `aimpire.cli`.
+- **Banned APIs** (ruff) inside `aimpire.sim`: `random`, `time.time`, `time.monotonic`, `datetime.datetime.now`, `datetime.date.today`, `numpy.random`.
+- **pyright** strict on `aimpire.sim`, basic elsewhere.
+
+Acceptance tests: `test_cli_version`, `test_import_rules_configured`, `test_banned_apis_configured`, `test_package_layout`.
+
+Out of scope: any simulation logic, any dependency not listed. Verify every version against PyPI before pinning.
+
+---
+
+## F2 — Deterministic core
+
+**Depends on:** F1. **ADRs:** 0007, 0011, 0012. Five small pull requests, in this order.
+
+### F2a — `aimpire/sim/fixed.py`
+Interfaces exactly as in ADR-0012 section A: `PPM`, `apply_rate`, `chance_ppm`, `stochastic_round`, and `apply_rate_array` for numpy `int64` layers.
+
+Acceptance tests:
+
+- `test_apply_rate_matches_exact_fraction`: over 10,000 ticks the summed deltas equal the floor of the exact total.
+- `test_apply_rate_never_stalls`: 1,000 ppm per tick from 5,000 reaches zero.
+- `test_slow_rate_accumulates`: 10,000 ppm per year on a value held at 1,000 units yields exactly 10 units over 120 ticks.
+- `test_stochastic_round_is_unbiased`, `test_chance_ppm_frequency`: within binomial bounds over 100,000 draws.
+- `test_negative_input_rejected`, `test_array_overflow_raises`.
+
+### F2b — `aimpire/sim/rng.py`
+Interfaces exactly as in ADR-0012 section B: `Stream` enum with the fixed numbers, `stream_key`, `mix64`, `draw`, `draw_array`, `uniform_int`, `permutation`.
+
+Acceptance tests:
+
+- `test_known_answer_vectors`: the eight rows of the ADR table.
+- `test_array_equals_scalar`: 5,000 ids including values above 2**40.
+- `test_uniformity_smoke`: chi-square over 100 buckets across ids, ticks, streams and `n` below 160; correlations below 0.01.
+- `test_stream_numbers_frozen`, `test_permutation_complete_and_deterministic`.
+
+### F2c — `aimpire/sim/calendar.py`
+`Calendar(ticks_per_season, seasons_per_year)` with `ticks_per_year`, `season_of(tick)`, `year_of(tick)`, `is_season_start(tick)`, `is_year_start(tick)`. `Rate(ppm, per)` with `per in {"tick", "season", "year"}` and `Rate.resolve(calendar) -> (ppm, per_ticks)`. A loader for `rules/v1/calendar.yaml`.
+
+Acceptance tests: `test_default_calendar_is_120_ticks`, `test_rate_resolution`, `test_calendar_loaded_from_rules`.
+
+### F2d — `aimpire/sim/ids.py`, `state.py`, `hashing.py`
+`IdAllocator` (monotonic, in state). `WorldState` holding tick, id counter, named `int64` layers, entities by id, carries. `state_hash(state)` and `subsystem_hashes(state)` as ADR-0007, carries included.
+
+Acceptance tests:
+
+- `test_hash_stable_across_processes`: two fresh interpreters, same hash.
+- `test_hash_ignores_insertion_order`, `test_hash_changes_with_any_field`.
+- `test_float_in_state_rejected`.
+
+### F2e — `aimpire/sim/scheduler.py`
+A `System` protocol: `name`, `cadence` (`tick | season | year`), `sequential`, `step(state, ctx)`. A `Scheduler` built from a preset: an ordered list of system names with parameters. `ctx` gives the calendar, `stream_key` access and the acting order for sequential systems.
+
+Acceptance tests:
+
+- `test_empty_world_same_hash_after_360_ticks` for two runs with one seed, and a different hash for another seed once a drawing system is present.
+- `test_cadence_runs_on_boundaries`.
+- `test_preset_mismatch_raises`: a missing or unknown system is an error, never a silent skip.
+- `test_sequential_order_changes_each_tick_and_replays`.
+
+---
+
+## F3 — Ledger and invariants
+
+**Depends on:** F2. `aimpire/sim/ledger.py`: every change to a conserved quantity is recorded with tick, material, delta, kind and reference. An invariant runner checks after each system in debug mode.
+
+Acceptance tests: `test_ledger_balances_toy_system`, `test_unrecorded_change_detected`, `test_negative_stock_raises`, `test_carry_included_in_balance`.
+
+---
+
+## F4 — Watch (parallel with F5)
+
+**Depends on:** F3.
+
+| Id | Work | Acceptance |
+|---|---|---|
+| F4a | Metrics time series per run; dot frames as arrays rendered to PNG | `test_frame_array_hash_stable` (hash the array, not the PNG) |
+| F4b | Replay export (one JSON file per run) and a static Canvas2D player under `client/replay/` | `test_replay_roundtrip`; the player opens the fixture replay |
+| F4c | A Markdown lab notebook per run: config, seed, charts, metrics, outcome counts | `test_notebook_lists_required_sections` |
+
+Charts follow the Tufte rules in `CLAUDE.md`. Verify any new dependency version before adding it.
+
+---
+
+## F5 — Mind interface v0 (parallel with F4)
+
+**Depends on:** F3. **ADRs:** 0004, 0005, 0013.
+
+| Id | Work | Acceptance |
+|---|---|---|
+| F5a | `contracts/mind.py`: Pydantic `Observation` and `MindReply` for contract `m0`; schema exported to `schema/`; `just schema-check` | `test_reply_schema_has_no_optional_or_union_fields`; `test_schema_export_is_current` |
+| F5b | `cognition/provider.py`: the `Provider` protocol; `MockProvider`, `RuleProvider`, `RecordedProvider` | `test_recorded_provider_replays_exactly` |
+| F5c | `sim/places.py` with `grid_blocks`; `cognition/observe.py` builder; `cognition/render.py` with the `places` and `grid` renderers | `test_observation_excludes_hidden_fields`; `test_other_group_state_does_not_change_observation_hash` |
+| F5d | `sim/actions/validate.py`; decision log with the eight outcome categories | `test_invalid_reply_changes_nothing`; `test_partial_acceptance`; `test_stale_observation_rejected`; `test_duplicate_decision_is_idempotent` |
+| F5e | Council barrier, budgets, run store (SQLite manifest, inputs, decisions, checkpoints) | `test_recorded_replay_matches_every_checkpoint_hash`; `test_budget_refuses_over_cap` |
+
+No network in any of this. `RuleProvider` returns ordinary replies through the same validator.
+
+---
+
+## F6 — Live adapters and batch runner
+
+**Depends on:** F5. **ADRs:** 0005, 0009, 0014.
+
+| Id | Work |
+|---|---|
+| F6a | `OpenAICompatProvider` (httpx): Ollama, llama.cpp, OpenRouter. Structured output by JSON schema. |
+| F6b | `AnthropicProvider` (official SDK). Verify the current API against the documentation first. |
+| F6c | `aimpire qualify <profile>`: frozen observations, reports schema adherence, order validity, latency, tokens, cost. |
+| F6d | `aimpire batch`: paired seeds, replicates, seat rotation, prompt variants; one report per experiment. |
+
+Live calls run only from an explicit profile with a budget. CI never calls a provider.
+
+---
+
+## M0 — Petri dish (outline; specified in detail when F5 lands)
+
+| Id | Work |
+|---|---|
+| M0a | Flat map, one food layer, regrowth with a seed term, `grid_blocks` places |
+| M0b | People with energy; rule execution of `FORAGE`, `MOVE_CAMP`, `SCOUT`; starvation |
+| M0c | Baselines: random, greedy, and the harvest policy that holds stock near half full |
+| M0d | Ensemble validation: the reference bands from several hundred seeds |
+| M0e | Experiment E0: pre-registration, run, report |

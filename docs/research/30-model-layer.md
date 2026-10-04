@@ -1,5 +1,8 @@
 # 30 — Model provider layer (LLM integration)
 
+!!! note "Review note, 2026-10-04"
+    Where this note conflicts with an ADR or with `docs/plan/roadmap.md`, they win. Epic numbers E1–E15 were replaced by F1–F6 and M0–M8. Corrections: a 10-tick cadence is 12 councils per civilization per year, so the per-year call and cost figures below are three times too high. Claude Haiku 4.5 caches only prefixes of 4,096 tokens or more. Structured output supports simple `pattern` constraints and allows at most 16 union-typed parameters. Claude Opus 4.7 and later reject a non-default temperature. The proposal schema is replaced by ADR-0013 and the qualification assumptions by ADR-0014.
+
 Research lead: LLM integration · 2026-10-04 · Status: proposal. Every model ID and price below was **seen in a cited page on 2026-10-04; verify at implementation**.
 
 ## 1. What the subscription/credit can pay for (read first)
@@ -23,7 +26,7 @@ LiteLLM is active (1.104.0 released 2026-10-03, `requires_python <3.15`; [PyPI](
 - **Supply chain:** on 2026-03-24, litellm 1.82.7/1.82.8 on PyPI were backdoored through a compromised maintainer account and CI. 1.82.8 shipped a `.pth` file that ran at interpreter start and exfiltrated API/cloud/SSH keys ([NetSPI](https://www.netspi.com/blog/executive-blog/ai-ml-pentesting/litellm-supply-chain-compromise/)).
 - **Weight:** core dependencies include `openai`, `tokenizers`, `huggingface-hub`, `tiktoken`, `aiohttp`, `jinja2`, and `boto3` (PyPI metadata), with release-candidate cadence ≈ daily.
 
-We need only ~3 wire formats. **Decision:** in-house adapters on `httpx`, plus the official `anthropic` SDK (and optionally `openai`) behind our own Protocol. `litellm` is an opt-in extra (`gf[litellm]`), hash-pinned with `uv --require-hashes`, and never imported in the core path or CI.
+We need only ~3 wire formats. **Decision:** in-house adapters on `httpx`, plus the official `anthropic` SDK (and optionally `openai`) behind our own Protocol. `litellm` is an opt-in extra (`aimpire[litellm]`), hash-pinned with `uv --require-hashes`, and never imported in the core path or CI.
 
 ```python
 class Provider(Protocol):
@@ -73,7 +76,7 @@ First adapters, in order:
 - On *sim-semantic* invalidity (wrong ID, missing prerequisite): no retry. Record an explicit `no_action` with reasons. This is game-visible (“the elders could not agree”).
 - Every attempt is stored as a blob. `attempts` and `status` are research metrics.
 
-**Qualification suite (`gf qualify <profile>`):** 50 frozen observation fixtures × 3 seeds. Reports:
+**Qualification suite (`aimpire qualify <profile>`):** 50 frozen observation fixtures × 3 seeds. Reports:
 - schema-adherence %
 - sim action-validity %
 - p50/p95 latency

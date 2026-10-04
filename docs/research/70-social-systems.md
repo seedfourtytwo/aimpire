@@ -1,5 +1,8 @@
 # Aimpire — Social Systems & Multi-Scale Cognition
 
+!!! note "Review note, 2026-10-04"
+    Where this note conflicts with an ADR or with `docs/plan/roadmap.md`, they win. Epic numbers E1–E15 were replaced by F1–F6 and M0–M8. The enumerated institutions in this note (polity types, succession types, a fixed doctrine vector) are superseded by ADR-0019: they may survive only as observer-layer labels and rule baselines. The call counts per year in section 5 are three times too high. The draft "ADR-0012" in section 8 was never filed and that number now belongs to another decision.
+
 Status: draft from the social-systems research lead, 2026-10-04. Builds on [`50-simulation-design.md`](50-simulation-design.md) and ADR-0008. It responds to the creator's new priority: logic first, dots on a map later, with trade, religion, politics and fighting "as close to a real-world simulator as possible". All state stays integer (milli-units, ‰, ppm), all randomness uses counter-based RNG streams, and entities iterate in sorted-id order (ADR-0007). New RNG streams: `trade, belief, politics, fission, morale`.
 
 **Design stance.** Every subsystem is a *rule-based individual layer* that runs every tick, cheap and deterministic, plus a *typed proposal surface* for LLM minds that runs every round. The models are drawn from published, testable models (Sugarscape, Boyd–Richerson, Axelrod, Lanchester, Turchin) so each one has a known stylized fact to validate against. Minds steer institutions. They never decide what individuals believe or how a battle resolves.
@@ -301,7 +304,7 @@ The key loops:
 
 ## 7. Validation
 
-Each stylized fact becomes an automated statistical test. Tests run `gf batch` over 20–50 seeds with rule-baseline minds. Thresholds are fixed in `evals/stylized.yaml` and versioned with the rules. Tests marked (v2) need births and aging.
+Each stylized fact becomes an automated statistical test. Tests run `aimpire batch` over 20–50 seeds with rule-baseline minds. Thresholds are fixed in `evals/stylized.yaml` and versioned with the rules. Tests marked (v2) need births and aging.
 
 | # | Stylized fact | Test |
 |---|---|---|

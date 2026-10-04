@@ -1,5 +1,5 @@
 # Aimpire task runner — CI calls ONLY these recipes, so local == CI.
-# Python/client recipes (lint, typecheck, test, golden, schema-check, client-*) are added in E1 / client prototype.
+# Python/client recipes (lint, typecheck, test, golden, schema-check, client-*) are added in F1 / client prototype.
 
 set shell := ["bash", "-euo", "pipefail", "-c"]
 

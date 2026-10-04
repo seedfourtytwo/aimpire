@@ -1,4 +1,7 @@
-# 40 — Repository, CI/CD and agent workflow (Great Filter / GodMode)
+# 40 — Repository, CI/CD and agent workflow
+
+!!! note "Review note, 2026-10-04"
+    Where this note conflicts with an ADR or with `docs/plan/roadmap.md`, they win. Epic numbers E1–E15 were replaced by F1–F6 and M0–M8. Agent guard rails and model tiering are now in ADR-0016.
 
 Author: DevOps/workflow lead agent · 2026-10-04 · Status: proposal (feeds ADR-0006)
 
@@ -7,9 +10,9 @@ Principles: **local-first, zero paid infra, zero LLM credentials in default CI**
 ## 1. Monorepo layout
 
 ```
-great-filter/
+aimpire/
 ├── sim/                      # Python authoritative backend (uv project)
-│   ├── src/greatfilter/      # engine, rules, cognition, api (FastAPI)
+│   ├── src/aimpire/      # engine, rules, cognition, api (FastAPI)
 │   ├── tests/{unit,property,golden,contract}/
 │   └── pyproject.toml        # ruff, pyright, pytest, hypothesis config
 ├── schema/                   # SOURCE OF TRUTH for backend<->client contracts
@@ -76,7 +79,7 @@ Sources: https://github.com/actions/checkout, https://github.com/astral-sh/setup
 |---|---|---|---|
 | `ci.yml` | `pull_request`, `push: main`, `merge_group` | changes → py-lint (ruff format --check, ruff check), py-types (pyright; ty advisory), py-test (pytest unit+hypothesis, `--hypothesis-profile=ci`), **determinism** (golden replay: recorded decisions → identical checkpoint hashes; plus same-seed double run equality), **contract** (regenerate JSON Schema from Pydantic → `git diff --exit-code schema/`; client validates fixtures against schema), client-build/test (variant), docs (mkdocs build --strict), workflows-lint (zizmor), ci-ok | ubuntu-latest, target < 10 min |
 | `nightly.yml` | `schedule` 03:17 UTC, `workflow_dispatch` | long seeded batch (N seeds × M ticks, mock+rule providers), invariant checks, hash-matrix on Linux+Windows (cross-OS determinism), benchmarks (pytest-benchmark → JSON → compare to `gh-pages/bench` history, fail on >15% regression), artifact upload (14-day retention) | ubuntu + windows, ≤ 60 min |
-| `release-please.yml` | `push: main` | release-please → on `release_created`: build sim wheel/sdist, desktop client exports (Linux x86_64, Windows x86_64), Docker image → GHCR (`ghcr.io/<owner>/great-filter-sim:{semver,sha}`), attest provenance, upload to GitHub Release | ubuntu (Godot exports Windows from Linux) |
+| `release-please.yml` | `push: main` | release-please → on `release_created`: build sim wheel/sdist, desktop client exports (Linux x86_64, Windows x86_64), Docker image → GHCR (`ghcr.io/<owner>/aimpire-sim:{semver,sha}`), attest provenance, upload to GitHub Release | ubuntu (Godot exports Windows from Linux) |
 | `pages.yml` | release published, `workflow_dispatch` | build web client demo (Godot web export or Vite build) + docs site → deploy-pages | ubuntu |
 | `eval-live.yml` | **`workflow_dispatch` only** (inputs: provider, models, seeds, ticks, `max_usd`, `max_tokens`) | job uses `environment: live-eval` (required reviewer = creator; secrets live only there); runs evals with hard token/USD caps enforced in code and `timeout-minutes`; uploads report | ubuntu; capped e.g. $5/run default |
 | `security.yml` | PR + weekly | CodeQL (python, javascript-typescript if web; `actions` language), dependency-review (PR, fail on high), gitleaks (or rely on GitHub push protection + secret scanning, free on public repos) | ubuntu |
@@ -129,7 +132,7 @@ jobs:
       - run: just test            # unit + property (hypothesis ci profile)
       - run: just golden          # replay fixtures/golden -> compare checkpoint hashes
       - run: just schema-check    # export schema, git diff --exit-code schema/
-        env: { GF_PROVIDERS: mock,rule }   # hard guard: no network providers
+        env: { AIMPIRE_PROVIDERS: mock,rule }   # hard guard: no network providers
 
   client:
     needs: changes
@@ -176,9 +179,9 @@ jobs:
 - **Ruleset on `main`:** PR required; required check `ci-ok` (+ `security / dependency-review`); linear history; **squash merge only**, PR title = squash commit; dismiss stale approvals; block force-push/deletion; merge queue optional (workflows already listen on `merge_group`). Solo creator: require 1 approval from CODEOWNERS on protected paths only, otherwise allow self-merge after green CI.
 - **Conventional Commits** enforced on PR titles (`amannn/action-semantic-pull-request` or a commit-msg prek hook). Scopes: `sim`, `rules`, `cognition`, `schema`, `client`, `docs`, `ci`, `evals`.
 - **Breaking-change triggers:** any `schema/` contract break → `feat(schema)!:`; any change that alters golden hashes → must bump `RULES_VERSION` and regenerate fixtures in the same PR with label `golden-update` and an explanation (never silently).
-- **CODEOWNERS:** `/sim/src/greatfilter/engine/`, `/schema/`, `/fixtures/golden/`, `/.github/`, `/docs/adr/`, `/.claude/` → creator.
+- **CODEOWNERS:** `/sim/src/aimpire/engine/`, `/schema/`, `/fixtures/golden/`, `/.github/`, `/docs/adr/`, `/.claude/` → creator.
 - **Templates:** `.github/pull_request_template.md` (summary, linked issue/ADR, determinism impact Y/N, schema impact Y/N, DoD checklist, agent session link). Issue forms: `feature.yml`, `bug.yml` (seed + run config + replay file required), `experiment.yml` (hypothesis, config, seeds, metrics, budget), `adr.yml` (context, options, decision owner).
-- **Releases:** release-please (manifest mode, single version for the product while 0.x; split per-component later if needed) maintains a release PR with CHANGELOG; merging it tags `vX.Y.Z` and fires build jobs. 0.x until first public demo. GitHub immutable releases on; artifacts get build-provenance attestations. Docker image is optional convenience; native `uv run greatfilter` is the primary path.
+- **Releases:** release-please (manifest mode, single version for the product while 0.x; split per-component later if needed) maintains a release PR with CHANGELOG; merging it tags `vX.Y.Z` and fires build jobs. 0.x until first public demo. GitHub immutable releases on; artifacts get build-provenance attestations. Docker image is optional convenience; native `uv run aimpire` is the primary path.
 
 ## 5. AI-agent workflow
 
@@ -190,7 +193,7 @@ jobs:
 - `agents/`: `sim-reviewer` (determinism and rule-validation review), `schema-guardian` (contract diff review), `test-writer` (property tests), `docs-writer`.
 
 **Parallel agents without conflicts**
-- One agent = one issue = one branch = one git worktree: `claude --worktree <slug>` (Claude Code native) or `git worktree add ../gf-<slug> -b agent/<slug>`. Use `.worktreeinclude` to copy local `.env`/model config.
+- One agent = one issue = one branch = one git worktree: `claude --worktree <slug>` (Claude Code native) or `git worktree add ../aimpire-<slug> -b agent/<slug>`. Use `.worktreeinclude` to copy local `.env`/model config.
 - Claim work by assigning the issue + `in-progress` label; split work along module seams (rules vs cognition vs client) to minimise overlap.
 - Hot files serialised: `schema/`, `uv.lock`, `fixtures/golden/`, `CHANGELOG.md` (release-please only). Agents needing a schema change open a small schema-first PR that merges before dependent work.
 - Rebase on `main` before PR; small PRs (< ~400 lines diff excl. generated).

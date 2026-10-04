@@ -22,3 +22,10 @@ One line per decision or assumption: date, item, source. Architecturally signifi
 | 2026-10-04 | ADRs 0002–0009 accepted; **ADR-0010**: logic first — simple physics + AI in the loop, then a complexity ladder L0–L8; dots before graphics | creator |
 | 2026-10-04 | Standards: TDD, clean modular commented code, small files (~300 lines), CI/CD, Tufte-style charts/UI | creator |
 | 2026-10-04 | Births/aging, ecology, disease are in scope early (ladder L1–L3), reversing ADR-0008's deferral | creator |
+| 2026-10-04 | Planning review done; its findings and sources are in `docs/research/80-plan-review-2026-10-04.md` | review |
+| 2026-10-04 | **Milestone order accepted** (ADR-0015): foundation, M0 petri dish, M1 seasons and a voice, M2 two tribes, M3 generations, M4 living world, M5 knowledge, M6–M8 society. Replaces the ladder order; births move from the second step to the fourth | creator |
+| 2026-10-04 | **Main goal is emergence:** let the models make their own decisions and see what civilization, political system and religion arise; then trace parallels with the real world (ADR-0019) | creator |
+| 2026-10-04 | Player contact is a hybrid: buttons for simple acts, free text for complex ones, scriptures, misunderstanding as a feature, possibly speaking only to certain people (ADR-0017) | creator |
+| 2026-10-04 | Ideal mind knows how to be a person and wants to live, but knows no technology or history; a pretrained model "pretending to be dumb" is the fallback (ADR-0018) | creator |
+| 2026-10-04 | Correction: a 10-tick cadence is 12 councils per civilization per year, not 36; per-year cost figures in ADR-0009 and research notes 30 and 70 are three times too high (ADR-0011) | review |
+| 2026-10-04 | `.github/workflows/` stays creator-only by design; agents are not given the Workflows permission (ADR-0016, proposed) | review |

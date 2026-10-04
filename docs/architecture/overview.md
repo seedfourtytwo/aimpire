@@ -2,6 +2,9 @@
 
 Status: planning baseline, 2026-10-04. Derived from ADRs 0002–0009.
 
+!!! note "Changes since this baseline"
+    The planning review added ADRs 0011–0019. Where they differ from this page, they win: time and council cadence (ADR-0011), draws and arithmetic (ADR-0012), what a mind sees and returns (ADR-0013), experiments (ADR-0014), build order (ADR-0015), the god's channels (ADR-0017), knowledge arms (ADR-0018) and the rule against pre-baked institutions (ADR-0019). In the diagrams below, read "cognition round" as "council" and "proposal" as "reply".
+
 ## System context
 
 ```mermaid
