@@ -15,7 +15,8 @@ Units:
 Three tools, one per kind of update:
     * ``apply_rate``: deterministic flows (decay, regrowth, metabolism). Exact:
       the running total of deltas always equals the floor of the exact rational
-      total, because the remainder is carried in state.
+      total, because the remainder is carried in state. ``apply_fraction_array``
+      is its per-tile form, for flows whose denominator differs by tile.
     * ``chance_ppm``: per-entity yes/no events driven by a counter draw.
     * ``stochastic_round``: split a remainder fairly with a counter draw.
 
@@ -90,6 +91,40 @@ def apply_rate_array(
         raise OverflowError("value * ppm + PPM * per_ticks would exceed int64")
     deltas, new_carries = np.divmod(values * np.int64(ppm) + carries, np.int64(denom))
     return deltas.astype(np.int64), new_carries.astype(np.int64)
+
+
+def apply_fraction_array(
+    numerators: Int64Array, denominators: Int64Array, carries: Int64Array
+) -> tuple[Int64Array, Int64Array]:
+    """Per-tile ``apply_rate``: ``divmod(numerator + carry, denominator)`` element-wise.
+
+    Why: a flow whose rate depends on the tile itself (logistic regrowth uses
+    ``F (K - F) / K``) has a different exact denominator on every tile. The
+    caller builds the exact numerator and denominator of this tick's change;
+    this helper floors it and carries the remainder, so nothing rounds away.
+    Each carry is in units of ``1 / denominator`` of its own tile and must
+    lie in ``[0, denominator)``.
+
+    The caller must check its numerators for overflow before building them
+    (numpy ``int64`` wraps silently); this helper checks only the final sum.
+    """
+    arrays = (numerators, denominators, carries)
+    if any(a.dtype != np.int64 for a in arrays):
+        raise TypeError("numerators, denominators and carries must be numpy int64 arrays")
+    if not numerators.shape == denominators.shape == carries.shape:
+        raise ValueError("numerators, denominators and carries must have one shape")
+    if numerators.size == 0:
+        return numerators.copy(), carries.copy()
+    if int(numerators.min()) < 0 or int(carries.min()) < 0:
+        raise ValueError("numerators and carries must be >= 0")
+    if int(denominators.min()) < 1:
+        raise ValueError("denominators must be >= 1")
+    if bool(np.any(carries >= denominators)):
+        raise ValueError("every carry must be below its denominator")
+    if int(numerators.max()) + int(denominators.max()) >= _INT64_LIMIT:
+        raise OverflowError("numerator + carry would exceed int64")
+    quotients, new_carries = np.divmod(numerators + carries, denominators)
+    return quotients.astype(np.int64), new_carries.astype(np.int64)
 
 
 def chance_ppm(u: int, ppm: int) -> bool:

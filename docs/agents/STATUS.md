@@ -3,7 +3,7 @@
 > Every agent session reads this first and updates it last.
 
 **Phase:** Phase 1, foundation. F1–F3 are done; next are F4 (watch) and F5 (mind interface) in parallel. See `docs/plan/roadmap.md` and `docs/plan/backlog.md`.
-**Last updated:** 2026-10-04 by the F6c/F6d and W0/LAB0 sessions.
+**Last updated:** 2026-10-04 by the M0a session (petri dish rules, worldgen, regrowth, preset `m0`).
 
 ## Current state
 - **Goal:** emergence. See what civilizations, political orders and beliefs arise when the models decide for themselves (ADR-0019).
@@ -28,6 +28,11 @@
   - `rules/v1/world.yaml` (gravity, sunlight, rain, tilt), branch `agent/w0-world-rules`;
   - code, branch `agent/w0-lab0-physics-knobs` (based on it): integer laws in `aimpire.rules.physics` (helpers in `rules/intmath.py`), `DerivedWorld` in `aimpire.sim.derived`, `load_world` and `rules_hash` in `aimpire.rules` (the hash covers every `*.yaml` in the rules dir plus world/rules/tribe overrides), `aimpire.lab` (knobs, overrides, variant, schema), `schema/lab-knobs.schema.json`.
   - No run command exists yet, so `--set` is not on the CLI. M0c calls `aimpire.lab.variant.resolve_variant(rules_dir, args.set)` and `aimpire.lab.overrides.add_set_option(parser)`.
+
+- [ ] M0a (in review), two PRs:
+  - `rules/v1/m0.yaml` plus `aimpire.rules.load_m0_rules(rules_dir, calendar)` returning `aimpire.sim.world.M0Rules`; new `Flow` (an amount in mu per period) beside `Rate` in `sim/calendar.py`. Branch `agent/m0a-rules`.
+  - Code, branch `agent/m0a-world-regrowth` (based on it): `aimpire.sim.world.m0.build_m0_world(seed, rules, derived, rules_version=, rules_hash=)` with layers `fertility` (ppm), `ceiling` (K, mu) and `food` (mu) and `grid_blocks` places; integer value noise in `sim/world/noise.py` (site `m0_fertility` = WORLDGEN, n 0); `aimpire.sim.systems.regrowth` (logistic plus seed term through the new `fixed.apply_fraction_array`, ledger `REGROWTH` on material `food`); `aimpire.sim.presets` (`PRESETS["m0"]`, `system_registry(rules, derived=...)`, `m0_quantities()`). Acceptance tests `sim/tests/acceptance/test_m0a_world.py`.
+  - Next: M0b appends its systems to `presets.M0` and its materials to `m0_quantities`, and reads the M0b fields of `M0Rules` (need, start, starvation, spoilage, carry, walk energy, scout sight).
 
 ## In flight
 _None._
