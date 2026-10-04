@@ -12,7 +12,8 @@ Units:
     * a rate applies linearly over ``per_ticks`` ticks (ADR-0011 converts
       "per year" or "per season" into ``per_ticks``).
 
-Three tools, one per kind of update:
+Three tools, one per kind of update (plus ``chance_fraction`` and
+``ceil_div`` for exact chances and counts):
     * ``apply_rate``: deterministic flows (decay, regrowth, metabolism). Exact:
       the running total of deltas always equals the floor of the exact rational
       total, because the remainder is carried in state. ``apply_fraction_array``
@@ -138,6 +139,39 @@ def chance_ppm(u: int, ppm: int) -> bool:
     if not 0 <= u <= U64_MASK:
         raise ValueError("u must be an unsigned 64-bit draw")
     return (u % PPM) < ppm
+
+
+CHANCE_DENOM_MAX: Final = 2**48
+"""Largest denominator ``chance_fraction`` accepts: modulo bias stays below 2**-16."""
+
+
+def chance_fraction(u: int, numer: int, denom: int) -> bool:
+    """True with probability ``numer / denom`` for a uniform 64-bit draw ``u``.
+
+    The exact form of ``chance_ppm`` for a chance that is a product of
+    fractions (a death chance times a shortfall share): no intermediate is
+    rounded, so a small chance never becomes zero. ``numer`` above ``denom``
+    is a certainty. The modulo bias is below ``denom / 2**64``.
+    """
+    if numer < 0:
+        raise ValueError(f"numer must be >= 0, got {numer}")
+    if not 1 <= denom <= CHANCE_DENOM_MAX:
+        raise ValueError(f"denom must be in [1, {CHANCE_DENOM_MAX}], got {denom}")
+    if not 0 <= u <= U64_MASK:
+        raise ValueError("u must be an unsigned 64-bit draw")
+    return (u % denom) < numer
+
+
+def ceil_div(numer: int, denom: int) -> int:
+    """``ceil(numer / denom)`` for a non-negative ``numer`` and positive ``denom``.
+
+    For counts that must not round down to zero, such as the ticks a walk
+    takes at a scaled speed.
+    """
+    if numer < 0 or denom < 1:
+        raise ValueError(f"need numer >= 0 and denom >= 1, got {numer} and {denom}")
+    quotient, remainder = divmod(numer, denom)
+    return quotient + (1 if remainder else 0)
 
 
 def stochastic_round(numer: int, denom: int, u: int) -> int:

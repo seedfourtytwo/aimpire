@@ -12,9 +12,13 @@ What a record commits, per ADR-0013 and ``decision.py``:
 * ``journal``: replaces the previous journal when the mind wrote one. Empty
   means "not used", so the old journal stays (ADR-0013 section 3).
 
-Accepted orders, messages, commitments, beliefs and names are carried by the
-record and applied by the systems that need them (task execution in M0b,
-delivery in later milestones). Nothing is committed for them here.
+* ``tasks``, ``last_results``, ``commitments``, ``names`` and
+  ``last_council`` (M0b): accepted orders become tasks the M0 systems start
+  in this same tick, so an order applies at the council tick, before the
+  scheduler steps. See ``aimpire.sim.actions.bookkeeping``.
+
+Messages and beliefs are carried by the record only: delivery and belief
+records come in later milestones.
 
 A civilization is an entity of kind ``civ`` with the string fields ``civ_id``
 and ``journal`` and a ``policy`` value in ``StandingPolicy.to_value`` form.
@@ -23,6 +27,7 @@ The kind name is a mechanic of the engine, not an institution (ADR-0019).
 
 from typing import Final, cast
 
+from aimpire.sim.actions.bookkeeping import apply_bookkeeping
 from aimpire.sim.actions.decision import DecisionRecord, PolicyLine, StandingPolicy
 from aimpire.sim.state import Entity, Value, WorldState
 
@@ -54,7 +59,7 @@ def standing_policy_of(entity: Entity) -> StandingPolicy:
 
 
 def commit_decision(state: WorldState, civ_entity_id: int, record: DecisionRecord) -> None:
-    """Write ``record``'s policy and journal into the civilization entity.
+    """Write ``record``'s policy, journal and bookkeeping into the civilization entity.
 
     The entity must be a ``civ`` whose ``civ_id`` matches the record; anything
     else is a wiring error in the caller and raises ``ValueError``.
@@ -67,3 +72,4 @@ def commit_decision(state: WorldState, civ_entity_id: int, record: DecisionRecor
     entity["policy"] = record.policy.to_value()
     if record.journal:
         entity["journal"] = record.journal
+    apply_bookkeeping(entity, record, state.tick)
