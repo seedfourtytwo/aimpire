@@ -33,7 +33,7 @@ def _write(tmp_path: Path, data: dict[str, Any]) -> Path:
 def test_v1_values_load_as_documented() -> None:
     rules = load_m0_rules(RULES_V1, load_calendar(RULES_V1))
     assert (rules.rows, rules.cols, rules.place_block) == (64, 64, 16)
-    assert rules.food_ceiling == 10_000
+    assert rules.food_ceiling == 5_000
     assert rules.initial_food == PPM
     assert (rules.fertility_min, rules.fertility_max, rules.fertility_cell) == (
         300_000,
