@@ -15,7 +15,9 @@ Layers (2-D int64, ``rules.rows`` by ``rules.cols``; each has a carry layer):
     ``food``       F, standing wild food in milli-units, starting at
                    ``floor(K * initial_food / PPM)``. Regrowth changes it.
 
-Places: ``grid_blocks`` with ``rules.place_block`` tiles a side.
+Places: ``grid_blocks`` with ``rules.place_block`` tiles a side. Map scale:
+one ``map`` entity (``aimpire.sim.scale``) after the places, so travel is in
+ticks; without a scale argument it is one tile per tick (bare test worlds).
 """
 
 from typing import Final
@@ -26,6 +28,7 @@ from aimpire.sim.derived import DerivedWorld
 from aimpire.sim.fixed import PPM, Int64Array
 from aimpire.sim.places import grid_blocks
 from aimpire.sim.rng import SITES, stream_key
+from aimpire.sim.scale import TILE_PER_TICK, MapScale, set_map_scale
 from aimpire.sim.state import WorldState
 from aimpire.sim.world.m0_rules import M0Rules
 from aimpire.sim.world.noise import value_noise
@@ -65,18 +68,20 @@ def tile_ceiling(rules: M0Rules, derived: DerivedWorld, fertility: Int64Array) -
     return np.floor_divide(fertility * np.int64(scale), np.int64(PPM * PPM)).astype(np.int64)
 
 
-def build_m0_world(
+def build_m0_world(  # noqa: PLR0913 (seed, rules, rates and the identity of the rules)
     run_seed: int,
     rules: M0Rules,
     derived: DerivedWorld,
     *,
     rules_version: str,
     rules_hash: str,
+    scale: MapScale = TILE_PER_TICK,
 ) -> WorldState:
     """Make the tick-0 petri dish: fertility, ceiling and food layers, then places.
 
     ``rules_hash`` should come from ``aimpire.lab.variant.resolve_variant``
     (rules files plus world overrides), the same call that gives ``derived``.
+    ``scale`` comes from ``aimpire.rules.load_map_scale`` (``scale.yaml``).
     """
     state = WorldState(run_seed=run_seed, rules_version=rules_version, rules_hash=rules_hash)
     fertility = fertility_map(run_seed, rules)
@@ -87,4 +92,5 @@ def build_m0_world(
     state.add_layer(CEILING, ceiling)
     state.add_layer(FOOD, food.astype(np.int64))
     grid_blocks(state, rules.place_block, rules.place_block)
+    set_map_scale(state, scale)
     return state

@@ -20,7 +20,7 @@ OK: Final = 0
 FAILED: Final = 1
 BAD_INPUT: Final = 2
 OVER_BUDGET: Final = 3
-_USER_ERRORS: Final = (
+USER_ERRORS: Final = (
     FileNotFoundError,
     FileExistsError,
     MindError,
@@ -43,7 +43,7 @@ def qualify_command(args: argparse.Namespace) -> int:
     except OverBudget as refused:
         print(refused)
         return OVER_BUDGET
-    except _USER_ERRORS as error:
+    except USER_ERRORS as error:
         print(f"error: {error}")
         return BAD_INPUT
     return OK if result.passed else FAILED
@@ -65,7 +65,7 @@ def batch_command(args: argparse.Namespace) -> int:
     except OverBudget as refused:
         print(refused)
         return OVER_BUDGET
-    except _USER_ERRORS as error:
+    except USER_ERRORS as error:
         print(f"error: {error}")
         return BAD_INPUT
     return OK

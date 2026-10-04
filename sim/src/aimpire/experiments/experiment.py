@@ -10,7 +10,7 @@ Example::
     id: e0-pilot
     hypothesis: "..."                      # required, the pre-registered claim
     metrics: {primary: usable_share_ppm, secondary: [refusal_share_ppm]}
-    world: stub                            # a registered preset factory
+    world: m0                              # a registered preset factory
     ticks: 30                              # days per run
     council_every: 10                      # days between councils
     checkpoint_every: 10                   # days between periodic checkpoints

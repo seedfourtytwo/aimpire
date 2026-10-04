@@ -1,47 +1,36 @@
-"""Named rule baselines, for ``aimpire qualify rule:<name>`` and batch arms (ADR-0014).
+"""Named rule baselines, for ``rule:<name>`` minds in qualify, batch and run (ADR-0014).
 
-Why here: experiments and qualification name minds by text (``rule:hold``),
+Why here: experiments and qualification name minds by text (``rule:half_full``),
 so the rules need one registry. Each rule reads only the typed observation it
 is given, exactly what a model is shown, and answers through ``RuleProvider``
 and the same validator as a model (ADR-0005).
 
-These two are plumbing baselines, not the M0 set: ``hold`` is the null mind
-and ``forage_nearest`` exercises policy and orders on every observation. M0c
-registers the analytic baselines (random, greedy, half full, msy) here.
+* The M0 baselines (``cognition.m0_baselines``): ``random``, ``greedy``,
+  ``half_full`` and ``msy``. They also know the disclosed rule
+  (``cognition.disclosed``); by default that of ``DEFAULT_RULES_DIR``.
+* Two plumbing rules, kept because the F6 and M0b acceptance tests name them
+  (``world: stub`` experiments, ``aimpire qualify rule``): ``hold`` is the
+  null mind and ``forage_nearest`` exercises policy and orders on every
+  observation. They are not baselines and no report compares a mind to them.
 """
 
 from collections.abc import Mapping
 from typing import Final
 
+from aimpire.cognition.baseline_kit import reply
+from aimpire.cognition.disclosed import Disclosed, default_disclosed
+from aimpire.cognition.m0_baselines import M0_BASELINES, m0_policy
 from aimpire.cognition.offline import RulePolicy, RuleProvider
 from aimpire.contracts.mind import MindReply, Observation, PlaceView
 from aimpire.contracts.vocabulary import PERMILLE
 
 DEFAULT_RULE: Final = "forage_nearest"
-
-
-def _reply(
-    obs: Observation, policy: dict[str, object], orders: list[dict[str, object]]
-) -> MindReply:
-    """A complete reply: every field present, unused ones empty (ADR-0013)."""
-    return MindReply.model_validate(
-        {
-            "decision_id": obs.decision_id,
-            "policy": policy,
-            "orders": orders,
-            "messages": [],
-            "commitments": [],
-            "beliefs": [],
-            "names": [],
-            "journal": "",
-            "annal": "",
-        }
-    )
+"""What a bare ``rule`` mind means (the F6 acceptance tests pin it)."""
 
 
 def hold(obs: Observation) -> MindReply:
     """Change nothing: no allocations and ration 0 keep the policy in force; no orders."""
-    return _reply(obs, {"allocations": [], "ration": 0}, [])
+    return reply(obs, ration=0)
 
 
 def _nearest(places: list[PlaceView]) -> PlaceView:
@@ -57,19 +46,26 @@ def forage_nearest(obs: Observation) -> MindReply:
     if not obs.places:
         return hold(obs)
     nearest = _nearest(obs.places)
-    allocation = {"activity": "FORAGE", "place": nearest.place_id, "share": PERMILLE}
     orders: list[dict[str, object]] = []
     if obs.status.population >= 1:
         target = _stalest(obs.places).place_id
         orders.append({"kind": "SCOUT", "place": target, "target": "", "qty": 1, "text": ""})
-    return _reply(obs, {"allocations": [allocation], "ration": PERMILLE}, orders)
+    return reply(obs, [("FORAGE", nearest.place_id, PERMILLE)], orders)
 
 
-RULES: Final[Mapping[str, RulePolicy]] = {"forage_nearest": forage_nearest, "hold": hold}
+PLUMBING: Final[Mapping[str, RulePolicy]] = {"forage_nearest": forage_nearest, "hold": hold}
+RULE_NAMES: Final = frozenset(PLUMBING) | frozenset(M0_BASELINES)
+"""Every name ``rule:<name>`` accepts."""
 
 
-def rule_provider(name: str) -> RuleProvider:
-    """The ``RuleProvider`` for a registered rule. ``KeyError`` names the known rules."""
-    if name not in RULES:
-        raise KeyError(f"unknown rule {name!r}; known rules: {sorted(RULES)}")
-    return RuleProvider(RULES[name], name=name)
+def rule_provider(name: str, disclosed: Disclosed | None = None) -> RuleProvider:
+    """The ``RuleProvider`` for a registered rule. ``KeyError`` names the known rules.
+
+    ``disclosed`` is the rule an M0 baseline plays under; ``None`` reads the
+    default rules. The plumbing rules ignore it.
+    """
+    if name in PLUMBING:
+        return RuleProvider(PLUMBING[name], name=name)
+    if name not in RULE_NAMES:
+        raise KeyError(f"unknown rule {name!r}; known rules: {sorted(RULE_NAMES)}")
+    return RuleProvider(m0_policy(name, disclosed or default_disclosed()), name=name)

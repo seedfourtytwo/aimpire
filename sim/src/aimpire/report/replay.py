@@ -24,7 +24,7 @@ identical runs give identical bytes.
 """
 
 import json
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -32,10 +32,14 @@ from aimpire.report.frames import PALETTE, RAMP_HIGH, RAMP_LOW, default_scale, e
 from aimpire.report.replay_check import FORMAT, ReplayError, validate_replay
 from aimpire.sim.calendar import Calendar
 from aimpire.sim.hashing import state_hash
-from aimpire.sim.state import WorldState
+from aimpire.sim.state import Entity, WorldState
+
+Locate = Callable[[WorldState, Entity], tuple[int, int] | None]
+"""Where an entity is drawn, ``(row, col)``, or ``None`` to leave it out."""
 
 __all__ = [
     "FORMAT",
+    "Locate",
     "ReplayError",
     "ReplayRecorder",
     "decode_layer",
@@ -69,8 +73,17 @@ def rle_decode(pairs: Sequence[int]) -> list[int]:
     return out
 
 
+def _own_pos(_state: WorldState, entity: Entity) -> tuple[int, int] | None:
+    return entity_pos(entity)
+
+
 class ReplayRecorder:
-    """Collects frames during a run. Call ``capture(state)`` at tick 0 and after each step."""
+    """Collects frames during a run. Call ``capture(state)`` at tick 0 and after each step.
+
+    ``locate`` places a dot for an entity; by default its own ``"pos"`` field.
+    A world whose entities have no tile position (the M0 tribe lives at a
+    place) passes its own, such as the camp's centroid.
+    """
 
     def __init__(
         self,
@@ -78,6 +91,7 @@ class ReplayRecorder:
         kinds: Sequence[str],
         calendar: Calendar,
         scale_max: int | None = None,
+        locate: Locate = _own_pos,
     ) -> None:
         if len(kinds) > len(PALETTE) or len(set(kinds)) != len(kinds):
             raise ValueError(f"kinds must be distinct and at most {len(PALETTE)}")
@@ -85,6 +99,7 @@ class ReplayRecorder:
         self.kinds = tuple(kinds)
         self.calendar = calendar
         self.scale_max = scale_max
+        self.locate = locate
         self.header: Replay | None = None
         self.frames: list[Replay] = []
 
@@ -139,8 +154,10 @@ class ReplayRecorder:
         for eid in sorted(state.entities):
             entity = state.entities[eid]
             kind = entity.get("kind")
-            pos = entity_pos(entity)
-            if not isinstance(kind, str) or kind not in self.kinds or pos is None:
+            if not isinstance(kind, str) or kind not in self.kinds:
+                continue
+            pos = self.locate(state, entity)
+            if pos is None:
                 continue
             if 0 <= pos[0] < rows and 0 <= pos[1] < cols:
                 dots.append([eid, kind, pos[0], pos[1]])

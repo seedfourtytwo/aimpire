@@ -5,7 +5,7 @@ registered under that name for a fresh world per run, built from the run's
 seed and its number of seats. The batch runner knows nothing else about the
 world, so a milestone plugs in by registering its preset:
 
-    register_world("m0", build_m0_world)   # M0a/M0b
+    register_world("m0", factory)   # done in experiments/__init__.py
 
 A factory must be deterministic: the same seed and seat count give the same
 state hash. Its civilizations use the m0 ``civ`` layout (``civ_record``), in
