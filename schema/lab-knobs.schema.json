@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Knobs settable with --set path=value. Values outside a knob's validated range are allowed but tag the run beyond-model (ADR-0020).",
+  "properties": {
+    "mind.knowledge_arm": {
+      "default": "A0",
+      "description": "How much a mind could know in advance (ADR-0018).",
+      "enum": [
+        "A0",
+        "A1",
+        "A2",
+        "A3"
+      ],
+      "type": "string",
+      "x-aimpire": {
+        "in_rules_hash": false,
+        "layer": "mind",
+        "unit": "choice"
+      }
+    },
+    "mind.renderer": {
+      "default": "places",
+      "description": "How an observation is laid out as prompt text (ADR-0013).",
+      "enum": [
+        "places",
+        "grid"
+      ],
+      "type": "string",
+      "x-aimpire": {
+        "in_rules_hash": false,
+        "layer": "mind",
+        "unit": "choice"
+      }
+    },
+    "world.gravity": {
+      "default": 1000000,
+      "description": "Surface gravity. Drives walking speed, carry load, walking energy, water speed, tree height, fall harm and throw range.",
+      "maximum": 10000000,
+      "minimum": 100000,
+      "type": "integer",
+      "x-aimpire": {
+        "in_rules_hash": true,
+        "layer": "world",
+        "unit": "ppm of Earth g",
+        "validated": {
+          "maximum": 1500000,
+          "minimum": 500000
+        }
+      }
+    },
+    "world.rain": {
+      "default": 1000000,
+      "description": "Rainfall. Drives the plant growth ceiling.",
+      "maximum": 5000000,
+      "minimum": 0,
+      "type": "integer",
+      "x-aimpire": {
+        "in_rules_hash": true,
+        "layer": "world",
+        "unit": "ppm of reference rain",
+        "validated": {
+          "maximum": 5000000,
+          "minimum": 0
+        }
+      }
+    },
+    "world.sunlight": {
+      "default": 1000000,
+      "description": "Mean sunlight at the surface. Drives the plant growth ceiling.",
+      "maximum": 5000000,
+      "minimum": 0,
+      "type": "integer",
+      "x-aimpire": {
+        "in_rules_hash": true,
+        "layer": "world",
+        "unit": "ppm of Earth mean sunlight",
+        "validated": {
+          "maximum": 5000000,
+          "minimum": 0
+        }
+      }
+    },
+    "world.tilt": {
+      "default": 23440,
+      "description": "Axial tilt. Drives the strength of summer and winter.",
+      "maximum": 90000,
+      "minimum": 0,
+      "type": "integer",
+      "x-aimpire": {
+        "in_rules_hash": true,
+        "layer": "world",
+        "unit": "milli-degrees",
+        "validated": {
+          "maximum": 45000,
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "title": "Aimpire Lab overrides",
+  "type": "object"
+}

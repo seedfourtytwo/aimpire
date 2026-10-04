@@ -1,35 +1,31 @@
-"""Load versioned rules data from ``rules/<version>/`` (ADR-0011).
+"""Load versioned rules data from ``rules/<version>/`` (ADR-0011, ADR-0020).
 
 File reading lives here, outside ``aimpire.sim``, which does no I/O. The
-loader parses and validates; the simulation receives plain typed objects.
+loader parses and validates; the simulation receives plain typed objects:
+``Calendar`` from ``calendar.yaml`` and, through ``physics.derive_world``,
+``DerivedWorld`` rates from the constants in ``world.yaml``.
+
+No ``/`` operator anywhere in this package, not even to join paths
+(``joinpath`` instead): the W0 acceptance test bans true division here, so a
+float can never slip into a derived, hashed rate.
 """
 
 from pathlib import Path
 
-import yaml
-
+from aimpire.rules.digest import rules_hash
+from aimpire.rules.errors import RulesError
+from aimpire.rules.world import load_world
+from aimpire.rules.yaml_io import read_mapping
 from aimpire.sim.calendar import Calendar
 
-
-class RulesError(ValueError):
-    """A rules file is missing, unreadable or invalid."""
-
-
-def _read_mapping(path: Path) -> dict[str, object]:
-    try:
-        data: object = yaml.safe_load(path.read_text(encoding="utf-8"))
-    except (OSError, yaml.YAMLError) as exc:
-        raise RulesError(f"cannot read {path}: {exc}") from exc
-    if not isinstance(data, dict):
-        raise RulesError(f"{path} must hold a mapping")
-    return {str(k): v for k, v in data.items()}  # pyright: ignore[reportUnknownVariableType]
+__all__ = ["RulesError", "load_calendar", "load_world", "rules_hash"]
 
 
 def load_calendar(rules_dir: Path) -> Calendar:
     """Read ``calendar.yaml`` from a rules version directory."""
-    path = Path(rules_dir) / "calendar.yaml"
+    path = Path(rules_dir).joinpath("calendar.yaml")
     try:
-        return Calendar.from_mapping(_read_mapping(path))
+        return Calendar.from_mapping(read_mapping(path))
     except RulesError:
         raise
     except ValueError as exc:
