@@ -1,5 +1,4 @@
 # Aimpire task runner — CI calls ONLY these recipes, so local == CI.
-# Client recipes (client-*) arrive with the replay player and console.
 
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
@@ -19,7 +18,7 @@ lint-workflows:
     uvx zizmor --offline .github/workflows
 
 # Everything CI checks (grows as code lands)
-check: docs lint-workflows check-sim
+check: docs lint-workflows check-sim check-client
 
 # --- Python simulation (sim/) ---------------------------------------------
 
@@ -58,6 +57,18 @@ schema-check: sync
 # Python sim checks: what the CI python job runs (golden checks join later)
 check-sim: lint typecheck test schema-check
 
-# Web client checks (filled in by the client work)
-check-client:
-    @if [ -d client ]; then echo "client/ exists but check-client is not implemented yet"; exit 1; else echo "no client/ yet: nothing to check"; fi
+# --- Static replay player (client/replay/) ----------------------------------
+
+# Regenerate the fixture replay the player opens by default
+fixture-replay: sync
+    cd sim && uv run python scripts/make_fixture_replay.py
+
+# Client checks: fixture valid and current; player.js syntax and headless smoke test (Node)
+check-client: sync
+    cd sim && uv run python scripts/make_fixture_replay.py --check
+    @if command -v node >/dev/null 2>&1; then \
+        node --check client/replay/player.js && \
+        node client/replay/smoke-test.cjs "$(cd sim && uv run python scripts/make_fixture_replay.py --frame-sha256)"; \
+    else \
+        echo "node not found: skipped the player.js syntax check and smoke test (fixture still validated)"; \
+    fi
