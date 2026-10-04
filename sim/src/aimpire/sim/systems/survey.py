@@ -11,8 +11,9 @@ takes
 ticks: slower walkers need more ticks, faster ones fewer, and a walk of one
 or more tiles never takes zero ticks. At Earth (``walk_speed == PPM``) it
 equals ``places.travel_ticks``. This is the true travel time used by the
-systems; what a mind is told stays ``places.travel_ticks_within`` (no leak of
-unseen places).
+systems; what a mind is told is ``places.travel_ticks_within`` at the same
+walking speed: the same days when the known places hold the true path, and
+never a route through an unseen place (no leak).
 
 Sight. People who stand at a place see every place whose centroid lies
 within ``scout_sight`` tiles (Manhattan) of that place's centroid, the place

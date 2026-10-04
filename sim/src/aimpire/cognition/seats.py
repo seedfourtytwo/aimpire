@@ -23,6 +23,7 @@ from aimpire.cognition.render import render_grid, render_places
 from aimpire.contracts.mind import CONTRACT_VERSION, MindReply, Observation
 from aimpire.sim.actions import CouncilSeat, PolicyLine, StandingPolicy
 from aimpire.sim.calendar import Calendar
+from aimpire.sim.fixed import PPM
 from aimpire.sim.state import WorldState
 
 Renderer = Literal["places", "grid"]
@@ -83,10 +84,20 @@ class Seat:
     provider: Provider
 
 
-def seats_for(
-    seats: Sequence[Seat], *, calendar: Calendar, every_ticks: int, renderer: Renderer, system: str
+def seats_for(  # noqa: PLR0913 (each is a separate run setting)
+    seats: Sequence[Seat],
+    *,
+    calendar: Calendar,
+    every_ticks: int,
+    renderer: Renderer,
+    system: str,
+    walk_speed: int = PPM,
 ) -> Callable[[WorldState, int], list[SeatCall]]:
-    """The runner's ``SeatsFor``: one call per seat at each council, in seat order."""
+    """The runner's ``SeatsFor``: one call per seat at each council, in seat order.
+
+    ``walk_speed`` is the run's W0 walking speed (ppm of Earth), so the travel
+    days each observation shows are the days the systems will take.
+    """
 
     def build(state: WorldState, council: int) -> list[SeatCall]:
         calls: list[SeatCall] = []
@@ -97,7 +108,7 @@ def seats_for(
                 decision_id=decision_id_for(seat.civ_id, council),
                 next_council_tick=state.tick + every_ticks,
             )
-            obs = build_observation(state, call, calendar)
+            obs = build_observation(state, call, calendar, walk_speed=walk_speed)
             request = request_for(obs, render(obs, state, renderer), system, seat.mind)
             seat_view = seat_from_observation(obs)
             calls.append(
