@@ -22,8 +22,8 @@ For each issue, run the loop (or use `/tdd <issue>`):
    it reports a test is wrong, decide yourself (or ask `architect`) before anything changes.
 4. **Review** — delegate to `reviewer` (Opus, fresh context) for every PR; add `ui-auditor` for
    client changes. Fix blocking findings via `implementer`, then re-review.
-5. **Wrap up** — run `just check` yourself and read the real output; delegate STATUS/handoff
-   chores to `scribe` (Haiku); open the PR.
+5. **Wrap up** — run `just check` yourself and read the real output; delegate handoff/STATUS
+   chores to `scribe` (Haiku); open the PR. Merging is the creator's call.
 
 Other delegation: `researcher` for any version, API, price or model-ID question (with URLs and
 dates); the built-in `Explore` agent for broad code searches. Run independent subagents in
@@ -63,13 +63,16 @@ Loaded automatically when you read or edit matching files: `sim-core.md` (sim, r
 ## Hooks (`.claude/hooks/`, tested in `tools/tests/`)
 
 - **SessionStart** — injects the branch, the session routine and the head of `STATUS.md`.
-- **PreToolUse(Bash)** — `guard_bash.py` blocks force-push, pushes to `main`, `--no-verify`,
-  destructive git, reading `.env`, literal keys, releases and visibility changes.
+- **PreToolUse(Bash)** — `guard_bash.py` parses each command (quotes, heredocs, chains) and blocks
+  pushes to `main`, force-push other than `--force-with-lease`, remote branch deletion, skipped
+  hooks, destructive git, `.env` reads, printed or literal credentials, PR merge/approve, releases
+  and visibility changes.
 - **PostToolUse(Edit|Write)** — formats Python with ruff (if installed) and flags files over the
   500-line limit.
 - **Stop** — reminds once per session to update `STATUS.md` when code changed.
 
-Hooks require `python3` on PATH. If a hook blocks something the creator has explicitly approved in
+All hooks fail open (a crash never blocks you; CI still gates). Hooks require `python3` on PATH.
+If a hook blocks something the creator has explicitly approved in
 this conversation, say so and ask the creator to run it.
 
 ## Reporting back

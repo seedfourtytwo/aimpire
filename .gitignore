@@ -19,8 +19,21 @@ test-results/
 # Docs
 site/
 
-# Runs & local data (never commit run outputs or secrets)
+# Runs & local data (never commit run outputs, weights or secrets; mirrors tools/checks/repo_hygiene.py)
 runs/
+exports/
+saves/
+*.log
+*.zst
+*.sqlite
+*.sqlite3
+*.gguf
+*.safetensors
+*.ckpt
+*.pt
+*.onnx
+*.pem
+*.key
 *.db
 *.db-wal
 *.db-shm

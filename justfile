@@ -3,6 +3,13 @@
 
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
+# Pinned tool versions (AGENTS.md §5.2). Bump deliberately, in their own PR.
+# `ruff` is mirrored in .claude/hooks/post_edit_check.py and .pre-commit-config.yaml.
+ruff := "ruff@0.16.10"
+pytest := "pytest==9.1.1"
+zizmor := "zizmor@1.30.1"
+prek := "prek@0.5.4"
+
 default:
     @just --list
 
@@ -16,7 +23,7 @@ docs-serve:
 
 # Lint GitHub workflows for security issues
 lint-workflows:
-    uvx zizmor --offline $(ls .github/workflows/*.yml ci/workflows/*.yml 2>/dev/null)
+    uvx {{zizmor}} --offline $(ls .github/workflows/*.yml ci/workflows/*.yml 2>/dev/null)
 
 # Repo hygiene: file sizes, source line limits, forbidden artifacts (AGENTS.md §4.1)
 hygiene:
@@ -24,16 +31,16 @@ hygiene:
 
 # Lint + format-check repo tooling and Claude Code hooks (limits from ruff.toml)
 lint-tools:
-    uvx ruff check tools .claude/hooks
-    uvx ruff format --check tools .claude/hooks
+    uvx {{ruff}} check tools .claude/hooks
+    uvx {{ruff}} format --check tools .claude/hooks
 
 # Tests for repo tooling and Claude Code hooks
 test-tools:
-    uvx pytest -q tools/tests
+    uvx --from {{pytest}} pytest -q tools/tests
 
 # Install local git hooks (prek, pre-commit compatible)
 hooks-install:
-    uvx prek install
+    uvx {{prek}} install
 
 # Repo-wide gates that run on every PR regardless of paths
 check-repo: hygiene lint-tools test-tools

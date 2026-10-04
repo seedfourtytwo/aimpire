@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 import repo_hygiene as rh
@@ -61,9 +62,31 @@ def test_lockfiles_are_allowed_to_be_large(tmp_path: Path) -> None:
 
 
 def test_forbidden_artifacts_are_errors(tmp_path: Path) -> None:
-    for rel in ("runs/r1.db", "model.gguf", ".env", "weights.safetensors"):
+    for rel in (
+        "runs/r1.db",
+        "runs/r1/blobs/ab.json.zst",
+        "model.gguf",
+        ".env",
+        "sim/.env.local",
+        "weights.safetensors",
+        "debug.log",
+        "exports/run1.csv",
+    ):
         _write(tmp_path, rel, "x")
         assert _rules(rh.check_paths(tmp_path, [rel])) == {"forbidden-file"}, rel
+
+
+def test_typescript_module_variants_are_line_limited(tmp_path: Path) -> None:
+    _write(tmp_path, "client/web/src/a.mts", "x;\n" * (rh.SOURCE_LINE_HARD_LIMIT + 1))
+    assert _rules(rh.check_paths(tmp_path, ["client/web/src/a.mts"])) == {"source-too-long"}
+
+
+def test_candidate_files_handles_non_ascii_names(tmp_path: Path) -> None:
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    _write(tmp_path, "données/é.db", "x")
+    files = rh.candidate_files(tmp_path)
+    assert "données/é.db" in files
+    assert _rules(rh.check_paths(tmp_path, files)) == {"forbidden-file"}
 
 
 def test_env_example_is_allowed(tmp_path: Path) -> None:

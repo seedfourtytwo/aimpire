@@ -75,10 +75,10 @@ flowchart LR
 |---|---|
 | Session starts from STATUS and the routine | `SessionStart` hook (`session_start.py`) |
 | Area rules load when touching sim, client or tests | path-scoped `.claude/rules/*.md` |
-| Implementer cannot edit tests/fixtures | agent-scoped `PreToolUse` hook (`guard_tests.py`) |
-| No force-push, push to main, `--no-verify`, `.env` reads, literal keys, releases | `PreToolUse(Bash)` hook (`guard_bash.py`) + `permissions.deny` |
-| Files stay under 500 lines; Python formatted | `PostToolUse` hook (`post_edit_check.py`) and CI `repo-hygiene` |
-| STATUS updated after code changes | `Stop` hook reminder (`stop_check.py`) |
+| Implementer cannot edit tests/fixtures/guardrails | agent-scoped `PreToolUse` hook (`guard_tests.py`); red tests committed first and diffed by `reviewer` |
+| No push to main, force-push (except with-lease), `--no-verify`, `.env`/credential leaks, merges, releases | `PreToolUse(Bash)` hook (`guard_bash.py`) + narrowed `permissions` |
+| Files stay under 500 lines; Python formatted | `PostToolUse` hook (`post_edit_check.py`) and CI job `repo` |
+| Progress recorded after code changes | `Stop` hook reminder (`stop_check.py`; STATUS or handoff note) |
 | Everything above, independent of the agent | CI (`just check`), required check `ci-ok` |
 
 Hooks are tested in `tools/tests/test_hooks.py`. Hooks are guardrails, not security boundaries: a

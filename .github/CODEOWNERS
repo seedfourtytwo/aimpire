@@ -7,3 +7,9 @@
 /.github/               @seedfourtytwo
 /.claude/               @seedfourtytwo
 /CLAUDE.md              @seedfourtytwo
+/AGENTS.md              @seedfourtytwo
+/ruff.toml              @seedfourtytwo
+/justfile               @seedfourtytwo
+/.pre-commit-config.yaml @seedfourtytwo
+/tools/checks/          @seedfourtytwo
+/ci/                    @seedfourtytwo

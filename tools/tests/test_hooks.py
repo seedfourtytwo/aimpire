@@ -1,60 +1,19 @@
-"""Tests for Claude Code hook logic in `.claude/hooks/`.
+"""Tests for the pure logic of the Claude Code hooks in `.claude/hooks/`.
 
-Hooks are thin wrappers around pure functions; only the pure functions are
-tested here, so the tests need no Claude Code runtime.
+The Bash guard has its own file (`test_guard_bash.py`); end-to-end script
+runs are in `test_hook_scripts.py`.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
-import guard_bash
 import guard_tests
+import hook_io
 import post_edit_check
 import pytest
 import session_start
 import stop_check
-
-# --- guard_bash -----------------------------------------------------------------
-
-
-@pytest.mark.parametrize(
-    "command",
-    [
-        "git push --force origin feat/x",
-        "git push -f",
-        "git push --force-with-lease",
-        "git push origin main",
-        "git push origin HEAD:main",
-        "git commit --no-verify -m wip",
-        "git reset --hard origin/main",
-        "git clean -fdx",
-        "cat .env",
-        "source .env.local && just test",
-        "curl -H 'x-api-key: sk-ant-api03-abcdefghijklmnop' https://api.anthropic.com",
-        "gh release create v0.1.0",
-        "gh repo edit --visibility public",
-    ],
-)
-def test_guard_bash_denies_dangerous_commands(command: str) -> None:
-    assert guard_bash.deny_reason(command) is not None
-
-
-@pytest.mark.parametrize(
-    "command",
-    [
-        "just check",
-        "git push -u origin agent/12-rng",
-        "git status",
-        "uv run pytest -q",
-        "git commit -m 'feat(sim): counter rng'",
-        "grep -r mainland docs/",
-        "cp .env.example .env.example.bak",
-    ],
-)
-def test_guard_bash_allows_normal_commands(command: str) -> None:
-    assert guard_bash.deny_reason(command) is None
-
 
 # --- guard_tests ------------------------------------------------------------------
 
@@ -63,26 +22,60 @@ def test_guard_bash_allows_normal_commands(command: str) -> None:
     "path",
     [
         "sim/tests/unit/test_rng.py",
-        "/repo/sim/src/aimpire/sim/rng_test.py",
+        "sim/src/aimpire/sim/rng_test.py",
         "client/web/src/map/projection.test.ts",
+        "client/web/src/map/projection.test.mts",
+        "client/web/src/__tests__/map.tsx",
         "client/web/e2e/map.spec.ts",
+        "client/web/e2e/map.spec.ts-snapshots/map-chromium.png",
+        "client/web/src/__snapshots__/x.snap",
+        "client/web/vitest.config.ts",
+        "client/web/playwright.config.ts",
         "fixtures/golden/shared_river.json",
         "sim/tests/conftest.py",
+        ".claude/hooks/guard_tests.py",
+        ".claude/agents/implementer.md",
+        "ruff.toml",
+        "tools/checks/repo_hygiene.py",
+        "ci/workflows/ci.yml",
+        ".github/workflows/ci.yml",
     ],
 )
-def test_test_and_fixture_paths_are_protected(path: str) -> None:
+def test_test_fixture_and_guardrail_paths_are_protected(path: str) -> None:
     assert guard_tests.is_protected_test_path(path)
 
 
 @pytest.mark.parametrize(
     "path",
-    ["sim/src/aimpire/sim/rng.py", "client/web/src/map/projection.ts", "docs/testing.md"],
+    [
+        "sim/src/aimpire/sim/rng.py",
+        "client/web/src/map/projection.ts",
+        "docs/testing.md",
+        "sim/tests/../src/aimpire/sim/x.py",
+    ],
 )
 def test_production_paths_are_not_protected(path: str) -> None:
     assert not guard_tests.is_protected_test_path(path)
 
 
-# --- post_edit_check ----------------------------------------------------------------
+def test_absolute_paths_are_relativized_to_the_project(tmp_path: Path) -> None:
+    root = tmp_path / "tests" / "aimpire"  # repo living under a dir named tests/
+    assert guard_tests.project_relative(str(root / "sim/src/a.py"), root) == "sim/src/a.py"
+    outside = guard_tests.project_relative("/elsewhere/tests/a.py", root)
+    assert outside == "/elsewhere/tests/a.py"
+
+
+# --- hook_io ----------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "event", [{}, {"tool_input": None}, {"tool_input": "x"}, {"tool_input": []}]
+)
+def test_tool_input_is_always_a_dict(event: dict[str, object]) -> None:
+    assert hook_io.tool_input(event) == {}
+
+
+# --- post_edit_check --------------------------------------------------------------
 
 
 def test_post_edit_flags_file_over_hard_limit(tmp_path: Path) -> None:
@@ -98,6 +91,12 @@ def test_post_edit_is_silent_for_small_file(tmp_path: Path) -> None:
     assert post_edit_check.size_feedback(path) is None
 
 
+def test_post_edit_respects_generated_exemption(tmp_path: Path) -> None:
+    path = tmp_path / "types.ts"
+    path.write_text("x;\n" * 900, encoding="utf-8")
+    assert post_edit_check.size_feedback(path, "client/web/src/contract/types.ts") is None
+
+
 # --- stop_check -------------------------------------------------------------------
 
 
@@ -107,6 +106,11 @@ def test_stop_reminds_when_code_changed_without_status() -> None:
 
 def test_stop_silent_when_status_updated() -> None:
     changed = ["sim/src/aimpire/sim/rng.py", "docs/agents/STATUS.md"]
+    assert not stop_check.needs_status_reminder(changed)
+
+
+def test_stop_silent_when_branch_handoff_written() -> None:
+    changed = ["sim/src/aimpire/sim/rng.py", "docs/agents/handoff-agent-12-rng.md"]
     assert not stop_check.needs_status_reminder(changed)
 
 
@@ -130,3 +134,7 @@ def test_session_context_includes_status_and_routine(tmp_path: Path) -> None:
 def test_session_context_survives_missing_status(tmp_path: Path) -> None:
     context = session_start.build_context(tmp_path, branch="main")
     assert "STATUS.md not found" in context
+
+
+def test_handoff_slug_flattens_branch_names() -> None:
+    assert session_start.handoff_path("agent/12-rng") == "docs/agents/handoff-agent-12-rng.md"

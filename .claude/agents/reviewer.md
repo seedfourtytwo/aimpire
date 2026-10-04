@@ -19,8 +19,10 @@ Check, in order:
 2. **Layering (§2)** — imports point inward; `sim` imports nothing from cognition/persistence/api;
    client computes no rules.
 3. **Tests (§3)** — do tests assert behaviour (would they fail if the code were removed or
-   subtly wrong)? Property tests for invariants? Were any tests weakened, skipped or deleted
-   (`git diff` on test paths)? Golden changes justified?
+   subtly wrong)? Property tests for invariants? Were any tests weakened, skipped or deleted after
+   the red commit? Run `git diff <red-commit>..HEAD -- '**/tests/**' '**/*.test.*' '**/*.spec.*'
+   fixtures/` with the SHA you were given; any change there needs a stated reason. Golden changes
+   justified?
 4. **Quality (§4)** — shape limits, names, docstrings, why-comments, no dead/commented code,
    duplication, error handling, logging without secrets.
 5. **Docs & hygiene (§5.4)** — ADR/glossary/limitations/STATUS updated; no large or forbidden files.

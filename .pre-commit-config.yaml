@@ -11,13 +11,13 @@ repos:
         pass_filenames: true
       - id: ruff-check-tools
         name: ruff check (tools, hooks)
-        entry: uvx ruff check
+        entry: uvx ruff@0.16.10 check
         language: system
         types: [python]
         files: ^(tools|\.claude/hooks)/
       - id: ruff-format-tools
         name: ruff format --check (tools, hooks)
-        entry: uvx ruff format --check
+        entry: uvx ruff@0.16.10 format --check
         language: system
         types: [python]
         files: ^(tools|\.claude/hooks)/

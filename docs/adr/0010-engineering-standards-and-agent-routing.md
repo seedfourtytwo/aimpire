@@ -42,9 +42,14 @@ Claude Code facts verified 2026-10-04 ([subagents](https://code.claude.com/docs/
      reminder. Path-scoped rules for sim, client and tests.
    - `just check-repo` runs all of the above. The new always-on CI job `repo` runs it on every PR
      and feeds `ci-ok`. prek runs the same checks as a local pre-commit hook.
-5. **UI standard:** `docs/agents/ui-rules.md` (Tufte integrity and data-ink, traceability,
+5. **Git workflow details:** rebase plus `git push --force-with-lease` is the only force-push allowed,
+   and only to feature branches. Red tests are committed before implementation and diffed in review.
+   Branch progress lives in per-branch handoff notes; `STATUS.md` is edited only in a PR's final
+   commit, own lines only. PR-title scopes gain `tools`, and AGENTS.md mirrors `pr-title.yml`.
+   Tool versions are pinned in the `justfile`.
+6. **UI standard:** `docs/agents/ui-rules.md` (Tufte integrity and data-ink, traceability,
    Okabe–Ito/viridis, WCAG 2.2 AA), audited by `ui-auditor`.
-6. **Shared vocabulary and sources:** `docs/glossary.md` and `docs/references.md`.
+7. **Shared vocabulary and sources:** `docs/glossary.md` and `docs/references.md`.
 
 ## Alternatives considered
 - **One model for everything** (Opus or Sonnet only): simpler, but either burns plan usage on

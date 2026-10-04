@@ -9,4 +9,6 @@ An honest, running list (AGENTS.md §4.3). Code marks these with `# SIMPLIFICATI
 | Cognition | One controller per civilization approximates collective decision-making; it does not model individual minds. | ADR-0008 | Declared in UI and exports; faction minds are a named extension point. |
 | Replay | Fresh reruns with live models are not reproducible; only recorded replay is hash-identical. | ADR-0004 | Labelled `LIVE` vs `RECORDED`; never compared by hash. |
 | Agent tooling | Claude Code hooks are guardrails, not security boundaries; an agent could route around them via other tools. | ADR-0010 | CI (`ci-ok`) and fresh-context review remain the gates. |
+| Agent tooling | `guard_bash.py` checks explicit refspecs; a bare `git push --force-with-lease` while checked out on `main` is not blocked. | ADR-0010 | Agents never work on `main` (AGENTS.md §5.2); the `main` ruleset (Q6) blocks force-pushes server-side. |
+| Agent tooling | No local secret scan before push yet. | ADR-0010 | Planned: gitleaks in `security.yml` (ADR-0006) and GitHub push protection (Q6). |
 | Agent tooling | Nesting depth (≤ 4) is not yet machine-checked for Python (ruff rule is preview-only). | ADR-0010 | Checked in review; enable when the rule is stable. |

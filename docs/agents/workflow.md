@@ -8,7 +8,7 @@
 5. **PR:**
    - The title is a Conventional Commit, e.g. `feat(sim): counter-based RNG`.
    - Fill in the template, including the determinism and schema impact lines.
-6. **Hand off:** update `STATUS.md`. If work remains, add `docs/agents/handoff-<branch>.md` (copy `handoff-template.md`).
+6. **Hand off:** update `STATUS.md`. If work remains, add `docs/agents/handoff-<slug>.md`, where the slug is the branch name with `/` → `-` (copy `handoff-template.md`). Edit `STATUS.md` only in the PR's final commit, own lines only.
 
 ## Hot files: one PR at a time, never mixed with feature work
 - `schema/`: the generated contracts. Make a schema-first PR, and merge it before dependent work.
@@ -18,7 +18,7 @@
 
 ## Parallel agents
 - **Split along module seams:** `sim/fields`, `sim/agents`, `sim/knowledge`, `cognition`, `persistence`, `client`.
-- **Rebase on `main` before opening a PR.** Never force-push to `main`.
+- **Rebase on `main` before opening a PR.** Update a pushed branch with `git push --force-with-lease` (the only allowed force-push). Never push to `main`.
 
 ## Definition of done
 The canonical checklist is [AGENTS.md §5.4](https://github.com/seedfourtytwo/aimpire/blob/main/AGENTS.md#54-definition-of-done-canonical--the-pr-template-and-dod-mirror-this).

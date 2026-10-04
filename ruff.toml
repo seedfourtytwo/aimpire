@@ -19,6 +19,9 @@ select = [
   "ERA",              # no commented-out code
   "T20",              # no print() outside CLIs
   "S",                # bandit security checks
+  "PLR2004",          # no magic numbers (AGENTS.md §4.2)
+  "TD003",            # every TODO links an issue
+  "ANN",              # full type hints
 ]
 ignore = [
   "D105", "D107",     # magic methods / __init__ documented on the class
@@ -38,6 +41,6 @@ max-returns = 6
 convention = "google"
 
 [lint.per-file-ignores]
-"**/tests/**" = ["D", "S101", "PLR2004"]      # asserts and literal numbers are fine in tests
+"**/tests/**" = ["D", "S101", "PLR2004", "S603", "S607"]  # asserts, literal numbers, subprocess of our own hooks
 "tools/checks/*.py" = ["T20", "S603", "S607"]  # CLI output; fixed git argv, no shell
 ".claude/hooks/*.py" = ["S603", "S607"]        # fixed argv, no shell

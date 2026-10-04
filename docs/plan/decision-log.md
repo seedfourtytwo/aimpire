@@ -22,4 +22,5 @@ One line per decision or assumption: date, item, source. Architecturally signifi
 | 2026-10-04 | Mandatory TDD with separate test-writer / implementer agents; hook blocks implementer from editing tests (ADR-0010) | creator request |
 | 2026-10-04 | Model routing: Opus (high/xhigh) plans and reviews, Sonnet implements, Haiku does doc chores (ADR-0010) | creator request |
 | 2026-10-04 | Shape limits: files ≤ 500 lines (target 300), ≤ 500 KB; functions ≤ 40 statements, complexity ≤ 12, ≤ 6 args; enforced by `repo_hygiene.py`, `ruff.toml`, CI job `repo` | creator request |
+| 2026-10-04 | `--force-with-lease` to feature branches is the only allowed force-push; PR-title scope `tools` added; STATUS.md edited only in a PR's final commit (ADR-0010) | review of ADR-0010 |
 | 2026-10-04 | UI follows Tufte rules, Okabe–Ito/viridis palettes and WCAG 2.2 AA (`docs/agents/ui-rules.md`) | creator request |

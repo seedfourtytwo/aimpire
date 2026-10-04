@@ -26,7 +26,9 @@ SOURCE_LINE_TARGET = 300
 SOURCE_LINE_HARD_LIMIT = 500
 MAX_FILE_BYTES = 500 * 1024
 
-SOURCE_SUFFIXES = frozenset({".py", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".gd", ".sh"})
+SOURCE_SUFFIXES = frozenset(
+    {".py", ".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs", ".css", ".sh"}
+)
 
 # Generated or vendored files: exempt from line limits (still size-checked).
 GENERATED_GLOBS = ("schema/*", "client/web/src/contract/*", "*.generated.*")
@@ -52,6 +54,13 @@ FORBIDDEN_GLOBS = (
     "*/.env.*",
     "*.pem",
     "*.key",
+    # run outputs: databases, blobs, saves, exports, logs (AGENTS.md §4.1)
+    "runs/*",
+    "*/runs/*",
+    "exports/*",
+    "saves/*",
+    "*.log",
+    "*.zst",
 )
 FORBIDDEN_EXCEPTIONS = (".env.example", "*/.env.example")
 
@@ -72,7 +81,7 @@ class Violation:
 
 
 def _matches(rel_path: str, globs: tuple[str, ...]) -> bool:
-    return any(fnmatch.fnmatch(rel_path, pattern) for pattern in globs)
+    return any(fnmatch.fnmatchcase(rel_path, pattern) for pattern in globs)
 
 
 def _check_forbidden(rel_path: str) -> Violation | None:
@@ -141,13 +150,14 @@ def check_paths(root: Path, rel_paths: list[str]) -> list[Violation]:
 def candidate_files(root: Path) -> list[str]:
     """Tracked files plus untracked-but-not-ignored ones (catches files before commit)."""
     result = subprocess.run(
-        ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
         cwd=root,
         check=True,
         capture_output=True,
         text=True,
     )
-    return [line for line in result.stdout.splitlines() if line]
+    # -z: NUL-separated and unquoted, so non-ASCII names are not mangled.
+    return [name for name in result.stdout.split("\0") if name]
 
 
 def main(argv: list[str] | None = None) -> int:

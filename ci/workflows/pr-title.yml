@@ -40,4 +40,5 @@ jobs:
             ci
             evals
             deps
+            tools
           requireScope: false
