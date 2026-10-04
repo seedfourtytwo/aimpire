@@ -16,7 +16,7 @@ docs-serve:
 
 # Lint GitHub workflows for security issues
 lint-workflows:
-    uvx zizmor --offline .github/workflows ci/workflows
+    uvx zizmor --offline $(ls -d .github/workflows ci/workflows 2>/dev/null)
 
 # Everything CI checks (grows as code lands)
 check: docs lint-workflows
