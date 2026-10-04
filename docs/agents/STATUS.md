@@ -2,13 +2,13 @@
 
 > Every agent session reads this first and updates it last.
 
-**Phase:** planning is done, including the planning review. Next is Phase 1: guard rails, then the foundation. See `docs/plan/roadmap.md` and `docs/plan/backlog.md`.
+**Phase:** Phase 1, foundation. F1 and F2 are done; next is F3 (ledger and invariants). See `docs/plan/roadmap.md` and `docs/plan/backlog.md`.
 **Last updated:** 2026-10-04 by the planning review session.
 
 ## Current state
 - **Goal:** emergence. See what civilizations, political orders and beliefs arise when the models decide for themselves (ADR-0019).
 - **Order (ADR-0015, accepted):** foundation F1–F6, then M0 petri dish, M1 seasons and a voice, M2 two tribes, M3 generations, M4 living world, M5 knowledge, M6–M8 society. This replaces the L0–L8 ladder order.
-- **Repo contents:** docs, ADRs 0001–0019, active CI, agent conventions, the backlog, and the `sim/` Python project skeleton (F1). No simulation logic yet.
+- **Repo contents:** docs, ADRs 0001–0019, active CI, agent conventions, the backlog, the `sim/` Python project (F1) and the deterministic core (F2). No world rules yet.
 - **ADR status:** 0001–0019 are all accepted (0011–0019 on 2026-10-04).
 - **Repo settings:** `main` is protected (PR required, `ci-ok` required, squash only, linear history). Pages source is GitHub Actions. Workflow token is read-only.
 
@@ -16,7 +16,7 @@
 - [ ] Creator: answer the remaining items in `docs/plan/open-questions.md`; push G1a (CI path check).
 - [ ] G1: guard rails (protected-path hook and CI check, acceptance-test folder). G1a needs the creator.
 - [x] F1: `sim/` uv project, package skeleton, CLI, guard-rail config and acceptance tests (PR #4).
-- [ ] F2: deterministic core (ADR-0011, ADR-0012).
+- [x] F2: deterministic core: `fixed` (F2a), `rng` (F2b), `calendar` and `rules` loader (F2c), `state` and `hashing` (F2d), `scheduler` (F2e). PRs #5–#9.
 - [ ] F3, then F4 and F5 in parallel, then F6.
 
 ## In flight
