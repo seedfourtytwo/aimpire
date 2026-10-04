@@ -118,9 +118,18 @@ The knobs are `world.gravity`, `world.sunlight`, `world.rain` and `world.tilt` (
 tagged `beyond-model`; a value outside the allowed range is refused with a message. Every
 change is recorded in the run, and `--set` games are tagged `exploratory`.
 
-**Coming soon: twin worlds.** `aimpire lab twin` is being built now. It will run the same seed
-twice, with and without your change, and show where the two worlds first part. Until it lands,
-run the same command with and without `--set` and compare the two notebooks.
+**Twin worlds.** `aimpire lab twin` runs the same seeds twice: once on Earth, once with your
+change, with the same mind. It then shows where the two worlds first part, and how the
+numbers differ:
+
+```bash
+uv run aimpire lab twin m0 --set world.gravity=900000 --mind rule:half_full --seeds 1-3 --years 2 --out ../runs/lab
+```
+
+It prints a first-divergence table per seed and the end-of-run differences, and writes
+`twin.md` with charts into the folder it names. At 0.9 g, for example, foragers bring in more
+per day (they carry more), so stores end higher, while survival is unchanged for `half_full`.
+Twin runs are exploration: a result counts only after a pre-registered re-run.
 
 ## 6. Play with a model on your laptop (free) **needs Ollama**
 
