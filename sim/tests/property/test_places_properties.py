@@ -4,7 +4,15 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from aimpire.sim.places import grid_blocks, place_of, places_by_id, tile_index, travel_ticks
+from aimpire.sim.places import (
+    grid_blocks,
+    lower_bound_ticks,
+    place_of,
+    places_by_id,
+    tile_index,
+    travel_ticks,
+    travel_ticks_within,
+)
 from aimpire.sim.state import WorldState
 
 
@@ -60,3 +68,18 @@ def test_neighbours_and_travel_symmetric(spec: tuple[int, int, int, int]) -> Non
             assert ab == travel_ticks(s, b, a)
             ca, cb = places[a].centroid, places[b].centroid
             assert ab >= abs(ca[0] - cb[0]) + abs(ca[1] - cb[1])
+
+
+@settings(max_examples=60, deadline=None)
+@given(maps(), st.data())
+def test_travel_within_bounds(spec: tuple[int, int, int, int], data: st.DataObject) -> None:
+    """Restricting the places never shortens a path, and the lower bound is a bound."""
+    s = _partition(*spec)
+    ids = list(places_by_id(s))
+    a, b = data.draw(st.sampled_from(ids)), data.draw(st.sampled_from(ids))
+    allowed = set(data.draw(st.lists(st.sampled_from(ids)))) | {a, b}
+    true = travel_ticks(s, a, b)
+    assert travel_ticks_within(s, a, b, set(ids)) == true
+    within = travel_ticks_within(s, a, b, allowed)
+    assert within is None or within >= true
+    assert lower_bound_ticks(s, a, b) <= true

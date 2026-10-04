@@ -5,10 +5,19 @@ could not have perceived (CLAUDE.md, truth / evidence / belief). So the
 builder takes its civilization-specific inputs only from
 ``aimpire.cognition.civ_record``, which reads that civilization's own ``civ``,
 ``evidence`` and ``message`` entities and nothing else. The only other state
-it reads is public geography from ``aimpire.sim.places``: place kind and
-the travel time between places. It never reads tile layers (a place's
-contents come from the civilization's last-seen snapshot), ``event``
-entities (world truth with ``hidden_cause``), or other civilizations.
+it reads is geography from ``aimpire.sim.places``: the kind of each known
+place and travel times. It never reads tile layers (a place's contents come
+from the civilization's last-seen snapshot), ``event`` entities (world truth
+with ``hidden_cause``), or other civilizations. Place names come from the
+civilization's own ``names`` map; place entities carry none.
+
+Travel times use only routes through places this civilization knows, plus its
+camp (``travel_ticks_within``). The true shortest path could run through a
+place it has never seen, and its length would reveal that place. If the known
+places do not connect, the time shown is ``lower_bound_ticks``: the Manhattan
+distance between the two known centroids, which uses the endpoints' geometry
+only and never exceeds the true time. So adding, removing or reshaping an
+unseen place leaves the observation unchanged.
 
 Consequences, checked by the F5c acceptance tests:
 
@@ -58,7 +67,7 @@ from aimpire.contracts.mind import (
 )
 from aimpire.contracts.vocabulary import MAX_EVENTS
 from aimpire.sim.calendar import Calendar
-from aimpire.sim.places import places_by_id, travel_ticks
+from aimpire.sim.places import lower_bound_ticks, places_by_id, travel_ticks_within
 from aimpire.sim.state import WorldState
 
 FOOD: Final = "food"
@@ -120,9 +129,16 @@ def _seen_text(seen: Stock) -> str:
     return ", ".join(f"{m} {_units(mu)}" for m, mu in seen) or "nothing"
 
 
+def _known_travel(state: WorldState, camp: str, pid: str, allowed: frozenset[str]) -> int:
+    """Days from the camp using known places only; the lower bound if they do not connect."""
+    found = travel_ticks_within(state, camp, pid, allowed)
+    return lower_bound_ticks(state, camp, pid) if found is None else found
+
+
 def _places(state: WorldState, civ: CivRecord) -> list[PlaceView]:
     geography = places_by_id(state)
     names = dict(civ.names)
+    allowed = frozenset(pid for pid, _, _ in civ.known) | {civ.camp}
     views: list[PlaceView] = []
     for pid, seen_tick, seen in civ.known:
         if pid not in geography:
@@ -132,7 +148,7 @@ def _places(state: WorldState, civ: CivRecord) -> list[PlaceView]:
                 place_id=pid,
                 name=names.get(pid, ""),
                 kind=geography[pid].kind,
-                travel_ticks=travel_ticks(state, civ.camp, pid),
+                travel_ticks=_known_travel(state, civ.camp, pid, allowed),
                 last_seen_tick=seen_tick,
                 seen=_seen_text(seen),
             )

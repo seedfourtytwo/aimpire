@@ -15,7 +15,7 @@ from aimpire.cognition.render import GridLayout, render_grid, render_places, sys
 from aimpire.contracts.vocabulary import MAX_EVENTS
 from aimpire.sim.calendar import Calendar
 from aimpire.sim.hashing import state_hash
-from aimpire.sim.places import grid_blocks
+from aimpire.sim.places import grid_blocks, travel_ticks_within
 from aimpire.sim.state import WorldState
 
 CAL = Calendar(ticks_per_season=30, seasons_per_year=4)
@@ -88,6 +88,23 @@ def test_places_sorted_with_own_names_and_travel() -> None:
     assert [p.name for p in obs.places] == ["", "Ash", ""]
     assert obs.places[0].travel_ticks == 0 and obs.places[0].seen == "food 2"
     assert obs.places[2].travel_ticks > obs.places[1].travel_ticks
+
+
+def test_travel_falls_back_to_lower_bound_when_known_places_do_not_connect() -> None:
+    # 3 rows by 2 columns; PL06 is known but PL03 to PL05 are not, so no known route.
+    known = {pid: {"seen_tick": 0, "seen": {}} for pid in ("PL01", "PL06")}
+    state = _state(known=known)
+    assert travel_ticks_within(state, "PL01", "PL06", {"PL01", "PL06"}) is None
+    obs = build_observation(state, _call(), CAL)
+    # Centroids (0, 1) and (4, 4): Manhattan distance 7.
+    assert {p.place_id: p.travel_ticks for p in obs.places} == {"PL01": 0, "PL06": 7}
+
+
+def test_camp_counts_as_known_for_routes() -> None:
+    # The camp PL01 is not in "known", but routes may start there.
+    known = {"PL02": {"seen_tick": 0, "seen": {}}}
+    obs = build_observation(_state(known=known), _call(), CAL)
+    assert obs.places[0].travel_ticks == 3
 
 
 def test_empty_snapshot_reads_nothing() -> None:

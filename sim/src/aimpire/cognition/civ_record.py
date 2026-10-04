@@ -23,7 +23,9 @@ milli-units, 1000 mu = one unit, and one unit of food = one person-day):
     ``known``         ``{place_id: {"seen_tick": int, "seen": {material: mu}}}``:
                       places the civilization knows and its last-seen snapshot
                       of them, never the live tile values
-    ``names``         ``{place_id: text}``: this civilization's own names
+    ``names``         ``{place_id: text}``: this civilization's own names. The
+                      only place names in the state; place entities have none
+                      (``aimpire.sim.places.set_civ_name`` writes here)
     ``policy``        ``{"allocations": [[activity, place, share‰]], "ration": ‰}``
                       (``StandingPolicy.to_value``)
     ``tasks``         ``[[task_id, kind, place, qty, status]]``

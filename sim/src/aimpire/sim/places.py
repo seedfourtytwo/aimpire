@@ -17,8 +17,12 @@ Stored fields of a place entity (ints and strings only, ADR-0012):
     ``tiles``       ``[[row, col], ...]`` in row-major order.
     ``centroid``    ``[row, col]``, the floor of the mean tile coordinate.
     ``neighbours``  sorted place ids that share at least one tile edge.
-    ``name``        text a civilization gave the place; ``""`` until then.
-                    Names are text only and never touch physics (ADR-0019).
+
+Names: a place entity has no name. A name is what one civilization calls a
+place, so it lives in that civilization's own ``civ`` entity, under
+``names[place_id]`` (``set_civ_name``). A shared field would let one
+civilization's names reach another's observation from M2 on. Names are text
+only: no rule reads them (ADR-0019).
 
 Partition ``grid_blocks``: the map is cut into ``rows // block_rows`` by
 ``cols // block_cols`` rectangles. Leftover rows and columns are absorbed by the
@@ -33,18 +37,30 @@ centroids: tile steps, at one tile per tick until movement rules set a speed.
 With unit weights this would be breadth-first search; weighting keeps the
 oversized remainder blocks honest. The shortest distance is unique, so the
 result is symmetric whatever the tie-breaking (equal entries pop by place id).
+``travel_ticks`` is the true world distance, for physics and execution.
+
+What a mind is told is ``travel_ticks_within``: the same search restricted to
+an allowed set of places (the civilization's known places plus its camp), so a
+path length never reveals a place the civilization has not seen. When the
+known places do not connect, ``lower_bound_ticks`` gives the Manhattan
+distance between the two centroids. It reads the two endpoints only, and it
+never exceeds the true distance: every hop costs the Manhattan distance between
+its centroids, so by the triangle inequality any path costs at least that. On
+``grid_blocks`` it equals the block distance times the block step.
 
 Out of scope: per-seed coined place names for the unfamiliar-world arm
 (ADR-0018 section 3) belong to prompt rendering and parsing, not to the state.
 """
 
 import heapq
+from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from typing import Final
 
 from aimpire.sim.state import Entity, Value, WorldState
 
 PLACE: Final = "place"
+CIV: Final = "civ"
 LAND: Final = "land"
 PETRI_BLOCK: Final = 16
 _PREFIX: Final = "PL"
@@ -63,7 +79,6 @@ class Place:
     tiles: tuple[Tile, ...]
     centroid: Tile
     neighbours: tuple[str, ...]
-    name: str
 
 
 def _int(value: Value, where: str) -> int:
@@ -102,7 +117,6 @@ def _view(entity_id: int, entity: Entity) -> Place:
         neighbours=tuple(
             _str(n, f"{where}.neighbours") for n in _list(entity.get("neighbours"), where)
         ),
-        name=_str(entity.get("name"), f"{where}.name"),
     )
 
 
@@ -191,35 +205,39 @@ def grid_blocks(state: WorldState, block_rows: int, block_cols: int) -> list[int
             "tiles": [[r, c] for r, c in tiles],
             "centroid": [cr, cc],
             "neighbours": list[Value](links[pid]),
-            "name": "",
         }
         ids.append(state.add_entity(PLACE, fields))
     return ids
 
 
-def set_name(state: WorldState, place_id: str, name: str) -> None:
-    """Record a civilization's name for a place. Text only: no rule reads it."""
+def set_civ_name(state: WorldState, civ_id: str, place_id: str, name: str) -> None:
+    """Record what ``civ_id`` calls ``place_id``, in that civ's own ``names`` map.
+
+    Text only: no rule reads it. ``KeyError`` for an unknown place or civ.
+    """
     if type(name) is not str:
         raise TypeError("a place name must be a str")
-    place = places_by_id(state).get(place_id)
-    if place is None:
+    if place_id not in places_by_id(state):
         raise KeyError(f"unknown place {place_id!r}")
-    state.entities[place.entity_id]["name"] = name
+    found = [
+        e for e in state.entities.values() if e.get("kind") == CIV and e.get("civ_id") == civ_id
+    ]
+    if len(found) != 1:
+        raise KeyError(f"expected one civ entity for {civ_id!r}, found {len(found)}")
+    names = found[0].setdefault("names", {})
+    if not isinstance(names, dict):
+        raise TypeError(f"civ {civ_id}.names must be a mapping")
+    names[place_id] = name
 
 
 def _step(a: Tile, b: Tile) -> int:
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 
-def travel_ticks(state: WorldState, from_place: str, to_place: str) -> int:
-    """Tile steps between two centroids along the neighbour graph (see module docstring).
-
-    ``KeyError`` for an unknown place; ``ValueError`` if the two are not connected.
-    """
-    places = places_by_id(state)
-    for pid in (from_place, to_place):
-        if pid not in places:
-            raise KeyError(f"unknown place {pid!r}")
+def _shortest(
+    places: dict[str, Place], from_place: str, to_place: str, allowed: AbstractSet[str] | None
+) -> int | None:
+    """Dijkstra over the neighbour graph, entering only ``allowed`` places (all if None)."""
     best: dict[str, int] = {from_place: 0}
     frontier: list[tuple[int, str]] = [(0, from_place)]
     while frontier:
@@ -230,8 +248,50 @@ def travel_ticks(state: WorldState, from_place: str, to_place: str) -> int:
             continue
         here = places[pid]
         for other in here.neighbours:
+            if allowed is not None and other not in allowed:
+                continue
             new = dist + _step(here.centroid, places[other].centroid)
             if other not in best or new < best[other]:
                 best[other] = new
                 heapq.heappush(frontier, (new, other))
-    raise ValueError(f"no path from {from_place} to {to_place}")
+    return None
+
+
+def _endpoints(state: WorldState, *pids: str) -> dict[str, Place]:
+    places = places_by_id(state)
+    for pid in pids:
+        if pid not in places:
+            raise KeyError(f"unknown place {pid!r}")
+    return places
+
+
+def travel_ticks(state: WorldState, from_place: str, to_place: str) -> int:
+    """True tile steps between two centroids along the neighbour graph (module docstring).
+
+    ``KeyError`` for an unknown place; ``ValueError`` if the two are not connected.
+    """
+    found = _shortest(_endpoints(state, from_place, to_place), from_place, to_place, None)
+    if found is None:
+        raise ValueError(f"no path from {from_place} to {to_place}")
+    return found
+
+
+def travel_ticks_within(
+    state: WorldState, from_place: str, to_place: str, allowed: AbstractSet[str]
+) -> int | None:
+    """Like ``travel_ticks``, but every place on the path must be in ``allowed``.
+
+    ``None`` if no such path exists. ``KeyError`` for an unknown place;
+    ``ValueError`` if an endpoint is not in ``allowed``.
+    """
+    places = _endpoints(state, from_place, to_place)
+    for pid in (from_place, to_place):
+        if pid not in allowed:
+            raise ValueError(f"{pid} is not in the allowed places")
+    return _shortest(places, from_place, to_place, allowed)
+
+
+def lower_bound_ticks(state: WorldState, from_place: str, to_place: str) -> int:
+    """Manhattan distance between the two centroids: never more than ``travel_ticks``."""
+    places = _endpoints(state, from_place, to_place)
+    return _step(places[from_place].centroid, places[to_place].centroid)

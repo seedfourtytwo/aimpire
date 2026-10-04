@@ -29,6 +29,7 @@ import types
 import typing
 from typing import Any
 
+import numpy as np
 import pytest
 from pydantic import BaseModel
 
@@ -41,6 +42,7 @@ from aimpire.cognition.observe import (
 from aimpire.cognition.render import render_grid, render_places, system_prompt
 from aimpire.contracts.mind import Observation
 from aimpire.sim.calendar import Calendar
+from aimpire.sim.places import grid_blocks, places_by_id, set_civ_name, travel_ticks
 from aimpire.sim.state import WorldState
 
 pytestmark = pytest.mark.acceptance
@@ -224,6 +226,48 @@ def test_other_group_state_does_not_change_observation_hash() -> None:
     own = build()
     _civ(own, "C01")["journal"] = "A different note."
     assert observation_hash(_observe(own)) != observation_hash(before)
+
+
+def test_place_names_are_per_civ() -> None:
+    """Civ B's name for a place both civs know never reaches civ A (decision log, F5c fix)."""
+    state = build()
+    set_civ_name(state, "C02", "PL03", "B calls it " + SECRET)
+    set_civ_name(state, "C02", "PL04", "B home " + SECRET)
+    obs = _observe(state)
+    for text in (*_renders(state), obs.model_dump_json()):
+        assert SECRET not in text, "another civilization's place name leaked"
+        assert "Red Hollow" in text
+    assert {p.place_id: p.name for p in obs.places} == {
+        "PL01": "Red Hollow", "PL02": "", "PL03": "",
+    }  # fmt: skip
+    assert observation_hash(obs) == observation_hash(_observe(build()))
+
+
+def _detour_world(with_shortcut: bool) -> WorldState:
+    """PL01 PL02 PL03 / PL04 PL05 PL06; C01 knows all but PL02, the shortcut to PL03."""
+    s = WorldState(run_seed=42, rules_version="v1", rules_hash="abc")
+    s.add_layer("food", np.zeros((4, 6), dtype=np.int64))
+    grid_blocks(s, 2, 2)
+    known = ["PL01", "PL04", "PL05", "PL06", "PL03"]
+    s.add_entity("civ", _ns["civ"]("C01", "PL01", known, "Scouts went east."))
+    if not with_shortcut:
+        del s.entities[places_by_id(s)["PL02"].entity_id]
+        for entity in s.entities.values():
+            if entity.get("kind") == "place":
+                entity["neighbours"] = [n for n in entity["neighbours"] if n != "PL02"]  # type: ignore[union-attr]
+    s.tick = 40
+    return s
+
+
+def test_travel_time_ignores_unknown_places() -> None:
+    """Path lengths shown to a mind run only through places it knows."""
+    with_cut, without_cut = _detour_world(True), _detour_world(False)
+    assert travel_ticks(with_cut, "PL01", "PL03") != travel_ticks(without_cut, "PL01", "PL03")
+    a, b = _observe(with_cut), _observe(without_cut)
+    assert observation_hash(a) == observation_hash(b)
+    assert render_places(a) == render_places(b)
+    shown = {p.place_id: p.travel_ticks for p in a.places}
+    assert shown["PL03"] == 8, "the detour through known places, not the unseen shortcut"
 
 
 # --- Determinism ----------------------------------------------------------
