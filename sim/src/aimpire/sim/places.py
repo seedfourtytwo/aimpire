@@ -43,7 +43,10 @@ one). Both are the true world distance, for physics and execution.
 
 What a mind is told is ``travel_ticks_within``: the same search restricted to
 an allowed set of places (the civilization's known places plus its camp), so a
-path length never reveals a place the civilization has not seen. When the
+path length never reveals a place the civilization has not seen. It takes the
+world's W0 walking speed, so the days a mind is shown are the days the walk
+takes: people experience how long walking takes, not the constant behind it
+(ADR-0020 section 7). When the
 known places do not connect, ``lower_bound_ticks`` gives the Manhattan
 distance between the two centroids, in ticks. It reads the two endpoints
 only, and it never exceeds the true time: every hop costs the Manhattan
@@ -59,6 +62,7 @@ import heapq
 from collections.abc import Set as AbstractSet
 from typing import Final
 
+from aimpire.sim.fixed import PPM
 from aimpire.sim.place_view import PLACE, Place, Tile, place_of, places_by_id, tile_index
 from aimpire.sim.scale import map_scale
 from aimpire.sim.state import Value, WorldState
@@ -223,23 +227,36 @@ def travel_ticks(state: WorldState, from_place: str, to_place: str) -> int:
 
 
 def travel_ticks_within(
-    state: WorldState, from_place: str, to_place: str, allowed: AbstractSet[str]
+    state: WorldState,
+    from_place: str,
+    to_place: str,
+    allowed: AbstractSet[str],
+    walk_speed: int = PPM,
 ) -> int | None:
     """Like ``travel_ticks``, but every place on the path must be in ``allowed``.
 
-    ``None`` if no such path exists. ``KeyError`` for an unknown place;
-    ``ValueError`` if an endpoint is not in ``allowed``.
+    ``walk_speed`` is the W0 walking speed in ppm of Earth (default: Earth),
+    so the ticks match what a walk of that path takes in the world
+    (``survey.walk_ticks``). ``None`` if no such path exists. ``KeyError`` for
+    an unknown place; ``ValueError`` if an endpoint is not in ``allowed``.
     """
     places = _endpoints(state, from_place, to_place)
     for pid in (from_place, to_place):
         if pid not in allowed:
             raise ValueError(f"{pid} is not in the allowed places")
     tiles = _shortest(places, from_place, to_place, allowed)
-    return None if tiles is None else map_scale(state).ticks(tiles)
+    return None if tiles is None else map_scale(state).ticks(tiles, walk_speed)
 
 
-def lower_bound_ticks(state: WorldState, from_place: str, to_place: str) -> int:
-    """Manhattan distance between the two centroids in ticks: never more than ``travel_ticks``."""
+def lower_bound_ticks(
+    state: WorldState, from_place: str, to_place: str, walk_speed: int = PPM
+) -> int:
+    """Manhattan distance between the two centroids in ticks: never more than the true walk.
+
+    At the same ``walk_speed`` (ppm of Earth), it never exceeds ``travel_ticks``
+    (Earth) or ``survey.walk_ticks``: the tile bound holds, and the conversion
+    to ticks is monotone.
+    """
     places = _endpoints(state, from_place, to_place)
     tiles = _step(places[from_place].centroid, places[to_place].centroid)
-    return map_scale(state).ticks(tiles)
+    return map_scale(state).ticks(tiles, walk_speed)

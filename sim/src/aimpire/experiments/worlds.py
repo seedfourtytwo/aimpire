@@ -16,6 +16,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from aimpire.sim.calendar import Calendar
+from aimpire.sim.fixed import PPM
 from aimpire.sim.scheduler import Scheduler
 from aimpire.sim.state import WorldState
 
@@ -28,6 +29,9 @@ class World:
     scheduler: Scheduler
     calendar: Calendar
     civs: tuple[tuple[str, int], ...]
+    walk_speed: int = PPM
+    """The W0 walking speed the systems use, ppm of Earth: pass it to ``seats_for``
+    so observed travel days match simulated ones (Earth for a world without overrides)."""
 
 
 PresetFactory = Callable[[int, int], World]

@@ -204,6 +204,7 @@ def _drive(  # noqa: PLR0913 (one run's parts)
         every_ticks=opts.council_every,
         renderer=opts.renderer,
         system=system_prompt(),
+        walk_speed=world.walk_speed,
     )
     asyncio.run(
         run_with_councils(

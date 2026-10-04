@@ -7,7 +7,8 @@ bind the ``m0`` preset to the same rules and W0 rates:
 
     world = build_m0_run(seed, rules_dir, settings=args.set)
     seats = [Seat(civ, eid, mind, provider) for civ, eid in world.civs]
-    await run_with_councils(world.state, world.scheduler, seats_for=seats_for(seats, ...), ...)
+    build = seats_for(seats, walk_speed=world.walk_speed, ...)
+    await run_with_councils(world.state, world.scheduler, seats_for=build, ...)
 
 ``World.civs`` is ``(civ_id, entity_id)`` in seat order (``C1``, ``C2``, ...).
 The same seed, rules directory and settings always give the same state hash.
@@ -63,4 +64,10 @@ def build_m0_run(
         calendar,
         quantities=m0_quantities() if checked else None,
     )
-    return World(state=state, scheduler=scheduler, calendar=calendar, civs=tuple(civs))
+    return World(
+        state=state,
+        scheduler=scheduler,
+        calendar=calendar,
+        civs=tuple(civs),
+        walk_speed=resolved.derived.walk_speed,
+    )

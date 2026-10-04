@@ -19,6 +19,11 @@ distance between the two known centroids, which uses the endpoints' geometry
 only and never exceeds the true time. So adding, removing or reshaping an
 unseen place leaves the observation unchanged.
 
+Days are counted at the world's walking speed (``walk_speed``, the W0 rate in
+ppm of Earth that the systems use), so the days shown are the days a walk
+takes: a mind meets gravity as slow or quick walking, never as a number
+(ADR-0020 section 7). The caller passes the run's own rate; the default is Earth.
+
 Consequences, checked by the F5c acceptance tests:
 
 * changing another civilization's private state, a truth event or an unseen
@@ -67,6 +72,7 @@ from aimpire.contracts.mind import (
 )
 from aimpire.contracts.vocabulary import MAX_EVENTS
 from aimpire.sim.calendar import Calendar
+from aimpire.sim.fixed import PPM
 from aimpire.sim.places import lower_bound_ticks, places_by_id, travel_ticks_within
 from aimpire.sim.state import WorldState
 
@@ -129,13 +135,15 @@ def _seen_text(seen: Stock) -> str:
     return ", ".join(f"{m} {_units(mu)}" for m, mu in seen) or "nothing"
 
 
-def _known_travel(state: WorldState, camp: str, pid: str, allowed: frozenset[str]) -> int:
+def _known_travel(
+    state: WorldState, camp: str, pid: str, allowed: frozenset[str], walk_speed: int
+) -> int:
     """Days from the camp using known places only; the lower bound if they do not connect."""
-    found = travel_ticks_within(state, camp, pid, allowed)
-    return lower_bound_ticks(state, camp, pid) if found is None else found
+    found = travel_ticks_within(state, camp, pid, allowed, walk_speed)
+    return lower_bound_ticks(state, camp, pid, walk_speed) if found is None else found
 
 
-def _places(state: WorldState, civ: CivRecord) -> list[PlaceView]:
+def _places(state: WorldState, civ: CivRecord, walk_speed: int) -> list[PlaceView]:
     geography = places_by_id(state)
     names = dict(civ.names)
     allowed = frozenset(pid for pid, _, _ in civ.known) | {civ.camp}
@@ -148,7 +156,7 @@ def _places(state: WorldState, civ: CivRecord) -> list[PlaceView]:
                 place_id=pid,
                 name=names.get(pid, ""),
                 kind=geography[pid].kind,
-                travel_ticks=_known_travel(state, civ.camp, pid, allowed),
+                travel_ticks=_known_travel(state, civ.camp, pid, allowed, walk_speed),
                 last_seen_tick=seen_tick,
                 seen=_seen_text(seen),
             )
@@ -213,8 +221,13 @@ def observation_hash(obs: Observation) -> str:
     return hashlib.blake2b(data, digest_size=32, person=_HASH_PERSON).hexdigest()
 
 
-def build_observation(state: WorldState, call: CouncilCall, calendar: Calendar) -> Observation:
-    """The observation for ``call.civ_id`` at ``state.tick``. Reads, never writes, the state."""
+def build_observation(
+    state: WorldState, call: CouncilCall, calendar: Calendar, *, walk_speed: int = PPM
+) -> Observation:
+    """The observation for ``call.civ_id`` at ``state.tick``. Reads, never writes, the state.
+
+    ``walk_speed`` is the run's W0 walking speed, ppm of Earth (module docstring).
+    """
     civ = read_civ(state, call.civ_id)
     draft = Observation(
         contract=CONTRACT_VERSION,
@@ -223,7 +236,7 @@ def build_observation(state: WorldState, call: CouncilCall, calendar: Calendar) 
         version="",
         calendar=_calendar(state, call, calendar),
         status=_status(civ),
-        places=_places(state, civ),
+        places=_places(state, civ, walk_speed),
         events=_events(state, civ),
         messages=_messages(state, civ),
         standing=_standing(civ),
