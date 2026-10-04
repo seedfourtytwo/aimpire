@@ -1,0 +1,52 @@
+<!doctype html>
+<!--
+  Aimpire replay player (F4b, ADR-0010). Static: no build step, no libraries.
+  Plays one aimpire-replay-v1 JSON file: a tile layer and entity dots per tick.
+
+  Open it from any static server, for example from the repo root:
+      python3 -m http.server -d client/replay 8000   then visit http://127.0.0.1:8000/
+  ?src=<url> loads another replay; the default is fixtures/wander.json.
+  Opened straight from disk (file://), browsers block fetch: use the file picker.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aimpire replay</title>
+<style>
+  :root { color-scheme: light dark; --ink: #222; --muted: #777; --bg: #fbfbf8; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #ddd; --muted: #999; --bg: #151515; }
+  }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--ink);
+         font: 13px/1.5 system-ui, sans-serif; }
+  #view { display: block; margin: 8px 0; image-rendering: pixelated;
+          image-rendering: crisp-edges; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; max-width: 100%; }
+  .bar input[type=range] { flex: 1 1 160px; min-width: 120px; }
+  button, select, input { font: inherit; }
+  .muted { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .swatch { display: inline-block; width: 8px; height: 8px; margin: 0 3px 0 8px; }
+</style>
+</head>
+<body>
+<div id="meta" class="muted">loading…</div>
+<canvas id="view" width="1" height="1" aria-label="Replay frame"></canvas>
+<div class="bar">
+  <button id="play" type="button">Play</button>
+  <button id="back" type="button" aria-label="Step back">&lsaquo;</button>
+  <button id="step" type="button" aria-label="Step forward">&rsaquo;</button>
+  <input id="slider" type="range" min="0" max="0" value="0" aria-label="Frame">
+  <label class="muted">speed
+    <select id="speed">
+      <option value="2">2</option>
+      <option value="5">5</option>
+      <option value="10" selected>10</option>
+      <option value="30">30</option>
+    </select> ticks/s</label>
+  <label class="muted">open <input id="file" type="file" accept=".json,application/json"></label>
+</div>
+<div id="status" class="muted"></div>
+<script src="player.js"></script>
+</body>
+</html>
