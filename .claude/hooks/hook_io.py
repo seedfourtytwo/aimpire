@@ -3,6 +3,10 @@
 Layer: agent tooling (stdlib only). Hook contract per Claude Code docs
 (https://code.claude.com/docs/en/hooks, checked 2026-10-04): the event arrives
 as JSON on stdin; JSON on stdout with exit code 0 carries decisions/context.
+PreToolUse denies via `hookSpecificOutput.permissionDecision: "deny"`; SessionStart,
+PostToolUse and Stop accept `hookSpecificOutput.additionalContext` (for Stop the docs
+describe it as non-error feedback that continues the conversation); PostToolUse
+`decision: "block"` with a `reason` feeds the reason back to Claude.
 
 Must never: print secrets or tool input back verbatim, or crash. Every hook
 runs through `run_hook`, which fails open (exit 0, note on stderr): a broken

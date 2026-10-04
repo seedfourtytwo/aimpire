@@ -1,11 +1,14 @@
-"""Split a Bash command string into per-command argv lists.
+"""Split a Bash command string into simple commands (env assignments + argv).
 
 Layer: agent tooling (stdlib only). Used by `guard_bash.py` so rules match
-real commands, not text: quoted strings stay single tokens, heredoc bodies
-are dropped (they are data), and `;`, `&&`, `||`, `|` and unquoted newlines
-separate commands.
+real commands, not text:
+- quoted strings stay single tokens; heredoc bodies are dropped (data);
+- `;`, `&&`, `||`, `|`, `(`, `)` and unquoted newlines separate commands;
+- `$(...)` and backtick substitutions are extracted as extra commands;
+- wrappers and keywords (`timeout 30`, `nice -n 5`, `sudo`, `then`, `do`, `!`,
+  `{`) are stripped so the real command is what rules see.
 
-Must never: execute or expand anything. This is a best-effort tokenizer for
+Must never: execute or expand anything. A best-effort tokenizer for
 guardrails, not a full shell parser; CI remains the real gate.
 """
 
@@ -13,12 +16,25 @@ from __future__ import annotations
 
 import re
 import shlex
+from typing import NamedTuple
 
 _HEREDOC = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_]\w*)\1")
+_SUBSTITUTION = re.compile(r"\$\(([^()]*)\)|`([^`]*)`")
 _SEPARATOR = re.compile(r"^[;&|()]+$")
 _ASSIGNMENT = re.compile(r"^[A-Za-z_]\w*=")
-# Words that run the command after them (`sudo git push` is still `git push`).
-_RUNNERS = frozenset({"sudo", "command", "exec", "time", "nohup", "xargs"})
+# Words dropped before the real command (no argument of their own).
+_PREFIX_WORDS = frozenset(
+    {"sudo", "command", "exec", "time", "nohup", "xargs", "do", "then", "else", "elif"}
+    | {"if", "while", "until", "!", "{", "}", "stdbuf", "nice", "timeout", "env"}
+)
+_DURATION = re.compile(r"^\d+(\.\d+)?[smhd]?$")
+
+
+class Command(NamedTuple):
+    """One simple command: leading `VAR=value` assignments and the argv."""
+
+    env: tuple[str, ...]
+    argv: list[str]
 
 
 def strip_heredocs(command: str) -> str:
@@ -70,37 +86,54 @@ def _tokens(text: str) -> list[str]:
         return re.sub(r"([;&|]+)", r" \1 ", text).split()
 
 
-def _effective_argv(argv: list[str]) -> list[str]:
-    """Strip leading `VAR=value` assignments, `env [VAR=..]` and runner words."""
+def _skip_wrapper_args(word: str, argv: list[str], index: int) -> int:
+    """Index after a wrapper's own options/arguments (`timeout 30`, `nice -n 5`)."""
+    while index < len(argv) and (argv[index].startswith("-") or _ASSIGNMENT.match(argv[index])):
+        takes_value = argv[index] in {"-n", "-s", "-k", "--signal", "--kill-after", "-u"}
+        index += 2 if takes_value else 1
+    if word == "timeout" and index < len(argv) and _DURATION.match(argv[index]):
+        index += 1
+    return index
+
+
+def _split_command(words: list[str]) -> Command:
+    """Separate leading assignments and wrapper words from the real argv."""
+    env: list[str] = []
     index = 0
-    while index < len(argv):
-        word = argv[index]
-        if _ASSIGNMENT.match(word) or word in _RUNNERS:
+    while index < len(words):
+        word = words[index]
+        if _ASSIGNMENT.match(word):
+            env.append(word)
             index += 1
-        elif word == "env" and index + 1 < len(argv):
-            index += 1
-            while index < len(argv) and (
-                argv[index].startswith("-") or _ASSIGNMENT.match(argv[index])
-            ):
-                index += 1
-            if index == len(argv):
-                return ["env"]  # `env VAR=1` with no command still prints the environment
+        elif word in _PREFIX_WORDS:
+            end = _skip_wrapper_args(word, words, index + 1)
+            env.extend(w for w in words[index + 1 : end] if _ASSIGNMENT.match(w))
+            if word == "env" and end >= len(words):
+                return Command(tuple(env), ["env"])  # bare `env` prints the environment
+            index = end
         else:
             break
-    return argv[index:]
+    return Command(tuple(env), words[index:])
 
 
-def segments(command: str) -> list[list[str]]:
-    """Return one argv list per simple command in `command`."""
-    text = _newlines_to_separators(strip_heredocs(command))
-    result: list[list[str]] = []
+def commands(command: str) -> list[Command]:
+    """Return every simple command in `command`, including substitutions."""
+    text = strip_heredocs(command)
+    inner = [a or b for a, b in _SUBSTITUTION.findall(text)]
+    text = text.replace("`", " ; ") + "".join(f" ; {part}" for part in inner)
+    result: list[Command] = []
     current: list[str] = []
-    for token in [*_tokens(text), ";"]:
+    for token in [*_tokens(_newlines_to_separators(text)), ";"]:
         if _SEPARATOR.match(token):
-            argv = _effective_argv(current)
-            if argv:
-                result.append(argv)
+            parsed = _split_command(current)
+            if parsed.argv or parsed.env:
+                result.append(parsed)
             current = []
         else:
             current.append(token)
     return result
+
+
+def segments(command: str) -> list[list[str]]:
+    """Argv lists only (convenience for callers that ignore assignments)."""
+    return [c.argv for c in commands(command) if c.argv]

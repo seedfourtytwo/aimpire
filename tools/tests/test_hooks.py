@@ -39,6 +39,12 @@ import stop_check
         "tools/checks/repo_hygiene.py",
         "ci/workflows/ci.yml",
         ".github/workflows/ci.yml",
+        "sim/pyproject.toml",
+        "justfile",
+        "AGENTS.md",
+        "CLAUDE.md",
+        ".pre-commit-config.yaml",
+        ".gitignore",
     ],
 )
 def test_test_fixture_and_guardrail_paths_are_protected(path: str) -> None:

@@ -63,13 +63,16 @@ Loaded automatically when you read or edit matching files: `sim-core.md` (sim, r
 ## Hooks (`.claude/hooks/`, tested in `tools/tests/`)
 
 - **SessionStart** — injects the branch, the session routine and the head of `STATUS.md`.
-- **PreToolUse(Bash)** — `guard_bash.py` parses each command (quotes, heredocs, chains) and blocks
+- **PreToolUse(Bash)** — `guard_bash.py` parses each command (quotes, heredocs, chains, wrappers,
+  substitutions, `bash -c`/`eval`) and blocks
   pushes to `main`, force-push other than `--force-with-lease`, remote branch deletion, skipped
-  hooks, destructive git, `.env` reads, printed or literal credentials, PR merge/approve, releases
-  and visibility changes.
-- **PostToolUse(Edit|Write)** — formats Python with ruff (if installed) and flags files over the
-  500-line limit.
-- **Stop** — reminds once per session to update `STATUS.md` when code changed.
+  hooks, discarding work, `.env` reads, printed or literal credentials, PR merge/approve, `gh api`
+  writes, `gh workflow run`, releases and visibility changes. Rules live in `guard_bash.py` and
+  `git_rules.py`; tests list every allowed and denied example.
+- **PostToolUse(Edit|Write)** — formats in-project Python with the pinned ruff (`uvx ruff@…`, if uv
+  is installed) and flags files over the 500-line limit.
+- **Stop** — reminds once per session to record progress (branch handoff note, or `STATUS.md` in a
+  PR's final commit) when code changed.
 
 All hooks fail open (a crash never blocks you; CI still gates). Hooks require `python3` on PATH.
 If a hook blocks something the creator has explicitly approved in

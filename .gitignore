@@ -20,9 +20,9 @@ test-results/
 site/
 
 # Runs & local data (never commit run outputs, weights or secrets; mirrors tools/checks/repo_hygiene.py)
-runs/
-exports/
-saves/
+/runs/
+/exports/
+/saves/
 *.log
 *.zst
 *.sqlite
@@ -34,6 +34,8 @@ saves/
 *.onnx
 *.pem
 *.key
+# Golden fixtures are committed recorded runs (ADR-0004); keep them trackable.
+!fixtures/golden/**
 *.db
 *.db-wal
 *.db-shm

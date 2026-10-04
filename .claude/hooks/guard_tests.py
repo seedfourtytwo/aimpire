@@ -25,7 +25,9 @@ _PROTECTED = re.compile(
     r"|(^|/)test_[^/]*\.py$|_test\.py$|(^|/)conftest\.py$"  # pytest
     r"|\.(test|spec)\.[cm]?[jt]sx?$"  # vitest / playwright specs
     r"|(^|/)(vitest|playwright)\.config\.[cm]?[jt]s$"  # runner config and thresholds
-    r"|^\.claude/|^\.github/|^ci/|^tools/checks/|^ruff\.toml$"  # the guardrails themselves
+    r"|^\.claude/|^\.github/|^ci/|^tools/checks/"  # the guardrails themselves
+    r"|^(ruff\.toml|justfile|AGENTS\.md|CLAUDE\.md|\.pre-commit-config\.yaml|\.gitignore)$"
+    r"|(^|/)pyproject\.toml$"  # test addopts, coverage floors, dependencies
 )
 
 

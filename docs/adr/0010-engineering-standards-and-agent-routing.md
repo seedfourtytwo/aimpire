@@ -16,7 +16,9 @@ size, TDD or UI rules were enforced mechanically.
 Claude Code facts verified 2026-10-04 ([subagents](https://code.claude.com/docs/en/sub-agents),
 [model config](https://code.claude.com/docs/en/model-config), [hooks](https://code.claude.com/docs/en/hooks),
 [memory](https://code.claude.com/docs/en/memory)):
-- Subagent frontmatter supports `model` (`opus`, `sonnet`, `haiku`, `fable`, full ID, `inherit`),
+- Subagent frontmatter supports `model` (`opus`, `sonnet`, `haiku`, `fable`, full ID, `inherit`;
+  the sub-agents page lists exactly these values, and the model-config page lists `fable` among the
+  aliases),
   `effort` (`low` … `max`), `tools`, and agent-scoped `hooks`.
 - Project `settings.json` supports `model`, `effortLevel` and `env`
   (`CLAUDE_CODE_SUBAGENT_MODEL`).

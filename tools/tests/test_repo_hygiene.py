@@ -5,6 +5,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
+import pytest
 import repo_hygiene as rh
 
 
@@ -74,6 +75,28 @@ def test_forbidden_artifacts_are_errors(tmp_path: Path) -> None:
     ):
         _write(tmp_path, rel, "x")
         assert _rules(rh.check_paths(tmp_path, [rel])) == {"forbidden-file"}, rel
+
+
+@pytest.mark.parametrize(
+    "rel",
+    [
+        "sim/src/aimpire/api/runs/router.py",
+        "client/web/src/views/runs/RunList.tsx",
+        "docs/saves/x.md",
+    ],
+)
+def test_source_folders_named_like_run_data_are_allowed(tmp_path: Path, rel: str) -> None:
+    _write(tmp_path, rel, "x = 1\n")
+    assert rh.check_paths(tmp_path, [rel]) == []
+
+
+def test_golden_fixtures_may_hold_run_artifacts(tmp_path: Path) -> None:
+    for rel in (
+        "fixtures/golden/shared_river/run.db",
+        "fixtures/golden/shared_river/blobs/a.json.zst",
+    ):
+        _write(tmp_path, rel, "x")
+        assert rh.check_paths(tmp_path, [rel]) == [], rel
 
 
 def test_typescript_module_variants_are_line_limited(tmp_path: Path) -> None:

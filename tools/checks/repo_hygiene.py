@@ -55,14 +55,14 @@ FORBIDDEN_GLOBS = (
     "*.pem",
     "*.key",
     # run outputs: databases, blobs, saves, exports, logs (AGENTS.md §4.1)
-    "runs/*",
-    "*/runs/*",
+    "runs/*",  # root-level run data only; source folders named `runs/` are fine
     "exports/*",
     "saves/*",
     "*.log",
     "*.zst",
 )
-FORBIDDEN_EXCEPTIONS = (".env.example", "*/.env.example")
+# Golden fixtures are committed recorded runs (ADR-0004/0006); size limits still apply.
+FORBIDDEN_EXCEPTIONS = (".env.example", "*/.env.example", "fixtures/golden/*")
 
 
 @dataclass(frozen=True)

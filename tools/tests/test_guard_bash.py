@@ -59,6 +59,44 @@ DENIED = [
     "gh pr merge 12 --squash",
     "gh pr review 12 --approve",
     "gh api -X PATCH repos/seedfourtytwo/aimpire -f private=false",
+    # wrappers, control flow, subshells and nested shells
+    "timeout 30 git push -f",
+    "nice -n 5 git push -f",
+    "for b in a; do git push -f; done",
+    "if true; then git push -f; fi",
+    "! git push -f",
+    "{ git push -f; }",
+    "echo `git reset --hard`",
+    'echo "$(git reset --hard)"',
+    "bash -c 'git push --force'",
+    'sh -c "git reset --hard"',
+    "eval 'git push -f'",
+    # more push variants
+    "git push --all origin",
+    "git push --prune origin",
+    # more ways to skip hooks
+    "git -c core.hooksPath=/dev/null commit -m x",
+    "git commit --no-ver -m x",
+    "SKIP=repo-hygiene git commit -m x",
+    # more destructive local git
+    "git checkout -f",
+    "git checkout -- sim/a.py",
+    "git restore sim/a.py",
+    "git restore --worktree sim/a.py",
+    "git stash clear",
+    "git branch -d -f agent/3-x",
+    "git branch --delete --force agent/3-x",
+    "git update-ref -d refs/heads/agent/3-x",
+    # gh writes through the API, and live workflows
+    "gh api -X PUT repos/seedfourtytwo/aimpire/pulls/12/merge",
+    "gh api --method DELETE repos/seedfourtytwo/aimpire/git/refs/heads/main",
+    "gh api repos/seedfourtytwo/aimpire/issues -f title=x",
+    "gh api graphql -f query='mutation { mergePullRequest }'",
+    "gh workflow run eval-live.yml",
+    # .env reads via redirect or glob
+    "cat <.env",
+    "cat .env*",
+    "cp .env backup.txt",
     # chains still checked segment by segment
     "just check && git push origin main",
     "git status\ngit push --force",
@@ -96,6 +134,25 @@ ALLOWED = [
     "git checkout -b agent/4-x",
     "git restore --staged sim/a.py",
     "git branch -d merged-branch",
+    # review round 2 false positives
+    "git push --force-with-lease --force-if-includes origin agent/1-x",
+    'git push -o"skip-ci" origin agent/1-x',
+    'git commit -m"fix: run tests"',
+    "git commit -am 'fix: run tests'",
+    "cp .env.example .env",
+    "test -f .env",
+    "rm -f .env",
+    "ls -a | grep .env",
+    "echo $MAX_TOKENS",
+    "timeout 120 just check",
+    "for f in a b; do echo $f; done",
+    "bash -c 'just check'",
+    "git checkout main",
+    "git stash",
+    "gh api repos/seedfourtytwo/aimpire/pulls",
+    "gh api -X GET repos/seedfourtytwo/aimpire/pulls -f state=open",
+    "gh api graphql -f query='query { viewer { login } }'",
+    "echo task-" + "sk-0123456789abcdefghij0123",
 ]
 
 
@@ -107,6 +164,18 @@ def test_dangerous_commands_are_denied(command: str) -> None:
 @pytest.mark.parametrize("command", ALLOWED)
 def test_everyday_commands_are_allowed(command: str) -> None:
     assert guard_bash.deny_reason(command) is None, command
+
+
+@pytest.mark.parametrize(
+    "command", ["git push", "git push origin", "git push origin HEAD", "git push -u origin @"]
+)
+def test_implicit_push_is_denied_only_on_main(command: str) -> None:
+    assert guard_bash.deny_reason(command, current_branch=lambda: "main") is not None
+    assert guard_bash.deny_reason(command, current_branch=lambda: "agent/1-x") is None
+
+
+def test_implicit_push_fails_open_without_branch_info() -> None:
+    assert guard_bash.deny_reason("git push", current_branch=lambda: None) is None
 
 
 def test_unbalanced_quotes_do_not_crash() -> None:

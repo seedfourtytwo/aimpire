@@ -2,111 +2,58 @@
 """PreToolUse(Bash) guard: blocks commands AGENTS.md §7 reserves for the creator.
 
 Layer: agent tooling. Complements `permissions.deny` in settings.json (prefix
-matching only). Rules run on parsed argv per command segment (`shell_words`),
-so quoted text, commit messages and heredoc bodies do not trigger them.
+matching only). Rules run on parsed commands (`shell_words`), recurse into
+`bash -c`/`sh -c`/`eval` strings and command substitutions, and ignore quoted
+text, commit messages and heredoc bodies.
 
 Allowed on purpose: `git push --force-with-lease` to a feature branch (needed
-after rebasing an open PR). Must never block routine work.
+after rebasing an open PR), read-only `gh api`. Must never block routine work.
 """
 
 from __future__ import annotations
 
 import posixpath
 import re
+import subprocess
 import sys
-from collections.abc import Callable
 from typing import Any
 
-from hook_io import deny_tool, run_hook, tool_input
-from shell_words import segments
+from git_rules import NO_VERIFY, BranchLookup, git_reason
+from hook_io import deny_tool, project_dir, run_hook, tool_input
+from shell_words import Command, commands
 
-Rule = Callable[[list[str]], str | None]
-
-_LITERAL_KEY = re.compile(r"\bsk-(?:ant|proj|or)-[\w-]{12,}|\bsk-[A-Za-z0-9]{20,}")
-_SECRET_NAME = re.compile(r"\w*(?:API_KEY|_TOKEN|SECRET|PASSWORD)\w*")
-_SECRET_VAR = re.compile(r"\$\{?" + _SECRET_NAME.pattern)
+_LITERAL_KEY = re.compile(r"(?<![\w-])sk-(?:ant|proj|or)-[\w-]{12,}|(?<![\w-])sk-[A-Za-z0-9]{20,}")
+_SECRET_SUFFIX = r"(?:API_KEY|_TOKEN|SECRET|PASSWORD)"  # noqa: S105 — a name pattern, not a credential
+_SECRET_NAME = re.compile(r"\w*" + _SECRET_SUFFIX)
+_SECRET_VAR = re.compile(r"\$\{?\w*" + _SECRET_SUFFIX + r"(?!\w)")
+_ENV_FILE = re.compile(r"\.env(\.[\w.*?-]+|\*)?")
 _QUOTED_ENV_PATH = re.compile(r"[\"']([^\"']*/)?\.env(\.(?!example)[\w.-]+)?[\"']")
-_GIT_OPTS_WITH_VALUE = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namespace"})
-_COMMIT_OPTS_WITH_VALUE = frozenset({"-m", "-F", "-C", "-c", "--message", "--file", "--author"})
+_SHELLS = frozenset({"bash", "sh", "zsh", "dash"})
+_ENV_SAFE_COMMANDS = frozenset({"test", "[", "rm", "touch", "ls", "git", "gh"})
+_PATTERN_FIRST = frozenset({"grep", "rg", "egrep", "fgrep"})
+_GH_READ_METHODS = frozenset({"GET", "HEAD"})
+_GH_FIELD_FLAGS = frozenset({"-f", "-F", "--field", "--raw-field", "--input"})
+_MAX_DEPTH = 3
 
-FORCE = (
-    "Force-push (other than --force-with-lease to a feature branch) is reserved "
-    "for the creator (AGENTS.md §7)."
-)
-MAIN = "Never push to main; open a PR from a feature branch (AGENTS.md §7)."
-DELETE = "Deleting remote branches needs the creator's approval (AGENTS.md §7)."
-NO_VERIFY = "Hooks and checks must not be skipped (AGENTS.md §5)."
-DESTRUCTIVE = "Destructive git operations need the creator's approval (AGENTS.md §7)."
-ENV_FILE = "Never read .env files or print credentials (AGENTS.md §8)."
 LEAK = "Never print or inline credentials (AGENTS.md §8)."
+ENV_FILE = "Never read .env files (AGENTS.md §8)."
 PUBLISH = (
-    "Publishing, merging, approving or changing visibility needs the creator (AGENTS.md §1.9, §7)."
+    "Publishing, merging, approving, API writes or live workflows need the creator (AGENTS.md §7)."
 )
 
 
-def _short_flags(args: list[str]) -> str:
-    """All letters from short-option clusters (`-uf` → `uf`)."""
-    return "".join(a[1:] for a in args if a.startswith("-") and not a.startswith("--"))
-
-
-def _git_subcommand(argv: list[str]) -> tuple[str, list[str]] | None:
-    """(`push`, args) for `git [-C dir] push args`; None if not a git command."""
-    if posixpath.basename(argv[0]) != "git":
-        return None
-    index = 1
-    while index < len(argv) and argv[index].startswith("-"):
-        index += 2 if argv[index] in _GIT_OPTS_WITH_VALUE else 1
-    return (argv[index], argv[index + 1 :]) if index < len(argv) else None
-
-
-def _push_reason(args: list[str]) -> str | None:
-    refs = [a for a in args if not a.startswith("-")]
-    long_force = [
-        a for a in args if a.startswith("--force") and not a.startswith("--force-with-lease")
-    ]
-    if "--no-verify" in args:
-        return NO_VERIFY
-    if any(r.lstrip("+") == "main" or r.endswith((":main", "refs/heads/main")) for r in refs):
-        return MAIN
-    if (
-        long_force
-        or "f" in _short_flags(args)
-        or "--mirror" in args
-        or any(r.startswith("+") for r in refs)
-    ):
-        return FORCE
-    if "--delete" in args or "d" in _short_flags(args) or any(r.startswith(":") for r in refs):
-        return DELETE
-    return None
-
-
-def _commit_flags(args: list[str]) -> list[str]:
-    flags, skip = [], False
-    for arg in args:
-        if not skip and arg.startswith("-"):
-            flags.append(arg)
-        skip = arg in _COMMIT_OPTS_WITH_VALUE and not skip
-    return flags
-
-
-def _git_reason(argv: list[str]) -> str | None:
-    parsed = _git_subcommand(argv)
-    if parsed is None:
-        return None
-    sub, args = parsed
-    if sub == "push":
-        return _push_reason(args)
-    if sub == "commit":
-        flags = _commit_flags(args)
-        return NO_VERIFY if "--no-verify" in flags or "n" in _short_flags(flags) else None
-    destructive = (
-        (sub == "reset" and "--hard" in args)
-        or (sub == "clean" and ("--force" in args or "f" in _short_flags(args)))
-        or (sub == "checkout" and "." in args)
-        or (sub == "restore" and "." in args and "--staged" not in args)
-        or (sub == "branch" and "D" in _short_flags(args))
-    )
-    return DESTRUCTIVE if destructive else None
+def _gh_api_writes(args: list[str]) -> bool:
+    """True if a `gh api` call can change state (non-GET, or fields without -X GET)."""
+    method = None
+    for index, arg in enumerate(args):
+        if arg in {"-X", "--method"} and index + 1 < len(args):
+            method = args[index + 1].upper()
+        elif arg.startswith(("-X", "--method=")) and len(arg) > len("-X"):
+            method = arg.split("=", 1)[-1].removeprefix("-X").upper()
+    if args[:1] == ["graphql"]:
+        return any("mutation" in a for a in args)
+    has_fields = any(a in _GH_FIELD_FLAGS for a in args)
+    return (method or ("POST" if has_fields else "GET")) not in _GH_READ_METHODS
 
 
 def _gh_reason(argv: list[str]) -> str | None:
@@ -115,51 +62,113 @@ def _gh_reason(argv: list[str]) -> str | None:
     args = argv[1:]
     head = tuple(args[:2])
     risky = (
-        head in {("release", "create"), ("repo", "delete"), ("pr", "merge")}
+        head in {("release", "create"), ("repo", "delete"), ("pr", "merge"), ("workflow", "run")}
         or (head == ("repo", "edit") and any(a.startswith("--visibility") for a in args))
         or (head == ("pr", "review") and ("--approve" in args or "-a" in args))
-        or (args[:1] == ["api"] and any(re.match(r"(private|visibility)=", a) for a in args))
+        or (args[:1] == ["api"] and _gh_api_writes(args[1:]))
     )
     return PUBLISH if risky else None
+
+
+def _env_file_args(argv: list[str]) -> list[str]:
+    """Arguments that a command would *read* as files."""
+    name = posixpath.basename(argv[0])
+    args = [a.lstrip("<") for a in argv[1:]]
+    if name in _ENV_SAFE_COMMANDS:
+        return []
+    if name in {"cp", "mv"}:
+        return args[:-1]  # the last argument is the destination
+    if name in _PATTERN_FIRST:
+        positional = [a for a in args if not a.startswith("-")]
+        return positional[1:]
+    return args
 
 
 def _secret_reason(argv: list[str]) -> str | None:
     name = posixpath.basename(argv[0])
     if name in {"git", "gh"}:
         return None  # commit messages and PR text may mention variable names
+    names = argv[1:]
     if argv == ["env"] or (
-        name == "printenv" and (len(argv) == 1 or any(_SECRET_NAME.fullmatch(a) for a in argv[1:]))
+        name == "printenv" and (not names or any(_SECRET_NAME.fullmatch(a) for a in names))
     ):
         return LEAK
     if any(_SECRET_VAR.search(a) for a in argv):
         return LEAK
-    for arg in argv:
+    for arg in _env_file_args(argv):
         base = posixpath.basename(arg)
         if (
-            re.fullmatch(r"\.env(\..+)?", base) and not base.startswith(".env.example")
+            _ENV_FILE.fullmatch(base) and not base.startswith(".env.example")
         ) or _QUOTED_ENV_PATH.search(arg):
             return ENV_FILE
     return None
 
 
-RULES: tuple[Rule, ...] = (_git_reason, _gh_reason, _secret_reason)
-
-
-def deny_reason(command: str) -> str | None:
-    """Return why `command` is blocked, or None if it may run."""
-    if _LITERAL_KEY.search(command):
-        return "Literal API keys must never appear in commands (AGENTS.md §8)."
-    for argv in segments(command):
-        for rule in RULES:
-            reason = rule(argv)
-            if reason:
-                return reason
+def _nested_script(argv: list[str]) -> str | None:
+    """The script string run by `bash -c STR` or `eval STR`, if any."""
+    name = posixpath.basename(argv[0])
+    if name == "eval":
+        return " ".join(argv[1:])
+    if name in _SHELLS and "-c" in argv[1:-1]:
+        return argv[argv.index("-c") + 1]
     return None
 
 
+def _command_reason(command: Command, current_branch: BranchLookup, depth: int) -> str | None:
+    if any(v.startswith("SKIP=") for v in command.env):
+        return NO_VERIFY  # prek/pre-commit skips named hooks
+    if not command.argv:
+        return None
+    nested = _nested_script(command.argv)
+    if nested is not None and depth < _MAX_DEPTH:
+        return deny_reason(nested, current_branch, depth + 1)
+    return (
+        git_reason(command.argv, current_branch)
+        or _gh_reason(command.argv)
+        or _secret_reason(command.argv)
+    )
+
+
+def deny_reason(
+    command: str, current_branch: BranchLookup = lambda: None, depth: int = 0
+) -> str | None:
+    """Return why `command` is blocked, or None if it may run.
+
+    Args:
+        command: The Bash command string Claude wants to run.
+        current_branch: Returns the checked-out branch (None if unknown); used for implicit pushes.
+        depth: Recursion depth for nested shells (internal).
+    """
+    if _LITERAL_KEY.search(command):
+        return "Literal API keys must never appear in commands (AGENTS.md §8)."
+    for parsed in commands(command):
+        reason = _command_reason(parsed, current_branch, depth)
+        if reason:
+            return reason
+    return None
+
+
+def _branch_lookup(event: dict[str, Any]) -> BranchLookup:
+    def lookup() -> str | None:
+        try:
+            result = subprocess.run(
+                ["git", "branch", "--show-current"],
+                cwd=project_dir(event),
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=5,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return None
+        return result.stdout.strip() or None
+
+    return lookup
+
+
 def handle(event: dict[str, Any]) -> None:
-    """Deny the Bash call if any segment breaks a rule."""
-    reason = deny_reason(str(tool_input(event).get("command", "")))
+    """Deny the Bash call if any command in it breaks a rule."""
+    reason = deny_reason(str(tool_input(event).get("command", "")), _branch_lookup(event))
     if reason:
         deny_tool("PreToolUse", f"Blocked by .claude/hooks/guard_bash.py: {reason}")
 
