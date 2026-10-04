@@ -1,0 +1,60 @@
+# Experiment E0, dry run (backlog M0e). Free: mock and rule minds only.
+#
+# The same arms as the live E0 files, with the mock mind in every model seat
+# (it has no scripted replies, so every one of its councils is a counted
+# PROVIDER_ERROR and the starting policy stays in force), on two seeds for
+# 40 days. It proves the whole pipeline before money is spent: manifests
+# with the pre-registration hash, observer measures, paired comparisons,
+# bands and the report. CI runs it (tests/acceptance/test_m0de_e0.py); run it
+# yourself from sim/ with:
+#   uv run aimpire batch ../experiments/e0-dry-run.yaml --out runs/e0-dry
+#
+# Design and hypotheses: docs/experiments/e0-preregistration.md.
+
+id: e0-dry-run
+preregistration: ../docs/experiments/e0-preregistration.md
+hypothesis: >-
+  Dry run of E0: the pipeline records every run with the pre-registration
+  hash and scores every arm against the four baselines. No claim about minds.
+metrics:
+  primary: survival_ppm
+  secondary: [final_near_camp_mu, deaths, final_stores_mu, usable_share_ppm,
+              refusal_share_ppm, failure_share_ppm]
+world: m0
+ticks: 40
+council_every: 10
+checkpoint_every: 20
+seats: 1
+seeds: [1001, 1002]
+replicates: 3
+arms:
+  - id: baselines
+    knowledge_arm: A0
+    renderer: places
+    rules: hidden
+    prompt: base
+    models: [rule:random, rule:greedy, rule:half_full, rule:msy]
+  - id: places-hidden
+    knowledge_arm: A0
+    renderer: places
+    rules: hidden
+    prompt: base
+    models: [mock]
+  - id: places-disclosed
+    knowledge_arm: A0
+    renderer: places
+    rules: disclosed
+    prompt: base
+    models: [mock]
+  - id: grid-hidden
+    knowledge_arm: A0
+    renderer: grid
+    rules: hidden
+    prompt: base
+    models: [mock]
+  - id: grid-disclosed
+    knowledge_arm: A0
+    renderer: grid
+    rules: disclosed
+    prompt: base
+    models: [mock]

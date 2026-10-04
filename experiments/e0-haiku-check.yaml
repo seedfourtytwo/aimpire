@@ -1,0 +1,39 @@
+# Experiment E0, confirmatory: Claude Haiku 4.5, the one check condition (paid).
+#
+# Run by hand only, with ANTHROPIC_API_KEY set in the environment (never in a
+# file). The check beside the primary condition (ADR-0014 section 3): named
+# places, regrowth rule disclosed. Worst case $11.69, realistic under $5, as
+# for e0-haiku-primary.yaml; the two together do not fit one month's $20 on
+# their worst case, so run this one after the primary, when the spend allows.
+#   cd sim && uv run aimpire batch ../experiments/e0-haiku-check.yaml --out runs/e0
+
+id: e0-haiku-check
+preregistration: ../docs/experiments/e0-preregistration.md
+hypothesis: >-
+  E0 (confirmatory, frontier arm, check condition): with named places and the
+  regrowth rule disclosed, Claude Haiku 4.5 keeps more of its people alive
+  over two years than the greedy and random baselines.
+metrics:
+  primary: survival_ppm
+  secondary: [final_near_camp_mu, deaths, final_stores_mu, usable_share_ppm,
+              refusal_share_ppm, failure_share_ppm]
+world: m0
+ticks: 240 # two years of 120 days
+council_every: 10
+checkpoint_every: 30
+seats: 1
+seeds: [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010]
+replicates: 3
+arms:
+  - id: baselines
+    knowledge_arm: A0
+    renderer: places
+    rules: hidden
+    prompt: base
+    models: [rule:random, rule:greedy, rule:half_full, rule:msy]
+  - id: places-disclosed
+    knowledge_arm: A0
+    renderer: places
+    rules: disclosed
+    prompt: base
+    models: [../profiles/anthropic-haiku-4-5-e0.toml]

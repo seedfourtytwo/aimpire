@@ -78,13 +78,24 @@ def cost_plan(exp: Experiment, runs: Sequence[PlannedRun]) -> CostPlan:
 
 
 def run_config(exp: Experiment, run: PlannedRun, civ_ids: Sequence[str]) -> dict[str, Any]:
-    """The manifest ``config`` of a run: the design facts a report or audit needs."""
+    """The manifest ``config`` of a run: the design facts a report or audit needs.
+
+    With a pre-registration document, its path (as the file names it) and
+    hash sit beside the file's own hash, so an edit of either is detected.
+    """
+    prereg = (
+        {"preregistration": {"path": exp.preregistration, "hash": exp.preregistration_hash}}
+        if exp.preregistration
+        else {}
+    )
     return {
         "experiment": {"id": exp.id, "file_hash": exp.file_hash},
+        **prereg,
         "world": exp.world,
         "arm": run.arm.id,
         "knowledge_arm": run.arm.knowledge_arm,
         "renderer": run.arm.renderer,
+        "rules": run.arm.rules,
         "prompt": {"name": run.arm.prompt, "hash": run.arm.prompt_hash},
         "rotation": run.rotation,
         "replicate": run.replicate,

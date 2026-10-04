@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="642" height="90" viewBox="0 0 642 90">
+<text x="4" y="9" font-family="sans-serif" font-size="9" fill="#333">random</text>
+<polygon fill="#ddd" stroke="none" points="4.0,16.0 27.2,62.6 50.4,54.6 73.6,35.8 96.8,28.5 120.0,26.3 120.0,54.6 96.8,60.7 73.6,63.9 50.4,75.8 27.2,76.0 4.0,41.7"/>
+<polyline fill="none" stroke="#333" stroke-width="1" points="4.0,28.0 27.2,75.8 50.4,65.8 73.6,52.4 96.8,42.7 120.0,40.4"/>
+<text x="123.0" y="43.4" font-family="sans-serif" font-size="9" fill="#333">2530</text>
+<text x="4" y="88" font-family="sans-serif" font-size="9" fill="#888">year 0</text>
+<text x="120.0" y="88" font-family="sans-serif" font-size="9" fill="#888" text-anchor="end">year 5</text>
+<text x="6.0" y="24.0" font-family="sans-serif" font-size="9" fill="#888">4262</text>
+<text x="168" y="9" font-family="sans-serif" font-size="9" fill="#333">greedy</text>
+<polygon fill="#ddd" stroke="none" points="168.0,16.0 191.2,71.5 214.4,71.4 237.6,71.3 260.8,71.5 284.0,71.3 284.0,75.3 260.8,75.3 237.6,75.3 214.4,75.3 191.2,75.3 168.0,41.7"/>
+<polyline fill="none" stroke="#333" stroke-width="1" points="168.0,28.0 191.2,74.0 214.4,73.9 237.6,73.9 260.8,73.9 284.0,73.9"/>
+<text x="287.0" y="76.9" font-family="sans-serif" font-size="9" fill="#333">148</text>
+<text x="168" y="88" font-family="sans-serif" font-size="9" fill="#888">year 0</text>
+<text x="284.0" y="88" font-family="sans-serif" font-size="9" fill="#888" text-anchor="end">year 5</text>
+<text x="332" y="9" font-family="sans-serif" font-size="9" fill="#333">half_full</text>
+<polygon fill="#ddd" stroke="none" points="332.0,16.0 355.2,36.5 378.4,36.5 401.6,36.1 424.8,36.4 448.0,36.5 448.0,53.8 424.8,53.6 401.6,53.5 378.4,53.8 355.2,53.7 332.0,41.7"/>
+<polyline fill="none" stroke="#333" stroke-width="1" points="332.0,28.0 355.2,44.7 378.4,44.3 401.6,44.5 424.8,44.5 448.0,44.4"/>
+<text x="451.0" y="47.4" font-family="sans-serif" font-size="9" fill="#333">2246</text>
+<text x="332" y="88" font-family="sans-serif" font-size="9" fill="#888">year 0</text>
+<text x="448.0" y="88" font-family="sans-serif" font-size="9" fill="#888" text-anchor="end">year 5</text>
+<text x="496" y="9" font-family="sans-serif" font-size="9" fill="#333">msy</text>
+<polygon fill="#ddd" stroke="none" points="496.0,16.0 519.2,48.0 542.4,48.0 565.6,48.0 588.8,48.0 612.0,48.1 612.0,60.4 588.8,60.3 565.6,60.4 542.4,60.5 519.2,60.4 496.0,41.7"/>
+<polyline fill="none" stroke="#333" stroke-width="1" points="496.0,28.0 519.2,53.8 542.4,53.7 565.6,53.8 588.8,53.9 612.0,53.7"/>
+<text x="615.0" y="56.7" font-family="sans-serif" font-size="9" fill="#333">1583</text>
+<text x="496" y="88" font-family="sans-serif" font-size="9" fill="#888">year 0</text>
+<text x="612.0" y="88" font-family="sans-serif" font-size="9" fill="#888" text-anchor="end">year 5</text>
+</svg>

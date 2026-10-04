@@ -1,0 +1,36 @@
+# Claude Haiku 4.5 for experiment E0 (docs/experiments/e0-preregistration.md).
+#
+# The same model id and price as anthropic-haiku-4-5.toml, checked 2026-10-04:
+#   https://platform.claude.com/docs/en/about-claude/models/overview  (id claude-haiku-4-5-20251001)
+#   https://platform.claude.com/docs/en/about-claude/pricing          ($1 / MTok in, $5 / MTok out)
+# Re-check both pages before the run; models retire on 60 days' notice (ADR-0014).
+#
+# Only the planning limits differ, so a pre-registered E0 file fits the budget
+# on its worst case:
+#   * max_input_tokens_per_call 6000: an M0 council is estimated at about
+#     3,000 tokens (system prompt, rule text, observation and reply schema;
+#     measured, the observation is at most about 2,200 characters and the
+#     schema 4,800; a journal adds at most 1,200);
+#   * max_output_tokens 2048: a full reply with a 1,200-character journal is
+#     well under 1,000 tokens; a longer one ends as TRUNCATED and is counted.
+# Worst case of one call: 6000 x $1/M + 2048 x $5/M = $0.01624.
+#
+# The key is read at call time from the variable named here, never from this file.
+
+kind = "anthropic"
+model = "claude-haiku-4-5-20251001"
+api_key_env = "ANTHROPIC_API_KEY"
+timeout_s = 120.0
+max_output_tokens = 2048
+# temperature and effort are left unset: nothing is sent, so the model's defaults apply.
+
+[price]
+input_micro_usd_per_mtok = 1_000_000
+output_micro_usd_per_mtok = 5_000_000
+source = "https://platform.claude.com/docs/en/about-claude/pricing"
+as_of = "2026-10-04"
+
+[budget]
+max_input_tokens_per_call = 6000
+# A run of E0 (24 councils) is at most 24 x $0.01624 = $0.39; cap each run at $1.
+run_cap_micro_usd = 1_000_000

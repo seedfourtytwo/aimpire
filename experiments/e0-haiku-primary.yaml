@@ -1,0 +1,42 @@
+# Experiment E0, confirmatory: Claude Haiku 4.5 in the primary condition (paid).
+#
+# Run by hand only, with ANTHROPIC_API_KEY set in the environment (never in a
+# file). Frontier models run the primary condition and one check (ADR-0014
+# section 3); this is the primary condition: named places, rule hidden.
+# Worst case: 30 runs x 24 councils x $0.01624 = $11.69 (profile
+# anthropic-haiku-4-5-e0.toml); the realistic cost is under $5. `aimpire batch`
+# prints the worst case and refuses if it does not fit what is left this month.
+#   cd sim && uv run aimpire batch ../experiments/e0-haiku-primary.yaml --out runs/e0
+# Run e0-haiku-check.yaml in a later month, or once this month's spend allows it.
+
+id: e0-haiku-primary
+preregistration: ../docs/experiments/e0-preregistration.md
+hypothesis: >-
+  E0 (confirmatory, frontier arm, primary condition): with named places and
+  the regrowth rule hidden, Claude Haiku 4.5 keeps more of its people alive
+  over two years than the greedy and random baselines, and no more than the
+  half-full baseline.
+metrics:
+  primary: survival_ppm
+  secondary: [final_near_camp_mu, deaths, final_stores_mu, usable_share_ppm,
+              refusal_share_ppm, failure_share_ppm]
+world: m0
+ticks: 240 # two years of 120 days
+council_every: 10
+checkpoint_every: 30
+seats: 1
+seeds: [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010]
+replicates: 3
+arms:
+  - id: baselines
+    knowledge_arm: A0
+    renderer: places
+    rules: hidden
+    prompt: base
+    models: [rule:random, rule:greedy, rule:half_full, rule:msy]
+  - id: places-hidden
+    knowledge_arm: A0
+    renderer: places
+    rules: hidden
+    prompt: base
+    models: [../profiles/anthropic-haiku-4-5-e0.toml]

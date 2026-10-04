@@ -3,6 +3,7 @@
 Subcommands:
     qualify <profile.toml | mock | rule[:name]>   frozen observations through one mind
     batch <experiment.yaml> [--verify]            a pre-registered experiment
+    batch <reference.yaml> [--jobs N] [--verify]  a reference ensemble of rule baselines
     run m0 --mind <mind> --seed N --years Y       one game: run store, replay, notebook
     lab twin m0 --set k=v --seeds 1-8 --years Y   baseline and variant on paired seeds
 
@@ -39,11 +40,18 @@ def build_parser() -> argparse.ArgumentParser:
     qualify.add_argument("--thresholds", type=Path, help="thresholds file (default: built-in)")
     qualify.set_defaults(handler=qualify_command)
 
-    batch = commands.add_parser("batch", help="run a pre-registered experiment file")
-    batch.add_argument("experiment", type=Path, help="experiment .yaml file")
+    batch = commands.add_parser(
+        "batch", help="run a pre-registered experiment file, or a reference ensemble"
+    )
+    batch.add_argument(
+        "experiment", type=Path, help="experiment .yaml file (or one with kind: reference)"
+    )
     batch.add_argument("--out", type=Path, default=Path("runs"), help="runs folder")
     batch.add_argument(
         "--verify", action="store_true", help="only check the file against its recorded runs"
+    )
+    batch.add_argument(
+        "--jobs", type=int, default=1, help="processes for a reference ensemble (default 1)"
     )
     batch.set_defaults(handler=batch_command)
 
