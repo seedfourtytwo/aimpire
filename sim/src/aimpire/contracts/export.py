@@ -1,4 +1,4 @@
-"""Generate the mind contract's JSON schemas into ``schema/``.
+"""Generate the JSON schemas into ``schema/``: the mind contract and the Lab knob registry.
 
 Usage (from ``sim/``; the ``just`` recipes wrap these):
 
@@ -21,10 +21,13 @@ import sys
 import tempfile
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel
 
 from aimpire.contracts.mind import CONTRACT_VERSION, MindReply, Observation
+from aimpire.lab.schema import SCHEMA_FILE as KNOB_SCHEMA_FILE
+from aimpire.lab.schema import knob_schema
 
 _MODELS: dict[str, type[BaseModel]] = {
     f"mind-{CONTRACT_VERSION}.reply.schema.json": MindReply,
@@ -32,20 +35,33 @@ _MODELS: dict[str, type[BaseModel]] = {
 }
 
 
+def _canonical(document: dict[str, Any]) -> str:
+    return json.dumps(document, sort_keys=True, indent=2) + "\n"
+
+
 def render_schemas() -> dict[str, str]:
-    """Return ``{file name: canonical JSON text}`` for every exported schema."""
+    """Return ``{file name: canonical JSON text}`` for the mind contract's schemas."""
     return {
-        name: json.dumps(model.model_json_schema(mode="validation"), sort_keys=True, indent=2)
-        + "\n"
+        name: _canonical(model.model_json_schema(mode="validation"))
         for name, model in sorted(_MODELS.items())
     }
+
+
+def render_exports() -> dict[str, str]:
+    """Every file this command writes: the mind contract plus the Lab knob registry.
+
+    The knob registry (ADR-0020) is kept out of ``render_schemas`` so that
+    function still means "the mind contract" to its callers.
+    """
+    exports = render_schemas() | {KNOB_SCHEMA_FILE: _canonical(knob_schema())}
+    return dict(sorted(exports.items()))
 
 
 def write_schemas(out_dir: Path) -> list[Path]:
     """Write every schema into ``out_dir`` (created if missing); return the paths."""
     out_dir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
-    for name, text in render_schemas().items():
+    for name, text in render_exports().items():
         path = out_dir / name
         path.write_text(text, encoding="utf-8", newline="\n")
         written.append(path)
@@ -92,7 +108,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if problems:
             print("schema/ is stale: run `just schema-export`", file=sys.stderr)
             return 1
-        print(f"schema/ is current ({len(_MODELS)} files)")
+        print(f"schema/ is current ({len(render_exports())} files)")
         return 0
     for path in write_schemas(schema_dir):
         print(f"wrote {path}")

@@ -3,7 +3,7 @@
 > Every agent session reads this first and updates it last.
 
 **Phase:** Phase 1, foundation. F1–F3 are done; next are F4 (watch) and F5 (mind interface) in parallel. See `docs/plan/roadmap.md` and `docs/plan/backlog.md`.
-**Last updated:** 2026-10-04 by the F5c leak-fix session (per-civ place names, known-route travel times).
+**Last updated:** 2026-10-04 by the W0/LAB0 session (world constants, derived physics, knob registry).
 
 ## Current state
 - **Goal:** emergence. See what civilizations, political orders and beliefs arise when the models decide for themselves (ADR-0019).
@@ -22,6 +22,11 @@
 - [x] F5: mind interface: contracts and schema (F5a), providers (F5b), places, observation builder and renderers (F5c), validator and decision log (F5d), council barrier, budgets and SQLite run store (F5e). PRs #11, #13, #14, #17, #19, #20. The m0 layout of `civ`, `evidence` and `message` entities is documented in `cognition/civ_record.py`; M0b writes them. Leak fixes (branch `agent/f5c-fix-leaks`): place names are per civilization only (`set_civ_name`), and observed travel times use only known places (`travel_ticks_within`, `lower_bound_ticks`).
 - [ ] F6: live adapters (OpenAI-compatible for Ollama and OpenRouter; Anthropic), `aimpire qualify`, `aimpire batch`. Budget rules are under F6 in `backlog.md` (20 dollars a month).
   - F6a/F6b (branch `agent/f6ab-live-adapters`): `OpenAICompatProvider` and `AnthropicProvider` in `cognition/`, profile loader `cognition/profiles.py`, `profiles/*.toml` (Ollama example, Claude Haiku 4.5, OpenRouter template that the loader refuses until filled), `provider_from_profile` in `cognition/live.py`. Tests block real sockets (`sim/tests/conftest.py`). HTTP is `httpx2`, the httpx continuation the `anthropic` SDK now requires.
+
+- [ ] Lab track W0 and LAB0 (ADR-0020, proposed), in review:
+  - `rules/v1/world.yaml` (gravity, sunlight, rain, tilt), branch `agent/w0-world-rules`;
+  - code, branch `agent/w0-lab0-physics-knobs` (based on it): integer laws in `aimpire.rules.physics` (helpers in `rules/intmath.py`), `DerivedWorld` in `aimpire.sim.derived`, `load_world` and `rules_hash` in `aimpire.rules` (the hash covers every `*.yaml` in the rules dir plus world/rules/tribe overrides), `aimpire.lab` (knobs, overrides, variant, schema), `schema/lab-knobs.schema.json`.
+  - No run command exists yet, so `--set` is not on the CLI. M0c calls `aimpire.lab.variant.resolve_variant(rules_dir, args.set)` and `aimpire.lab.overrides.add_set_option(parser)`.
 
 ## In flight
 _None._
