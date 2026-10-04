@@ -27,13 +27,30 @@ map:
   place_block: 16
 
 food:
-  # Food ceiling of one tile at Earth and full fertility, in mu: 10 food units.
+  # Food ceiling of one tile at Earth and full fertility, in mu: 5 food units.
   # The tile ceiling is K = ceiling x W0 plant_ceiling x fertility (both ppm).
-  # A 16 x 16 place at mean fertility (650_000 ppm) holds about 1_660 units;
-  # at the logistic optimum it yields about 33 units a tick, about what the
-  # 30 starting people eat, so one place alone barely feeds the tribe and
-  # where to forage matters.
-  ceiling: 10_000
+  #
+  # Calibration (M0c, with the map scale of scale.yaml and harvests spread
+  # over a place's tiles in proportion to their food):
+  #   * a 16 x 16 place at mean fertility (650_000 ppm) holds about
+  #     256 x 5 x 0.65 = 832 units, and its steady yield peaks at
+  #     K (r + s)^2 / (4 r) = 832 x 0.0205 = about 17 units a tick, held at
+  #     49.4 % of K (regrowth below);
+  #   * the 30 starting people eat 30 units a tick, so one place alone cannot
+  #     feed them: the tribe must spread over 2 to 4 places. The camp and its
+  #     neighbours (1 tick away) are 3 places in a corner of the dish, 4 on an
+  #     edge and 5 inside, about 50, 70 or 85 units a tick at the optimum;
+  #   * a forager on the camp's place brings in 10 units a tick, one on a
+  #     neighbouring place 10 / (1 + 2 x 1) = 3.3 units and burns a third of
+  #     a ration walking: taking the optimum yield needs about 2 people on
+  #     the camp's place and 5 on each neighbour, so labour is not the limit.
+  # Rule baselines over seeds 1 to 10, 5 years each (M0c): half_full and msy
+  # keep all 30 people on every seed; greedy falls to 4 to 14 people within
+  # the first year; random falls to 1 to 4. At 4_000 mu half_full still lives
+  # but a corner camp ends with under 4 ticks of food in store; at 10_000
+  # (rules v1 before M0c) greedy and random also live on most seeds, so
+  # where and how much to forage barely matters.
+  ceiling: 5_000
   # Food on every tile at worldgen, in ppm of its ceiling: the dish starts full.
   initial: 1_000_000
 

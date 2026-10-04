@@ -1,0 +1,33 @@
+# Map scale, rules v1: how big a tile is and how far people walk in a tick.
+#
+# Read by aimpire.rules.load_map_scale into aimpire.sim.scale.MapScale. Shared
+# by every milestone that has a map (M0 now, terrain from M1), so it lives in
+# its own file rather than in m0.yaml.
+#
+# Why it exists: without a scale, travel was counted at one tile per tick, so
+# the neighbouring place on the 16-tile petri dish grid was 16 ticks away.
+# A tick is a game day of about three calendar days (ADR-0011: 120 ticks a
+# year), and people on foot cover 20 to 30 km a day, so 16 ticks for 16 km
+# was absurd and made every place but the camp's own unreachable in practice.
+#
+# Units (ADR-0012), integers only: metres. "At Earth" means before the W0
+# walking speed (aimpire.sim.derived.walk_speed, ppm of Earth, ∝ sqrt(g)):
+# a walk of d metres takes
+#     ceil(d * 1_000_000 / (walk_per_tick * walk_speed))   ticks,
+# so a lighter world walks faster and a heavier one slower.
+#
+# Changing a value here changes the rules hash and every run.
+
+# Side of one tile, in metres. The 64 x 64 dish is then 64 km square and a
+# 16 x 16 place is 16 km across (256 km2): about the foraging range of one
+# band, so the tribe's camp place plus its neighbours are the home range of
+# the ethnography summarised in research note 50.
+tile: 1_000
+
+# Distance walked in one tick at Earth gravity, in metres: one day of
+# walking (20 km, the low end of 20 to 30 km a day). The rest of the tick's
+# three calendar days goes to gathering, carrying and rest, so the forage
+# rule's "1 + 2 x travel ticks" per trip still holds: a neighbouring place
+# (16 km between centroids) is 1 tick away, a diagonal or second-ring place
+# (32 km) 2 ticks, and the far corner of the dish (96 km) 5 ticks.
+walk_per_tick: 20_000
