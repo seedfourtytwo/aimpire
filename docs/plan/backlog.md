@@ -226,3 +226,17 @@ Live calls run only from an explicit profile with a budget. CI never calls a pro
 | LAB2 | `aimpire lab sweep`: 1-D and 2-D; free providers by default | `test_sweep_is_reproducible` |
 | LAB3 | forks from checkpoints; world events as recorded data | `test_fork_replays_exactly` |
 | LAB4 | workshop page in the web console | — |
+
+---
+
+## Native mind track (ADR-0021, proposed; outline)
+Starts after M0b. Never blocks a milestone. Training code lives in `native/`, outside CI.
+
+| Id | Work | Acceptance |
+|---|---|---|
+| N0 | `native/vocab/v1.txt` closed vocabulary and checker script | `test_checker_refuses_out_of_vocabulary_line`; the list contains no tool, office, worship, money, writing or farming words |
+| N1 | Deterministic corpus generator: primer templates, narrated rule-baseline runs, council examples | `test_corpus_is_reproducible_from_seed`; `test_every_line_passes_vocabulary` |
+| N2 | Tokenizer and small decoder-only training script (PyTorch); model card; GGUF export | manual: loss curve and sample text in the model card |
+| N3 | Reply grammar (GBNF) generated from the m0 contract; a llama.cpp/Ollama profile | `test_grammar_accepts_only_valid_replies` |
+| N4 | `aimpire qualify` on the native mind; M0 experiment arm A3 | pre-registered report |
+| N5 | Generations: fine-tune on its own chronicles | later |

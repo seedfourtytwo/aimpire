@@ -60,7 +60,7 @@ Lab runs are exploratory. A finding counts only after a pre-registered re-run (A
 ## Side tracks
 | Track | Starts | What |
 |---|---|---|
-| **Native minds** (ADR-0018) | after M2 | train a small model on in-world text only; put it through M0 qualification; decide on that result |
+| **Native minds** (ADR-0018, ADR-0021) | after M0 (creator, 2026-10-04) | N0 vocabulary, N1 generated corpus, N2 train a 10–30M model, N3 grammar-constrained serving, N4 M0 qualification; decide on that result. See [`research/91`](../research/91-native-minds.md) |
 | **Observer layer** (ADR-0019) | with M2 | detectors that label patterns in finished runs; the emergence ledger; parallels with real history |
 | **Web client** (ADR-0002) | console at M1; full client when the logic earns it | pause, step, intervene, read the chronicle, follow the sent-to-done chain, fork a timeline |
 
