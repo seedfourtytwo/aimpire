@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, Literal
 
-from aimpire.cognition.baselines import DEFAULT_RULE, RULES, rule_provider
+from aimpire.cognition.baselines import DEFAULT_RULE, RULE_NAMES, rule_provider
 from aimpire.cognition.budget import DEFAULT_RUN_CAP_MICRO_USD, FREE, Price
 from aimpire.cognition.live import provider_from_profile
 from aimpire.cognition.offline import MockFailure, MockProvider
@@ -100,8 +100,8 @@ def resolve_mind(name: str, base_dir: Path) -> MindSpec:
     head, _, rule = name.partition(":")
     if head == RULE_PREFIX:
         rule = rule or DEFAULT_RULE
-        if rule not in RULES:
-            raise MindError(f"unknown rule {rule!r}; known rules: {sorted(RULES)}")
+        if rule not in RULE_NAMES:
+            raise MindError(f"unknown rule {rule!r}; known rules: {sorted(RULE_NAMES)}")
         return _offline(f"{RULE_PREFIX}:{rule}", "rule", rule)
     if name.endswith(PROFILE_SUFFIX):
         path = Path(name) if Path(name).is_absolute() else base_dir / name

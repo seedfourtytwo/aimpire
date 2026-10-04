@@ -116,18 +116,21 @@ def test_apportion_largest_remainder_and_ties() -> None:
         apportion(5, [("FORAGE", "PL01", 700), ("SCOUT", "PL01", 400)])
 
 
-def test_take_food_sorted_order_and_cap() -> None:
+def test_take_food_spreads_in_proportion_and_caps() -> None:
+    """Each tile gives the same share of its food; rounding goes to the first tiles."""
     world = _world(3)
     place = places_by_id(world.state)["PL01"]
     layer = world.state.layers[FOOD]
-    first, second = sorted(place.tiles)[:2]
-    layer[first] = 5
-    layer[second] = 7
-    others = sum(int(layer[t]) for t in place.tiles) - 12
-    assert take_food(world.state, place, 6) == 6
-    assert int(layer[first]) == 0 and int(layer[second]) == 6
-    assert take_food(world.state, place, 10**12) == 6 + others
+    for tile in place.tiles:
+        layer[tile] = 0
+    first, second, third = sorted(place.tiles)[:3]
+    layer[first], layer[second], layer[third] = 300, 100, 1
+    # Floors 149, 49 and 0 make 198; the 2 mu left go to the first two rounded-down tiles.
+    assert take_food(world.state, place, 200) == 200
+    assert (int(layer[first]), int(layer[second]), int(layer[third])) == (150, 50, 1)
+    assert take_food(world.state, place, 10**12) == 201
     assert sum(int(layer[t]) for t in place.tiles) == 0
+    assert take_food(world.state, place, 5) == 0
 
 
 def test_walk_ticks_scales_with_walking_speed() -> None:

@@ -1,9 +1,12 @@
-"""PLACEHOLDER world ``stub``: replace with the M0 preset (backlog M0a/M0b), then delete.
+"""PLUMBING world ``stub``: no physics. Real experiments use ``world: m0``.
 
-Why it exists: ``aimpire batch`` needs a world to run in, and no world rules
-exist before M0. This is the toy world of the F5e acceptance tests, extended
-to the full m0 ``civ`` layout so the real observation builder, renderers and
-validator run unchanged:
+Why it still exists: the F6 acceptance tests (``test_f6cd_qualify_batch``)
+run their experiment files in ``world: stub``, and those tests are read-only
+for implementers. M0c registered ``m0`` beside it; delete this module when the
+creator moves those tests to ``m0``. It was built because ``aimpire batch``
+needed a world before any world rules existed: the toy world of the F5e
+acceptance tests, extended to the full m0 ``civ`` layout so the real
+observation builder, renderers and validator run unchanged:
 
 * an 8 by 8 map cut into four 4 by 4 places (``grid_blocks``);
 * one ``drift`` system that adds a seeded amount (0 to 6 milli-units) to one

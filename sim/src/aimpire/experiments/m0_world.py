@@ -2,8 +2,8 @@
 
 The one call that does the I/O the simulation may not do: read the calendar,
 ``m0.yaml`` and the world constants, apply Lab ``--set`` overrides, then build
-the world, place one tribe per seat and bind the ``m0`` preset to the same
-rules and W0 rates:
+the world at the map scale of ``scale.yaml``, place one tribe per seat and
+bind the ``m0`` preset to the same rules and W0 rates:
 
     world = build_m0_run(seed, rules_dir, settings=args.set)
     seats = [Seat(civ, eid, mind, provider) for civ, eid in world.civs]
@@ -18,7 +18,7 @@ from pathlib import Path
 
 from aimpire.experiments.worlds import World
 from aimpire.lab.variant import resolve_variant
-from aimpire.rules import load_calendar, load_m0_rules
+from aimpire.rules import load_calendar, load_m0_rules, load_map_scale
 from aimpire.sim.presets import PRESETS, m0_quantities, system_registry
 from aimpire.sim.scheduler import Scheduler
 from aimpire.sim.world.m0 import build_m0_world
@@ -46,7 +46,12 @@ def build_m0_run(
     rules = load_m0_rules(rules_dir, calendar)
     resolved = resolve_variant(rules_dir, settings)
     state = build_m0_world(
-        seed, rules, resolved.derived, rules_version=rules_dir.name, rules_hash=resolved.rules_hash
+        seed,
+        rules,
+        resolved.derived,
+        rules_version=rules_dir.name,
+        rules_hash=resolved.rules_hash,
+        scale=load_map_scale(rules_dir),
     )
     civs: list[tuple[str, int]] = []
     for seat in range(seats):

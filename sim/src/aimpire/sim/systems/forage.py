@@ -21,9 +21,16 @@ the food is counted into the stores at once. They burn walking energy every
 tick they are on the road, and are back at the trip's ``done`` tick.
 
 **Taking from tiles.** A harvest is capped by the food on the place's tiles
-and taken tile by tile in sorted (row-major) order, each tile down to zero
-before the next is touched. One ``HARVEST`` pair per harvest: ``-h`` of
-``food`` (the tile layer) and ``+h`` of ``stores``.
+and spread over them in proportion to the food each holds: tile ``i`` gives
+``floor(h * F_i / F)``, and the few mu of rounding left go one each to the
+first tiles in sorted (row-major) order whose share was rounded down. Every
+tile so loses the same fraction of its food, and a place harvested this way
+regrows as one logistic unit with ceiling ``sum(K_i)``: that is what makes
+its steady yield peak near half full (M0a). Taking tiles one by one down to
+zero, the M0b order, left stripped tiles to regrow from the seed term alone,
+so no place could yield more than about 2 units a tick (M0c calibration).
+One ``HARVEST`` pair per harvest: ``-h`` of ``food`` (the tile layer) and
+``+h`` of ``stores``.
 
 Sequential: tribes act in the per-tick shuffled order, so when two forage
 the same place the order of first pick is fair over time (ADR-0012 C).
@@ -69,7 +76,13 @@ _COL: Final = 1
 
 
 def take_food(state: WorldState, place: Place, wanted: int) -> int:
-    """Remove up to ``wanted`` mu from ``place``'s tiles in sorted order; return what was taken."""
+    """Remove up to ``wanted`` mu from ``place``'s tiles in proportion to their food; return it.
+
+    See the module docstring. Integer only: each tile's share is floored and
+    the remainder (fewer mu than there are tiles) goes one mu each to the
+    first tiles in sorted order whose share was rounded down, so no tile goes
+    below zero and the total taken is exactly ``min(wanted, food)``.
+    """
     if wanted <= 0 or not place.tiles:
         return 0
     tiles = sorted(place.tiles)
@@ -77,10 +90,19 @@ def take_food(state: WorldState, place: Place, wanted: int) -> int:
     cols = np.fromiter((t[_COL] for t in tiles), dtype=np.int64, count=len(tiles))
     layer = state.layers[FOOD_LAYER]
     food = layer[rows, cols]
-    before = np.cumsum(food, dtype=np.int64) - food  # food on earlier tiles
-    take = np.clip(np.int64(wanted) - before, 0, food).astype(np.int64)
+    total = int(food.sum(dtype=np.int64))
+    if total == 0:
+        return 0
+    if wanted >= total:
+        layer[rows, cols] = 0
+        return total
+    # Proportional share of one harvest (not a rate over time), floored per tile.
+    numer = food * np.int64(wanted)
+    take = numer // np.int64(total)
+    rounded_down = np.flatnonzero(numer % np.int64(total))
+    take[rounded_down[: wanted - int(take.sum(dtype=np.int64))]] += 1
     layer[rows, cols] = food - take
-    return int(take.sum(dtype=np.int64))
+    return wanted
 
 
 def record_harvest(ledger: Ledger, entity: Entity, taken: int, ref: str) -> None:

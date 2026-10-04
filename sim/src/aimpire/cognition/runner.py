@@ -6,7 +6,8 @@ The loop, for each of ``ticks`` ticks:
    a council for the seats ``seats_for`` builds, hand the results to the
    sink, and checkpoint with label ``barrier`` (ADR-0007: a full snapshot
    hash at every cognition barrier);
-2. step the scheduler once;
+2. step the scheduler once, then call ``on_tick(state)`` if given (metrics
+   and replay frames: it may read the state, never change it);
 3. checkpoint with label ``periodic`` when the new tick is a multiple of
    ``checkpoint_every``.
 
@@ -52,6 +53,7 @@ async def run_with_councils(  # noqa: PLR0913 (each is a separate run setting)
     seats_for: SeatsFor,
     gate: Gate,
     sink: CouncilSink,
+    on_tick: Callable[[WorldState], None] | None = None,
 ) -> DecisionLog:
     """Run ``ticks`` ticks with a council every ``every_ticks``; return the decision log.
 
@@ -69,6 +71,8 @@ async def run_with_councils(  # noqa: PLR0913 (each is a separate run setting)
             sink.record_council(state.tick, council, settled)
             sink.checkpoint(state, "barrier")
         scheduler.step(state)
+        if on_tick is not None:
+            on_tick(state)
         if state.tick % checkpoint_every == 0:
             sink.checkpoint(state, "periodic")
     sink.checkpoint(state, "final")

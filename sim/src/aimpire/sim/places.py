@@ -12,8 +12,8 @@ Stored fields of a place entity (ints and strings only, ADR-0012):
                     pad width is at least 2 and grows with the number of places,
                     so string order equals numeric order within one map.
     ``place_kind``  a neutral land-cover word; ``"land"`` on the flat petri dish.
-                    (The entity key ``kind`` is already ``"place"``; the view
-                    below exposes this field as ``Place.kind``.)
+                    (The entity key ``kind`` is already ``"place"``; the
+                    view in ``place_view`` exposes it as ``Place.kind``, re-exported here.)
     ``tiles``       ``[[row, col], ...]`` in row-major order.
     ``centroid``    ``[row, col]``, the floor of the mean tile coordinate.
     ``neighbours``  sorted place ids that share at least one tile edge.
@@ -31,22 +31,25 @@ block and the count is exactly predictable. For the 64 by 64 petri dish use
 ``PETRI_BLOCK`` (16 by 16, giving 16 places); 12 by 12 gives 25. Both are inside
 the 12 to 30 target of ADR-0013.
 
-Travel: ``travel_ticks`` is the shortest path between centroids over the
+Travel: ``travel_tiles`` is the shortest path between centroids over the
 neighbour graph, each hop weighted by the Manhattan distance between the two
-centroids: tile steps, at one tile per tick until movement rules set a speed.
-With unit weights this would be breadth-first search; weighting keeps the
-oversized remainder blocks honest. The shortest distance is unique, so the
-result is symmetric whatever the tie-breaking (equal entries pop by place id).
-``travel_ticks`` is the true world distance, for physics and execution.
+centroids, in tile steps. With unit weights this would be breadth-first
+search; weighting keeps the oversized remainder blocks honest. The shortest
+distance is unique, so the result is symmetric whatever the tie-breaking
+(equal entries pop by place id). ``travel_ticks`` is that path in ticks at
+Earth walking speed, through the state's map scale (``aimpire.sim.scale``:
+``ceil(tiles * tile / walk_per_tick)``; one tile per tick in a state without
+one). Both are the true world distance, for physics and execution.
 
 What a mind is told is ``travel_ticks_within``: the same search restricted to
 an allowed set of places (the civilization's known places plus its camp), so a
 path length never reveals a place the civilization has not seen. When the
 known places do not connect, ``lower_bound_ticks`` gives the Manhattan
-distance between the two centroids. It reads the two endpoints only, and it
-never exceeds the true distance: every hop costs the Manhattan distance between
-its centroids, so by the triangle inequality any path costs at least that. On
-``grid_blocks`` it equals the block distance times the block step.
+distance between the two centroids, in ticks. It reads the two endpoints
+only, and it never exceeds the true time: every hop costs the Manhattan
+distance between its centroids, so by the triangle inequality any path costs
+at least that, and rounding up to ticks keeps the order. On ``grid_blocks``
+the tile distance equals the block distance times the block step.
 
 Out of scope: per-seed coined place names for the unfamiliar-world arm
 (ADR-0018 section 3) belong to prompt rendering and parsing, not to the state.
@@ -54,97 +57,35 @@ Out of scope: per-seed coined place names for the unfamiliar-world arm
 
 import heapq
 from collections.abc import Set as AbstractSet
-from dataclasses import dataclass
 from typing import Final
 
-from aimpire.sim.state import Entity, Value, WorldState
+from aimpire.sim.place_view import PLACE, Place, Tile, place_of, places_by_id, tile_index
+from aimpire.sim.scale import map_scale
+from aimpire.sim.state import Value, WorldState
 
-PLACE: Final = "place"
+__all__ = [
+    "CIV",
+    "LAND",
+    "PETRI_BLOCK",
+    "PLACE",
+    "Place",
+    "Tile",
+    "grid_blocks",
+    "lower_bound_ticks",
+    "place_of",
+    "places_by_id",
+    "set_civ_name",
+    "tile_index",
+    "travel_ticks",
+    "travel_ticks_within",
+    "travel_tiles",
+]
+
 CIV: Final = "civ"
 LAND: Final = "land"
 PETRI_BLOCK: Final = 16
 _PREFIX: Final = "PL"
 _MIN_WIDTH: Final = 2
-
-Tile = tuple[int, int]
-
-
-@dataclass(frozen=True, slots=True)
-class Place:
-    """Read-only typed view of one place entity."""
-
-    entity_id: int
-    place_id: str
-    kind: str
-    tiles: tuple[Tile, ...]
-    centroid: Tile
-    neighbours: tuple[str, ...]
-
-
-def _int(value: Value, where: str) -> int:
-    if type(value) is not int:
-        raise TypeError(f"{where} must be an int")
-    return value
-
-
-def _str(value: Value, where: str) -> str:
-    if type(value) is not str:
-        raise TypeError(f"{where} must be a str")
-    return value
-
-
-def _list(value: Value, where: str) -> list[Value]:
-    if not isinstance(value, list):
-        raise TypeError(f"{where} must be a list")
-    return value
-
-
-def _pair(value: Value, where: str) -> Tile:
-    items = _list(value, where)
-    if len(items) != 2:
-        raise TypeError(f"{where} must be a [row, col] pair")
-    return _int(items[0], where), _int(items[1], where)
-
-
-def _view(entity_id: int, entity: Entity) -> Place:
-    where = f"place entity {entity_id}"
-    return Place(
-        entity_id=entity_id,
-        place_id=_str(entity.get("place_id"), f"{where}.place_id"),
-        kind=_str(entity.get("place_kind"), f"{where}.place_kind"),
-        tiles=tuple(_pair(t, f"{where}.tiles") for t in _list(entity.get("tiles"), where)),
-        centroid=_pair(entity.get("centroid"), f"{where}.centroid"),
-        neighbours=tuple(
-            _str(n, f"{where}.neighbours") for n in _list(entity.get("neighbours"), where)
-        ),
-    )
-
-
-def places_by_id(state: WorldState) -> dict[str, Place]:
-    """Every place, keyed and ordered by place id."""
-    views = [
-        _view(eid, state.entities[eid])
-        for eid in sorted(state.entities)
-        if state.entities[eid].get("kind") == PLACE
-    ]
-    return {p.place_id: p for p in sorted(views, key=lambda p: p.place_id)}
-
-
-def tile_index(state: WorldState) -> dict[Tile, str]:
-    """Map every tile to the id of the place containing it (built in place-id order)."""
-    return {tile: pid for pid, place in places_by_id(state).items() for tile in place.tiles}
-
-
-def place_of(state: WorldState, row: int, col: int) -> str:
-    """Id of the place containing tile ``(row, col)``; ``KeyError`` if none does.
-
-    Rebuilds the index on every call; callers looking up many tiles should
-    build ``tile_index`` once.
-    """
-    index = tile_index(state)
-    if (row, col) not in index:
-        raise KeyError(f"no place contains tile ({row}, {col})")
-    return index[(row, col)]
 
 
 def _spans(length: int, block: int) -> list[range]:
@@ -258,14 +199,14 @@ def _shortest(
 
 
 def _endpoints(state: WorldState, *pids: str) -> dict[str, Place]:
-    places = places_by_id(state)
+    places = places_by_id(state, with_tiles=False)
     for pid in pids:
         if pid not in places:
             raise KeyError(f"unknown place {pid!r}")
     return places
 
 
-def travel_ticks(state: WorldState, from_place: str, to_place: str) -> int:
+def travel_tiles(state: WorldState, from_place: str, to_place: str) -> int:
     """True tile steps between two centroids along the neighbour graph (module docstring).
 
     ``KeyError`` for an unknown place; ``ValueError`` if the two are not connected.
@@ -274,6 +215,11 @@ def travel_ticks(state: WorldState, from_place: str, to_place: str) -> int:
     if found is None:
         raise ValueError(f"no path from {from_place} to {to_place}")
     return found
+
+
+def travel_ticks(state: WorldState, from_place: str, to_place: str) -> int:
+    """``travel_tiles`` in ticks at Earth walking speed, by the state's map scale."""
+    return map_scale(state).ticks(travel_tiles(state, from_place, to_place))
 
 
 def travel_ticks_within(
@@ -288,10 +234,12 @@ def travel_ticks_within(
     for pid in (from_place, to_place):
         if pid not in allowed:
             raise ValueError(f"{pid} is not in the allowed places")
-    return _shortest(places, from_place, to_place, allowed)
+    tiles = _shortest(places, from_place, to_place, allowed)
+    return None if tiles is None else map_scale(state).ticks(tiles)
 
 
 def lower_bound_ticks(state: WorldState, from_place: str, to_place: str) -> int:
-    """Manhattan distance between the two centroids: never more than ``travel_ticks``."""
+    """Manhattan distance between the two centroids in ticks: never more than ``travel_ticks``."""
     places = _endpoints(state, from_place, to_place)
-    return _step(places[from_place].centroid, places[to_place].centroid)
+    tiles = _step(places[from_place].centroid, places[to_place].centroid)
+    return map_scale(state).ticks(tiles)
