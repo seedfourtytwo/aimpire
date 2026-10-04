@@ -204,10 +204,25 @@ Live calls run only from an explicit profile with a budget. CI never calls a pro
 
 ---
 
-## M0 — Petri dish (outline; specified in detail when F5 lands)
+## M0 — Petri dish (specified 2026-10-04)
 
-| Id | Work |
-|---|---|
+**Goal.** One tribe on a flat map with one regrowing food. Rule baselines show the physics behave as theory predicts; then a mind is scored against them. **ADRs:** 0007, 0010, 0011, 0012, 0013, 0014, 0015, 0019, 0020 (W0 rates).
+
+**Rules data** (`rules/v1/m0.yaml`, a rules version bump, its own PR): map size (default 64 × 64 tiles), place block (16 → 16 places), food ceiling per tile at Earth (milli-units), fertility noise range, regrowth rate and seed term (each with its period, ADR-0011), daily food need per person, spoilage of stores, starvation death chance, scout sight, starting people and stores. No numbers are hard-coded in `sim/`.
+
+**Physics from W0.** The plant ceiling, walking speed (travel ticks), carry load and walking energy come from the derived rates, so the Lab knobs reach M0.
+
+| Id | Work | Acceptance (tests written first) |
+|---|---|---|
+| M0a | `sim/systems/regrowth.py` and `sim/world/m0.py`: worldgen from the seed (WORLDGEN stream; fertility as integer value noise), a `food` layer in milli-units, per-tile ceiling = W0 plant ceiling × fertility. Logistic regrowth with a seed term, ΔF = r·F·(K−F)/K + s·(K−F), through `fixed.apply_rate` with carries; ledger kind `REGROWTH`. Preset `m0` registered. | `test_empty_map_settles_at_ceiling` (every tile within 1 % of K after the predicted time); `test_regrowth_matches_closed_form` (one tile against the exact discrete recurrence); `test_constant_harvest_sweep_peaks_near_half_full` (a harvest-fraction sweep on rule code peaks where theory says, within a stated tolerance); `test_ledger_balances_every_tick`; `test_gravity_changes_ceiling_only_through_w0` |
+| M0b | `sim/systems/forage.py`, `camp.py`, `scout.py`, `hunger.py`; the commit step turns the standing policy into work. Each tick: <ul><li>foragers at a place gather min(carry per trip ÷ (1 + 2·travel ticks), food available), taking from the place's tiles in sorted order (`HARVEST`, tile → stores);</li><li>walking energy is eaten from stores (`CONSUME`);</li><li>people eat the ration (`CONSUME`), and stores spoil (`SPOIL`);</li><li>a shortfall gives each person a death chance from the LIFE stream;</li><li>`MOVE_CAMP` takes the travel ticks, with no foraging meanwhile;</li><li>`SCOUT` writes `evidence` and updates `known` with a dated snapshot.</li></ul> Population is a count on the `civ` entity; there are no births in M0 (they come in M3). Every change is written into the `civ` / `evidence` / `message` layout read by `civ_record.py`. | `test_foraging_conserves_food`; `test_no_food_means_deaths_and_no_negative_stores`; `test_move_camp_takes_travel_time`; `test_scout_reveals_snapshot_not_live_truth`; `test_unknown_place_order_rejected_without_leak`; `test_turn_order_independent` |
+| M0c | Rule baselines as `RuleProvider` policies: `random`, `greedy` (all workers on the richest known place), `half_full` (forage a place only above K/2, effort scaled to hold it there), `msy` (the analytic optimum for the disclosed rule). `aimpire run m0 --mind rule:half_full --seed 1 --ticks N --out runs/` writes the run store, the replay file and the lab notebook. | `test_half_full_outlives_greedy_on_most_seeds` (k of n, stated in the test); `test_run_cli_is_reproducible` (same hashes twice) |
+| M0d | `aimpire batch` ensemble of the baselines over several hundred seeds; reference bands (median and 10–90 %) of population, stores and stock at fixed checkpoints, written to `docs/experiments/m0-reference.md` with charts | `test_reference_bands_reproduce` (a 10-seed subset) |
+| M0e | Experiment E0: pre-registration file (hypotheses, metrics, arms: places or grid, rule disclosed or hidden, knowledge arm A0), the batch file, and a report template. Runs with rule and mock minds in CI; live arms run by hand under the budget | pre-registration hash stored in every run manifest |
+
+**Lab steps landing alongside:** W0 and LAB0 before M0a; LAB1 (`aimpire lab twin`) after M0c.
+
+---|---|
 | M0a | Flat map, one food layer, regrowth with a seed term, `grid_blocks` places |
 | M0b | People with energy; rule execution of `FORAGE`, `MOVE_CAMP`, `SCOUT`; starvation |
 | M0c | Baselines: random, greedy, and the harvest policy that holds stock near half full |
