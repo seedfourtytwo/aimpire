@@ -30,3 +30,5 @@ One line per decision or assumption: date, item, source. Architecturally signifi
 | 2026-10-04 | Correction: a 10-tick cadence is 12 councils per civilization per year, not 36; per-year cost figures in ADR-0009 and research notes 30 and 70 are three times too high (ADR-0011) | review |
 | 2026-10-04 | `.github/workflows/` stays creator-only by design; agents are not given the Workflows permission (ADR-0016, proposed) | review |
 | 2026-10-04 | ADRs 0011–0014 and 0016–0019 accepted | creator |
+| 2026-10-04 | **Spending (Q4):** in-game AI is capped at 20 dollars a month in total. Providers: OpenRouter, an Anthropic API key, local Ollama (free). Keys are added by the creator as secrets, never in chat, code or logs | creator |
+| 2026-10-04 | Remove the admin bypass on the `main` ruleset, so CI must pass before every merge; the creator changes it in GitHub settings (the session cannot) | creator |

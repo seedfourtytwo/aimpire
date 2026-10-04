@@ -193,6 +193,15 @@ No network in any of this. `RuleProvider` returns ordinary replies through the s
 
 Live calls run only from an explicit profile with a budget. CI never calls a provider.
 
+### Budget rules (creator decision, 2026-10-04)
+
+- **Monthly cap: 20 dollars in total** across OpenRouter and Anthropic. Ollama runs locally and costs nothing.
+- **Two layers of protection.** The creator sets a hard monthly limit on each provider's dashboard. The code also keeps its own spend ledger in the run store and refuses a call that would cross a cap (`test_budget_refuses_over_cap`).
+- **Code defaults:** 20 dollars a month across all runs; 2 dollars per run unless the profile sets less; every profile names its price per million input and output tokens, checked against the provider's current price page.
+- **Estimate before spending.** `aimpire batch` and `aimpire qualify` print the worst-case cost (councils × tokens × price) and refuse to start if it exceeds the remaining budget.
+- **Order of use:** mock, rule and recorded providers first; Ollama for iteration; OpenRouter cheap models for breadth; Anthropic for selected runs.
+- **Keys:** `OPENROUTER_API_KEY` and `ANTHROPIC_API_KEY`, read from the environment by name (profiles hold only `api_key_env`). In GitHub they live only in the gated `live-eval` environment.
+
 ---
 
 ## M0 — Petri dish (outline; specified in detail when F5 lands)
