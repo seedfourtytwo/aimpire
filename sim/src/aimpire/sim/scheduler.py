@@ -12,8 +12,11 @@ One call to ``Scheduler.step`` advances the world one tick:
     2. ``state.tick`` increases by one.
 
 Systems get randomness and turn order only through ``TickContext``, so all
-draws are counter-based (ADR-0012). A sequential system acts on entities in
-``ctx.order(ids)``, a fresh shuffle every tick; it never relies on id order.
+draws are counter-based (ADR-0012). They record every change to a conserved
+material in ``ctx.ledger``. In checked mode (``quantities`` given), the
+scheduler verifies each system against the ledger right after it runs (F3).
+A sequential system acts on entities in ``ctx.order(ids)``, a fresh shuffle
+every tick; it never relies on id order.
 """
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
@@ -21,6 +24,7 @@ from dataclasses import dataclass, field
 from typing import Literal, Protocol
 
 from aimpire.sim.calendar import Calendar
+from aimpire.sim.ledger import Ledger, Measure, check_after_system, measure_all
 from aimpire.sim.rng import SITES, permutation, stream_key
 from aimpire.sim.state import Value, WorldState
 
@@ -37,6 +41,7 @@ class TickContext:
     calendar: Calendar
     run_seed: int
     tick: int
+    ledger: Ledger
 
     def key(self, stream: int) -> int:
         """The draw key for ``stream`` at this tick (pass to ``rng.draw``)."""
@@ -97,7 +102,11 @@ class Scheduler:
     """Builds the systems a preset names and runs them tick by tick."""
 
     def __init__(
-        self, preset: Preset, registry: Mapping[str, SystemFactory], calendar: Calendar
+        self,
+        preset: Preset,
+        registry: Mapping[str, SystemFactory],
+        calendar: Calendar,
+        quantities: Mapping[str, Measure] | None = None,
     ) -> None:
         names = [spec.name for spec in preset.systems]
         unknown = sorted(set(names) - set(registry))
@@ -117,13 +126,29 @@ class Scheduler:
         self.preset = preset
         self.calendar = calendar
         self.systems: tuple[System, ...] = tuple(systems)
+        self.ledger = Ledger()
+        self.quantities: Mapping[str, Measure] | None = quantities
 
     def step(self, state: WorldState) -> None:
-        """Run every due system once, in preset order, then advance the tick."""
-        ctx = TickContext(calendar=self.calendar, run_seed=state.run_seed, tick=state.tick)
+        """Run every due system once, in preset order, then advance the tick.
+
+        In checked mode each system is verified against the ledger as soon as
+        it returns, so a failure names the system that broke the invariant.
+        """
+        ctx = TickContext(
+            calendar=self.calendar, run_seed=state.run_seed, tick=state.tick, ledger=self.ledger
+        )
+        checked = self.quantities is not None
+        before = measure_all(state, self.quantities) if self.quantities is not None else {}
         for system in self.systems:
-            if _due(system.cadence, self.calendar, state.tick):
-                system.step(state, ctx)
+            if not _due(system.cadence, self.calendar, state.tick):
+                continue
+            self.ledger.begin(system.name, state.tick)
+            system.step(state, ctx)
+            if checked and self.quantities is not None:
+                before = check_after_system(
+                    state, system.name, before, self.quantities, self.ledger
+                )
         state.tick += 1
 
     def run(self, state: WorldState, ticks: int) -> None:

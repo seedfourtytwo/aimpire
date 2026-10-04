@@ -2,7 +2,7 @@
 
 > Every agent session reads this first and updates it last.
 
-**Phase:** Phase 1, foundation. F1 and F2 are done; next is F3 (ledger and invariants). See `docs/plan/roadmap.md` and `docs/plan/backlog.md`.
+**Phase:** Phase 1, foundation. F1–F3 are done; next are F4 (watch) and F5 (mind interface) in parallel. See `docs/plan/roadmap.md` and `docs/plan/backlog.md`.
 **Last updated:** 2026-10-04 by the planning review session.
 
 ## Current state
@@ -17,7 +17,8 @@
 - [ ] G1: guard rails (protected-path hook and CI check, acceptance-test folder). G1a needs the creator.
 - [x] F1: `sim/` uv project, package skeleton, CLI, guard-rail config and acceptance tests (PR #4).
 - [x] F2: deterministic core: `fixed` (F2a), `rng` (F2b), `calendar` and `rules` loader (F2c), `state` and `hashing` (F2d), `scheduler` (F2e). PRs #5–#9.
-- [ ] F3, then F4 and F5 in parallel, then F6.
+- [x] F3: ledger and per-system invariant checks (`aimpire.sim.ledger`; scheduler checked mode).
+- [ ] F4 and F5 in parallel, then F6.
 
 ## In flight
 _None._
