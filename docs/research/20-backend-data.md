@@ -1,5 +1,8 @@
 # 20 — Backend & Data Architecture
 
+!!! note "Review note, 2026-10-04"
+    Where this note conflicts with an ADR or with `docs/plan/roadmap.md`, they win. Epic numbers E1–E15 were replaced by F1–F6 and M0–M8. Superseded here: the random-number design (see ADR-0007 and ADR-0012), LiteLLM as a core provider (ADR-0005), the GDScript generator (ADR-0002), and the tick phase order (ADR-0007).
+
 Author: backend/data research lead · 2026-10-04 · Input: `00-brief.md`
 
 ## 1. Versions verified (2026-10-04)
@@ -114,7 +117,7 @@ Not pure event sourcing (re-deriving state from events requires every rule to be
   - `ws_messages.schema.json` via `pydantic.json_schema.models_json_schema` (JSON Schema 2020-12) for WS messages, which OpenAPI doesn't describe.
   - GDScript: no mature schema→GDScript generator; write a small `scripts/gen_gdscript.py` that walks the JSON Schema and emits typed GDScript classes with `from_dict()`. CI fails if regenerated output differs (`git diff --exit-code`).
   - Contract version field (`api_version`) in every message.
-- **Headless CLI** (`gf run|replay|branch|batch|verify`, typer or argparse) calls the same `engine` package directly, no HTTP. Batch experiments = N seeds × configs, each a separate run db, results summarized to a CSV/parquet.
+- **Headless CLI** (`aimpire run|replay|branch|batch|verify`, typer or argparse) calls the same `engine` package directly, no HTTP. Batch experiments = N seeds × configs, each a separate run db, results summarized to a CSV/parquet.
 
 ## 7. Async cognition scheduler (sketch)
 
@@ -145,9 +148,9 @@ async def run_one(r, sem):
 ## 8. Proposed package layout
 
 ```
-greatfilter/
+aimpire/
   pyproject.toml  uv.lock  .python-version
-  src/greatfilter/
+  src/aimpire/
     sim/            # authoritative, pure, no I/O, no asyncio
       state.py ids.py fixed.py rng.py hashing.py tick.py
       fields/ (hydrology.py vegetation.py weather.py)
@@ -159,7 +162,7 @@ greatfilter/
     persistence/    # db.py migrations/*.sql blobs.py checkpoints.py replay.py
     contracts/      # pydantic API/WS models; generated/ outputs
     api/            # FastAPI app, routes, ws stream
-    cli/            # gf command
+    cli/            # aimpire command
   tests/ (unit/ property/ golden/ replay/)
   scripts/ (gen_contracts.py gen_gdscript.py)
   docs/adr/

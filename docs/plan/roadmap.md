@@ -1,40 +1,70 @@
 # Roadmap
 
-Strategy (ADR-0010): **logic first, simple physics, AI in the loop from day one, then add one layer of complexity at a time.** Graphics are dots until the logic earns better.
+**Goal.** Let model-driven societies make their own decisions and see what emerges: what kind of civilization, what political order, what beliefs. Then trace parallels with real history. The player is a god who can nudge and speak but never command.
+
+**Strategy.** Logic first, dots before graphics (ADR-0010). Build a thin slice of the whole loop early, then deepen it (ADR-0015). Author physics and primitives, never institutions (ADR-0019).
+
+The order below was accepted by the creator on 2026-10-04. It replaces the L0 to L8 ladder order. Detailed issue specs for the first steps are in [`backlog.md`](backlog.md).
 
 ## Phase 0 — Planning ✅
-Spec, research, ADRs 0001–0010, CI skeleton, agent conventions.
+Spec, research, ADRs 0001–0010, CI skeleton, agent conventions. Then the planning review and ADRs 0011–0019.
 
-## Phase 1 — Engine foundation (needed before L0)
-| Epic | Deliverable | Tests (written first) |
+## Phase 1 — Foundation
+No live model is needed until F6. Tests are written first (ADR-0016).
+
+| Epic | Deliverable | Gate |
 |---|---|---|
-| **F1** Repo bootstrap | `sim/` uv project; justfile recipes `lint`, `typecheck`, `test`, `check-sim`; CI python job goes live | CI green on an empty package |
-| **F2** Deterministic core | counter RNG, fixed-point helpers, canonical hash, plug-in system scheduler (ordered systems, per-system rate, on/off via config) | same seed → same hash; permuted registration order → error, not drift |
-| **F3** Ledger & invariants | conserved-quantity ledger, debug-mode invariant checks per system | no negatives; sources − sinks balance every tick |
-| **F4** Run output & viewer | metrics time-series, PNG/GIF frame renderer (dots), Markdown "lab notebook" per run, replay export + static Canvas2D player | golden image hash for a seeded 10-tick run |
+| **G1** Guard rails | Protected paths hook, CI path check, acceptance-test folder, review workflow, task template | A test pull request that touches a protected path is blocked |
+| **F1** Bootstrap | `sim/` uv project, package skeleton, `just` recipes, import rules, banned-API lint | `just check` green on the empty package |
+| **F2** Deterministic core | calendar, fixed-point helpers, draw function, turn order, ids, state hash, scheduler with presets (ADR-0011, ADR-0012) | Same seed gives the same hash; integer results match exact fractions; known-answer draw vectors match |
+| **F3** Ledger and invariants | conserved-quantity ledger, invariant checks per system | No negatives; sources minus sinks balance every tick |
+| **F4** Watch | metrics series, dot frames, replay file, static replay player, lab notebook per run | A replay file renders identically twice |
+| **F5** Mind interface v0 | provider protocol; mock, rule and recorded providers; places; observation builder; reply schema; validator; decision log; budgets (ADR-0013) | An invalid reply never changes state; recorded replay matches every hash |
+| **F6** Live and batch | OpenAI-compatible and Anthropic adapters; qualification; batch runner with paired seeds, replicates and seats; report generator (ADR-0014) | Budget caps refuse a call that would exceed them; two or three models qualified |
 
-## Phase 2 — The ladder (ADR-0010)
-Each level is done only when: its physics tests pass, the rule baseline runs, and an AI experiment report is written (`docs/experiments/`).
+Dependencies: G1 → F1 → F2 → F3 → (F4 and F5 in parallel) → F6.
 
-| Level | Physics & rules | AI hook | Validation |
+## Phase 2 — Milestones
+Each milestone is a named preset (`m0`, `m1`, …). It is done when its physics tests pass on rule baselines, one pre-registered AI experiment is written up, a replay can be watched, and status files are updated.
+
+| Milestone | Adds | Gate on rule baselines | AI experiment |
 |---|---|---|---|
-| **L0 Petri dish** | grid, regrowing food, agents with energy: move, eat, starve | action contract (move/forage/stay) + mock + one real-model profile | food regrowth curve; energy conservation; random vs greedy vs LLM foraging |
-| **L1 Life cycle** | birth, aging, death; inheritance | ration / disperse allocations | emergent carrying capacity; logistic-like growth |
-| **L2 Terrain & weather** | elevation, river, moisture, seasons, rain/drought interventions | observation of weather; store/move decisions | seasonal cycles; drought → measurable behaviour change |
-| **L3 Ecology & disease** | prey, predators, hunting; SEIR contagion | avoid/quarantine/hunt decisions | Lotka–Volterra oscillation; SIR curve shape |
-| **L4 Groups & conflict** | 2+ groups, territory, contact, combat | raid / defend / negotiate | Lanchester sanity; permutation-invariant resolution |
-| **L5 Trade** | goods, barter, specialisation | trade offers | price convergence; inequality (Gini) emerges |
-| **L6 Knowledge** | experiments, teaching, records, loss | experiment / teach / record | carrier-loss blocks process; records restore it |
-| **L7 Belief & religion** | visions, speech, beliefs, rituals, sects | belief updates cite evidence | speech can't bypass validation; sect fission under drift |
-| **L8 Politics** | leaders, factions, institutions, fission | minds per polity (+ role minds later) | group fission at size thresholds; legitimacy dynamics |
+| **M0 Petri dish** | one group, one regrowing food, named places | an empty map settles at the predicted stock; a harvest sweep peaks near half-full stock | harvest policy against random, greedy and optimal rules; regrowth rule disclosed or hidden; places or grid |
+| **M1 Seasons and a voice** | terrain, river, seasons, storage, spoilage, weather; signs, omens, a voice heard by one person, prayer (ADR-0017); journal and chronicle; run store with branching; minimal web console | drought changes executed work against a control; a voice message cannot bypass validation | unexplained drought; true, false and harmful messages from the voice; coincidence against intervention; what they pray for |
+| **M2 Two tribes** | a second group on another model; contact, messages, gifts, barter, raids, territory | shuffling proposal order leaves the hash unchanged; ordinary fights kill under 10% | mixed-model pairings with seats rotated; a scarcity sweep; promises kept or broken |
+| **M3 Generations** | births, aging, death, inheritance, succession; households; knowledge carriers, teaching, records, loss; dictation and inscription | the population plateau scales with food; growth slows as numbers rise; losing every carrier of a skill blocks it and a surviving record restores it | population policy; what survives a leader's death; how a message drifts over generations; first runs with household minds |
+| **M4 Living world** | prey with their own food; predators; hunting; disease that can return | both species persist in k of n seeds; predators lag prey; the share infected in an outbreak falls in an expected range | avoidance, quarantine, overhunting |
+| **M5 Knowledge** | experiments on materials; rule tables generated per seed (ADR-0018) | an unsupported experiment yields nothing; a process becomes usable only after two independent successes | discovery in familiar and unfamiliar worlds; the familiarity gap |
+| **M6 Exchange** | households as owners; trade, gifts, obligations; the control and obligation primitives (ADR-0019) | prices converge in a trading fixture; inequality responds to storage | what exchange arrangements appear, by knowledge arm |
+| **M7 Belief** | what a society does with the voice: roles for hearers, shared assemblies, splits; the god's power economy | belief never changes physics; a message cannot be made true by repetition | how groups explain the voice; when they split |
+| **M8 Rule** | rules about rules, roles, sanctions, fission; household minds by default | rule checking is exact; fission hazard rises with group size | what orders of rule appear, how they change, how they end |
 
-Persistence (save, replay, branch) arrives with F4 as replay export, and fully alongside L1 (ADR-0004).
-The research API and live interventions UI arrive alongside L2.
-The PixiJS/React client (ADR-0002) is deferred.
+M2 and M3 do not depend on each other. M2 comes first by default; swap them if population dynamics matter more than rivalry.
 
-## First sprint (parallel agent sessions)
-1. **Agent A:** F1 → F2 (core + scheduler).
-2. **Agent B:** F4 viewer + metrics, against a stub world. It can start once F1 lands.
-3. **Agent C:** after F2, the L0 physics: food field, energy agents, rule baselines.
+M6 to M8 are designed in detail when M5 closes, around primitives and not named institutions.
 
-Then L0's AI experiment: an LLM group-mind vs rules, on matched seeds.
+## Side tracks
+| Track | Starts | What |
+|---|---|---|
+| **Native minds** (ADR-0018) | after M2 | train a small model on in-world text only; put it through M0 qualification; decide on that result |
+| **Observer layer** (ADR-0019) | with M2 | detectors that label patterns in finished runs; the emergence ledger; parallels with real history |
+| **Web client** (ADR-0002) | console at M1; full client when the logic earns it | pause, step, intervene, read the chronicle, follow the sent-to-done chain, fork a timeline |
+
+## From the old ladder
+| Old level | Now |
+|---|---|
+| L0 Petri dish | M0 |
+| L1 Life cycle | M3 |
+| L2 Terrain and weather | M1 |
+| L3 Ecology and disease | M4 |
+| L4 Groups and conflict | M2 |
+| L5 Trade | M6, with simple barter in M2 |
+| L6 Knowledge | M3 (carriers, teaching, records) and M5 (experiments) |
+| L7 Belief | the voice in M1; the rest in M7 |
+| L8 Politics | M8 |
+
+## First sprint
+1. **Creator:** merge the planning change; answer the open questions; push the CI path check from G1.
+2. **Strong model:** G1, then acceptance tests for F1 and F2.
+3. **Implementing agents:** F1, then F2 in the order given in the backlog.
+4. Once F3 lands: F4 and F5 in parallel sessions.

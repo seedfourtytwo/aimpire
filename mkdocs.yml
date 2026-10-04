@@ -37,6 +37,7 @@ nav:
   - Architecture: architecture/overview.md
   - Plan:
       - Roadmap: plan/roadmap.md
+      - Backlog: plan/backlog.md
       - Open questions: plan/open-questions.md
       - Decision log: plan/decision-log.md
   - ADRs:
@@ -52,6 +53,15 @@ nav:
       - "0008 First-slice scope": adr/0008-first-slice-simulation-scope.md
       - "0009 Funding": adr/0009-funding-development-vs-cognition.md
       - "0010 Complexity ladder": adr/0010-complexity-ladder.md
+      - "0011 Time & cadence": adr/0011-time-schedules-and-council-cadence.md
+      - "0012 Numbers & draws": adr/0012-numeric-and-random-primitives.md
+      - "0013 Mind interface": adr/0013-mind-interface.md
+      - "0014 Experiment protocol": adr/0014-experiment-protocol.md
+      - "0015 Milestone order": adr/0015-milestone-order.md
+      - "0016 Agent guard rails": adr/0016-agent-guard-rails-and-model-tiering.md
+      - "0017 The god's channels": adr/0017-the-gods-channels.md
+      - "0018 What the minds know": adr/0018-what-the-minds-know.md
+      - "0019 Emergence first": adr/0019-emergence-first.md
   - Research:
       - Brief: research/00-brief.md
       - Client & rendering: research/10-client-rendering.md
@@ -60,7 +70,10 @@ nav:
       - CI/CD & workflow: research/40-cicd-workflow.md
       - Simulation design: research/50-simulation-design.md
       - Social systems: research/70-social-systems.md
+      - Planning review: research/80-plan-review-2026-10-04.md
   - Agents:
       - Status: agents/STATUS.md
       - Workflow: agents/workflow.md
       - Handoff template: agents/handoff-template.md
+      - Task template: agents/task-template.md
+      - Review checklist: agents/review-checklist.md

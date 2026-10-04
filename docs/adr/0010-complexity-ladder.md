@@ -1,6 +1,6 @@
 # ADR-0010: Logic first, complexity ladder, dot viewer
 
-- **Status:** Accepted
+- **Status:** Accepted — ladder order superseded by ADR-0015
 - **Date:** 2026-10-04
 - **Deciders:** creator
 - **Amends:** ADR-0002 (client comes later; dots first), ADR-0008 (the fixed first slice is replaced by the ladder below)

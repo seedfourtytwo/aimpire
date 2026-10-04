@@ -1,4 +1,7 @@
-# Great Filter — condensed brief for research agents
+# Aimpire — condensed brief for research agents (working title was Great Filter)
+
+!!! note "Review note, 2026-10-04"
+    Where this note conflicts with an ADR or with `docs/plan/roadmap.md`, they win. Epic numbers E1–E15 were replaced by F1–F6 and M0–M8. This brief predates the name Aimpire, the web-client decision and the milestone order.
 
 Source: creator's handoff spec (2026-10-04). Working title "Great Filter" (project nickname: GodMode).
 

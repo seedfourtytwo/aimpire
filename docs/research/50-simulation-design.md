@@ -1,4 +1,7 @@
-# Great Filter — First-Slice Simulation Design
+# Aimpire — First-Slice Simulation Design
+
+!!! note "Review note, 2026-10-04"
+    Where this note conflicts with an ADR or with `docs/plan/roadmap.md`, they win. Epic numbers E1–E15 were replaced by F1–F6 and M0–M8. Corrections and replacements: "36 rounds per year" should read 12. Time is governed by ADR-0011, rates and draws by ADR-0012, the action contract by ADR-0013, interventions by ADR-0017. The validation rules and rejection reasons in section 3 still apply.
 
 Status: draft from planning agent, 2026-10-04. Scope: 64×64 map, 2 civilizations × 30 people. All rules are versioned as `rules/v1`. Items marked *[ext]* are extension points: named, not built.
 
@@ -145,7 +148,7 @@ Natural weather (showers, dry spells, ~1 lightning/year) uses the same event kin
 | E3 | World gen + environment (B) | Shared River from seed; seasons, moisture, regrowth, river lag, fire, spoilage — unit tested |
 | E4 | People, needs, movement, routine (B) | hunger/health/death; deterministic A*; predictable starvation scenario; conservation holds |
 | E5 | Action contract, validator, task executor (B) | 13 action schemas; every rejection reason tested; partial acceptance; idempotency; stale rejection |
-| E6 | Baseline policy + headless demo (B) | `gf run --scenario shared_river --ticks 360 --headless` completes without credentials, emits metrics |
+| E6 | Baseline policy + headless demo (B) | `aimpire run --scenario shared_river --ticks 360 --headless` completes without credentials, emits metrics |
 | E7 | Persistence, replay, branching (B/C) | SQLite manifest/decisions/snapshots/RNG; save/resume and replay hash-identical; branch provenance |
 | E8 | Observation projection (C) | visibility, witnesses, comm network; leakage + hidden-cause tests; observation hash per round |
 | E9 | Cognition scheduler + providers (C) | barrier, timeouts, budgets, mock + rule providers, one local + one cloud adapter (live qualification may be blocked by credentials — disclosed); mixed-profile fixture run |
@@ -154,6 +157,6 @@ Natural weather (showers, dry spells, ~1 lightning/year) uses the same event kin
 | E12 | Interventions (D) | five channels with flags, costs, logs; geographic evidence; vision/speech as observations only; drought→executed-behaviour test |
 | E13 | Contact, trade, negotiation, conflict (E) | first-contact event; matched trades; agreements; combat order test |
 | E14 | Research API + inspection client (E) | loopback FastAPI: pause/step/intervene/inspect; event→evidence→belief→decision→task→outcome traversal; branch from UI |
-| E15 | Batch runner, metrics, exports, benchmark (F) | `gf batch --seeds 1..20 --profiles …` with model rotation across positions; CSV/JSONL; ablations; benchmark command |
+| E15 | Batch runner, metrics, exports, benchmark (F) | `aimpire batch --seeds 1..20 --profiles …` with model rotation across positions; CSV/JSONL; ablations; benchmark command |
 
 Extension points (not built): births/aging, institutions as carriers, multiple settlements, hydrology/irrigation, rules v2 (metallurgy+), map chunking for larger worlds.

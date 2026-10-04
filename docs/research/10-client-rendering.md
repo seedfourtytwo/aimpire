@@ -1,5 +1,8 @@
 # 10 — Visual client & rendering
 
+!!! note "Review note, 2026-10-04"
+    Where this note conflicts with an ADR or with `docs/plan/roadmap.md`, they win. Epic numbers E1–E15 were replaced by F1–F6 and M0–M8. The full web client is deferred; a static replay player and a minimal console come first (ADR-0010, ADR-0015).
+
 Author: graphics/client research lead · 2026-10-04 · Inputs: `00-brief.md`, `20-backend-data.md`, `40-cicd-workflow.md`, creator constraints of 2026-10-04 (cloud-first dev with no GPU or display, public OSS repo, research panels as important as the map, browser/phone demo is a plus).
 
 ## 1. Verified facts (2026-10-04)

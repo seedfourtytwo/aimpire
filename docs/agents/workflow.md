@@ -10,6 +10,14 @@
    - Fill in the template, including the determinism and schema impact lines.
 6. **Hand off:** update `STATUS.md`. If work remains, add `docs/agents/handoff-<branch>.md` (copy `handoff-template.md`).
 
+## Tiers, specs and tests (ADR-0016)
+- **Tiers.** The strongest model writes ADRs, interfaces, acceptance tests and reviews. A mid-tier model implements one specified issue. Small models do search and mechanical edits.
+- **The issue is the spec.** Use [`task-template.md`](task-template.md). The backlog in `docs/plan/backlog.md` lists the items in build order.
+- **Acceptance tests come first.** They live in `sim/tests/acceptance/`, are written by the strong model, and are read-only for implementers.
+- **Protected paths.** `sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, lint and type-check settings. Implementing sessions do not change them.
+- **If a test seems wrong, stop and report.** Never edit a test to make it pass.
+- **Review.** Changes under `sim/`, `rules/` or `schema/` are reviewed in a fresh session by a stronger model, using [`review-checklist.md`](review-checklist.md).
+
 ## Hot files: one PR at a time, never mixed with feature work
 - `schema/`: the generated contracts. Make a schema-first PR, and merge it before dependent work.
 - `uv.lock` and `client/web/package-lock.json`
@@ -17,7 +25,7 @@
 - `rules/`: versioned data; a change bumps the rules version.
 
 ## Parallel agents
-- **Split along module seams:** `sim/fields`, `sim/agents`, `sim/knowledge`, `cognition`, `persistence`, `client`.
+- **Split along module seams:** `sim/fields`, `sim/agents`, `sim/knowledge`, `cognition`, `persistence`, `client`. Inside a milestone, split into physics, observation and prompt, experiment and report.
 - **Rebase on `main` before opening a PR.** Never force-push to `main`.
 
 ## Definition of done
@@ -29,7 +37,7 @@
 - [ ] Docs are updated: domain rules, ADR, README as relevant.
 - [ ] `STATUS.md` is updated.
 
-## Recommended repo settings (needs admin; see open-questions Q6–Q7)
+## Recommended repo settings (needs admin)
 **Ruleset on `main`:**
 - Require a pull request, and require status check `ci-ok`.
 - Linear history, squash merge only.
@@ -43,5 +51,9 @@
 **Security:** enable secret scanning, push protection and Dependabot alerts.
 
 **Environment `live-eval`:** the creator is the required reviewer. Secrets: `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY` (optional).
+
+**Environment `protected-change`:** the creator is the required reviewer. Used by the protected-path check (backlog G1a).
+
+**Ruleset bypass list:** agents push as the creator's GitHub user, so the creator should not be on it.
 
 **Pages:** set Source to GitHub Actions.
