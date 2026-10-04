@@ -3,7 +3,7 @@
 > Every agent session reads this first and updates it last.
 
 **Phase:** Phase 1, foundation. F1–F3 are done; next are F4 (watch) and F5 (mind interface) in parallel. See `docs/plan/roadmap.md` and `docs/plan/backlog.md`.
-**Last updated:** 2026-10-04 by the planning review session.
+**Last updated:** 2026-10-04 by the F5e session (council barrier, budgets, run store).
 
 ## Current state
 - **Goal:** emergence. See what civilizations, political orders and beliefs arise when the models decide for themselves (ADR-0019).
@@ -18,11 +18,12 @@
 - [x] F1: `sim/` uv project, package skeleton, CLI, guard-rail config and acceptance tests (PR #4).
 - [x] F2: deterministic core: `fixed` (F2a), `rng` (F2b), `calendar` and `rules` loader (F2c), `state` and `hashing` (F2d), `scheduler` (F2e). PRs #5–#9.
 - [x] F3: ledger and per-system invariant checks (`aimpire.sim.ledger`; scheduler checked mode).
-- [ ] F4 and F5 in parallel, then F6.
-  - F5c second half (observation builder `cognition/observe.py`, reader `cognition/civ_record.py`, `places` and `grid` renderers `cognition/render.py`): PR open on `agent/f5c-observe-render`. It fixes the m0 layout of `civ`, `evidence` and `message` entities (documented in `civ_record.py`); M0b writes them.
+- [x] F4: watch tools: metrics, dot frames, PNG and SVG charts (F4a), replay export and Canvas2D player (F4b), lab notebook (F4c). PRs #12, #15, #16.
+- [x] F5: mind interface: contracts and schema (F5a), providers (F5b), places, observation builder and renderers (F5c), validator and decision log (F5d), council barrier, budgets and SQLite run store (F5e). PRs #11, #13, #14, #17, #19, #20. The m0 layout of `civ`, `evidence` and `message` entities is documented in `cognition/civ_record.py`; M0b writes them.
+- [ ] F6: live adapters (OpenAI-compatible for Ollama and OpenRouter; Anthropic), `aimpire qualify`, `aimpire batch`. Budget rules are under F6 in `backlog.md` (20 dollars a month).
 
 ## In flight
-- `agent/f5c-observe-render`: awaiting review (protected path: new `sim/tests/acceptance/test_f5c_observe.py`).
+_None._
 
 ## Known blockers
 - `.github/workflows/` is the creator's alone, by design (ADR-0016). Workflow changes are pushed by the creator.
