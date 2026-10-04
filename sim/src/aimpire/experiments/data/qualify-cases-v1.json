@@ -1,0 +1,498 @@
+{
+ "cases": [
+  {
+   "mock": {
+    "reply": "{\"annal\": \"\", \"beliefs\": [], \"commitments\": [], \"decision_id\": \"C01-K0001\", \"journal\": \"council 1\", \"messages\": [], \"names\": [], \"orders\": [{\"kind\": \"SCOUT\", \"place\": \"PL02\", \"qty\": 2, \"target\": \"\", \"text\": \"\"}, {\"kind\": \"FORAGE\", \"place\": \"PL01\", \"qty\": 5, \"target\": \"\", \"text\": \"\"}], \"policy\": {\"allocations\": [{\"activity\": \"FORAGE\", \"place\": \"PL01\", \"share\": 600}], \"ration\": 1000}}"
+   },
+   "note": "first council, plenty of food",
+   "observation": {
+    "calendar": {
+     "council": 1,
+     "season": "S0",
+     "tick": 0,
+     "ticks_to_next_council": 10,
+     "year": 0
+    },
+    "civ_id": "C01",
+    "contract": "m0",
+    "decision_id": "C01-K0001",
+    "events": [],
+    "journal": "",
+    "knowledge": {
+     "beliefs": [],
+     "claims": []
+    },
+    "last_results": [],
+    "messages": [],
+    "places": [
+     {
+      "kind": "land",
+      "last_seen_tick": 0,
+      "name": "",
+      "place_id": "PL01",
+      "seen": "food 40",
+      "travel_ticks": 0
+     },
+     {
+      "kind": "land",
+      "last_seen_tick": 0,
+      "name": "",
+      "place_id": "PL02",
+      "seen": "food 25",
+      "travel_ticks": 3
+     },
+     {
+      "kind": "land",
+      "last_seen_tick": -1,
+      "name": "",
+      "place_id": "PL03",
+      "seen": "",
+      "travel_ticks": 6
+     }
+    ],
+    "standing": {
+     "commitments": [],
+     "policy": {
+      "allocations": [],
+      "ration": 1000
+     },
+     "tasks": []
+    },
+    "status": {
+     "food_days": 60,
+     "food_days_change": 0,
+     "population": 20,
+     "population_change": 0,
+     "stores": [
+      {
+       "change": 0,
+       "material": "food",
+       "qty": 60
+      }
+     ]
+    },
+    "version": "C01:c0001:80d107483fc2"
+   }
+  },
+  {
+   "mock": {
+    "reply": "{\"annal\": \"\", \"beliefs\": [], \"commitments\": [], \"decision_id\": \"C01-K0002\", \"journal\": \"council 2\", \"messages\": [], \"names\": [], \"orders\": [{\"kind\": \"SCOUT\", \"place\": \"PL03\", \"qty\": 1, \"target\": \"\", \"text\": \"\"}, {\"kind\": \"SCOUT\", \"place\": \"PL99\", \"qty\": 1, \"target\": \"\", \"text\": \"\"}], \"policy\": {\"allocations\": [{\"activity\": \"FORAGE\", \"place\": \"PL01\", \"share\": 600}], \"ration\": 1000}}"
+   },
+   "note": "evidence and a quoted message arrived",
+   "observation": {
+    "calendar": {
+     "council": 2,
+     "season": "S0",
+     "tick": 10,
+     "ticks_to_next_council": 10,
+     "year": 0
+    },
+    "civ_id": "C01",
+    "contract": "m0",
+    "decision_id": "C01-K0002",
+    "events": [
+     {
+      "event_id": "EV0007",
+      "place": "PL02",
+      "text": "Fresh tracks by the water.",
+      "tick": 8,
+      "witnesses": [
+       "P0003"
+      ]
+     }
+    ],
+    "journal": "",
+    "knowledge": {
+     "beliefs": [],
+     "claims": []
+    },
+    "last_results": [],
+    "messages": [
+     {
+      "delivered_by": "P0004",
+      "message_id": "MS0009",
+      "route": "heard at camp",
+      "text": "Go north.",
+      "tick": 9
+     }
+    ],
+    "places": [
+     {
+      "kind": "land",
+      "last_seen_tick": 0,
+      "name": "",
+      "place_id": "PL01",
+      "seen": "food 40",
+      "travel_ticks": 0
+     },
+     {
+      "kind": "land",
+      "last_seen_tick": 0,
+      "name": "",
+      "place_id": "PL02",
+      "seen": "food 25",
+      "travel_ticks": 3
+     },
+     {
+      "kind": "land",
+      "last_seen_tick": -1,
+      "name": "",
+      "place_id": "PL03",
+      "seen": "",
+      "travel_ticks": 6
+     }
+    ],
+    "standing": {
+     "commitments": [],
+     "policy": {
+      "allocations": [
+       {
+        "activity": "FORAGE",
+        "place": "PL01",
+        "share": 600
+       }
+      ],
+      "ration": 1000
+     },
+     "tasks": []
+    },
+    "status": {
+     "food_days": 55,
+     "food_days_change": -5,
+     "population": 20,
+     "population_change": 0,
+     "stores": [
+      {
+       "change": 0,
+       "material": "food",
+       "qty": 55
+      }
+     ]
+    },
+    "version": "C01:c0002:8413c347c91b"
+   }
+  },
+  {
+   "mock": {
+    "reply": "The people should move to the river."
+   },
+   "note": "food running low, journal carried over",
+   "observation": {
+    "calendar": {
+     "council": 3,
+     "season": "S0",
+     "tick": 20,
+     "ticks_to_next_council": 10,
+     "year": 0
+    },
+    "civ_id": "C01",
+    "contract": "m0",
+    "decision_id": "C01-K0003",
+    "events": [],
+    "journal": "Stores fall each council.",
+    "knowledge": {
+     "beliefs": [],
+     "claims": []
+    },
+    "last_results": [],
+    "messages": [],
+    "places": [
+     {
+      "kind": "land",
+      "last_seen_tick": 0,
+      "name": "",
+      "place_id": "PL01",
+      "seen": "food 40",
+      "travel_ticks": 0
+     },
+     {
+      "kind": "land",
+      "last_seen_tick": 0,
+      "name": "",
+      "place_id": "PL02",
+      "seen": "food 25",
+      "travel_ticks": 3
+     },
+     {
+      "kind": "land",
+      "last_seen_tick": -1,
+      "name": "",
+      "place_id": "PL03",
+      "seen": "",
+      "travel_ticks": 6
+     }
+    ],
+    "standing": {
+     "commitments": [],
+     "policy": {
+      "allocations": [],
+      "ration": 1000
+     },
+     "tasks": []
+    },
+    "status": {
+     "food_days": 6,
+     "food_days_change": -5,
+     "population": 19,
+     "population_change": 0,
+     "stores": [
+      {
+       "change": 0,
+       "material": "food",
+       "qty": 6
+      }
+     ]
+    },
+    "version": "C01:c0003:cb746c927c42"
+   }
+  },
+  {
+   "mock": {
+    "reply": "{\"beliefs\": [], \"commitments\": [], \"decision_id\": \"C01-K0004\", \"journal\": \"council 4\", \"messages\": [], \"names\": [], \"orders\": [{\"kind\": \"FORAGE\", \"place\": \"PL01\", \"qty\": 4, \"target\": \"\", \"text\": \"\"}], \"policy\": {\"allocations\": [{\"activity\": \"FORAGE\", \"place\": \"PL01\", \"share\": 600}], \"ration\": 1000}}"
+   },
+   "note": "a rejected order in last results",
+   "observation": {
+    "calendar": {
+     "council": 4,
+     "season": "S1",
+     "tick": 30,
+     "ticks_to_next_council": 10,
+     "year": 0
+    },
+    "civ_id": "C01",
+    "contract": "m0",
+    "decision_id": "C01-K0004",
+    "events": [],
+    "journal": "",
+    "knowledge": {
+     "beliefs": [],
+     "claims": []
+    },
+    "last_results": [
+     {
+      "index": 0,
+      "kind": "SCOUT",
+      "outcome": "REJECTED",
+      "place": "PL03",
+      "reason": "INSUFFICIENT_LABOR"
+     }
+    ],
+    "messages": [],
+    "places": [
+     {
+      "kind": "land",
+      "last_seen_tick": 0,
+      "name": "",
+      "place_id": "PL01",
+      "seen": "food 40",
+      "travel_ticks": 0
+     },
+     {
+      "kind": "land",
+      "last_seen_tick": 0,
+      "name": "",
+      "place_id": "PL02",
+      "seen": "food 25",
+      "travel_ticks": 3
+     },
+     {
+      "kind": "land",
+      "last_seen_tick": -1,
+      "name": "",
+      "place_id": "PL03",
+      "seen": "",
+      "travel_ticks": 6
+     }
+    ],
+    "standing": {
+     "commitments": [],
+     "policy": {
+      "allocations": [],
+      "ration": 1000
+     },
+     "tasks": []
+    },
+    "status": {
+     "food_days": 12,
+     "food_days_change": -5,
+     "population": 19,
+     "population_change": 0,
+     "stores": [
+      {
+       "change": 0,
+       "material": "food",
+       "qty": 12
+      }
+     ]
+    },
+    "version": "C01:c0004:d612a0124280"
+   }
+  },
+  {
+   "mock": {
+    "failure": "refusal",
+    "raw_text": "I will not decide for them."
+   },
+   "note": "open task and a pending commitment",
+   "observation": {
+    "calendar": {
+     "council": 5,
+     "season": "S1",
+     "tick": 40,
+     "ticks_to_next_council": 10,
+     "year": 0
+    },
+    "civ_id": "C01",
+    "contract": "m0",
+    "decision_id": "C01-K0005",
+    "events": [],
+    "journal": "",
+    "knowledge": {
+     "beliefs": [],
+     "claims": []
+    },
+    "last_results": [],
+    "messages": [],
+    "places": [
+     {
+      "kind": "land",
+      "last_seen_tick": 0,
+      "name": "",
+      "place_id": "PL01",
+      "seen": "food 40",
+      "travel_ticks": 0
+     },
+     {
+      "kind": "land",
+      "last_seen_tick": 0,
+      "name": "",
+      "place_id": "PL02",
+      "seen": "food 25",
+      "travel_ticks": 3
+     },
+     {
+      "kind": "land",
+      "last_seen_tick": -1,
+      "name": "",
+      "place_id": "PL03",
+      "seen": "",
+      "travel_ticks": 6
+     }
+    ],
+    "standing": {
+     "commitments": [
+      {
+       "by_council": 7,
+       "kind": "STOCK_AT_LEAST",
+       "place": "",
+       "qty": 20,
+       "state": "PENDING"
+      }
+     ],
+     "policy": {
+      "allocations": [],
+      "ration": 1000
+     },
+     "tasks": [
+      {
+       "kind": "SCOUT",
+       "place": "PL03",
+       "qty": 2,
+       "status": "UNDER_WAY",
+       "task_id": "T0002"
+      }
+     ]
+    },
+    "status": {
+     "food_days": 15,
+     "food_days_change": -5,
+     "population": 18,
+     "population_change": 0,
+     "stores": [
+      {
+       "change": 0,
+       "material": "food",
+       "qty": 15
+      }
+     ]
+    },
+    "version": "C01:c0005:5061377b00b1"
+   }
+  },
+  {
+   "mock": {
+    "reply": "{\"annal\": \"\", \"beliefs\": [], \"commitments\": [], \"decision_id\": \"C01-K0006\", \"journal\": \"council 6\", \"messages\": [], \"names\": [], \"orders\": [{\"kind\": \"FORAGE\", \"place\": \"PL02\", \"qty\": 3, \"target\": \"\", \"text\": \"\"}], \"policy\": {\"allocations\": [{\"activity\": \"FORAGE\", \"place\": \"PL01\", \"share\": 600}], \"ration\": 1000}}"
+   },
+   "note": "a named place and a far one never seen",
+   "observation": {
+    "calendar": {
+     "council": 6,
+     "season": "S1",
+     "tick": 50,
+     "ticks_to_next_council": 10,
+     "year": 0
+    },
+    "civ_id": "C01",
+    "contract": "m0",
+    "decision_id": "C01-K0006",
+    "events": [],
+    "journal": "",
+    "knowledge": {
+     "beliefs": [],
+     "claims": []
+    },
+    "last_results": [],
+    "messages": [],
+    "places": [
+     {
+      "kind": "land",
+      "last_seen_tick": 50,
+      "name": "Low Field",
+      "place_id": "PL01",
+      "seen": "food 31",
+      "travel_ticks": 0
+     },
+     {
+      "kind": "land",
+      "last_seen_tick": 41,
+      "name": "",
+      "place_id": "PL02",
+      "seen": "food 9",
+      "travel_ticks": 3
+     },
+     {
+      "kind": "land",
+      "last_seen_tick": -1,
+      "name": "",
+      "place_id": "PL04",
+      "seen": "",
+      "travel_ticks": 9
+     }
+    ],
+    "standing": {
+     "commitments": [],
+     "policy": {
+      "allocations": [],
+      "ration": 1000
+     },
+     "tasks": []
+    },
+    "status": {
+     "food_days": 18,
+     "food_days_change": -5,
+     "population": 18,
+     "population_change": 0,
+     "stores": [
+      {
+       "change": 0,
+       "material": "food",
+       "qty": 18
+      }
+     ]
+    },
+    "version": "C01:c0006:e6f436b4d50c"
+   }
+  }
+ ],
+ "version": "qualify-cases-v1"
+}

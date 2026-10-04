@@ -83,6 +83,11 @@ class CognitionResult:
     ``parsed`` is the JSON object in ``raw_text`` when the text is one, even if
     it fails the contract (``schema_fail``), so the validator can record why.
     It is ``None`` when the text is not a JSON object or the call failed.
+
+    ``reported_cost_micro_usd`` is what the provider itself said the call cost
+    (OpenRouter's ``usage.cost``), rounded up to whole micro-dollars; ``None``
+    when it said nothing. It is reported beside the profile-priced cost and is
+    never what the budget charges, so a provider cannot talk a cap down.
     """
 
     raw_text: str
@@ -92,6 +97,7 @@ class CognitionResult:
     model_reported: str
     latency_ms: int
     attempts: int
+    reported_cost_micro_usd: int | None = None
 
 
 @runtime_checkable

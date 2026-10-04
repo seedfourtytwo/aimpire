@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Final
 
 from aimpire.report.charts import line_chart_svg
+from aimpire.report.markdown import cell, table
 from aimpire.report.metrics import MetricsRecorder
 from aimpire.sim.ledger import Ledger
 from aimpire.sim.scheduler import Preset
@@ -53,17 +54,6 @@ class RunInfo:
     preset: Preset
     ticks: int
     reproduce: str
-
-
-def _cell(value: object) -> str:
-    """A Markdown table cell: pipes escaped, newlines flattened."""
-    return str(value).replace("|", "\\|").replace("\n", " ")
-
-
-def _table(header: tuple[str, ...], rows: list[tuple[object, ...]]) -> list[str]:
-    lines = ["| " + " | ".join(header) + " |", "|" + "---|" * len(header)]
-    lines += ["| " + " | ".join(_cell(v) for v in row) + " |" for row in rows]
-    return lines
 
 
 def _chart_file(index: int, name: str) -> str:
@@ -100,7 +90,7 @@ def _metrics_section(metrics: MetricsRecorder) -> list[str]:
         f"Recorded ticks {first} to {last} ({len(metrics.rows)} rows). "
         "Values are milli-units or counts.",
         "",
-        *_table(("metric", "first", "last", "min", "max"), rows),
+        *table(("metric", "first", "last", "min", "max"), rows),
     ]
 
 
@@ -113,7 +103,7 @@ def _charts_section(metrics: MetricsRecorder, folder: Path) -> list[str]:
         file_name = _chart_file(index, name)
         svg = line_chart_svg(ticks, metrics.series(name), label=name)
         (folder / file_name).write_bytes(svg.encode("utf-8"))
-        lines.append(f"![{_cell(name)}]({file_name})")
+        lines.append(f"![{cell(name)}]({file_name})")
         lines.append("")
     return lines[:-1]
 
@@ -132,7 +122,7 @@ def _ledger_section(ledger: Ledger) -> list[str]:
     return [
         "Net change in milli-units by material and cause.",
         "",
-        *_table(("material", "kind", "entries", "net"), rows),
+        *table(("material", "kind", "entries", "net"), rows),
     ]
 
 
@@ -144,7 +134,7 @@ def _outcomes_section(outcomes: Mapping[str, int]) -> list[str]:
     note = "Decision outcomes (ADR-0013 section 8)."
     if not any(outcomes.values()):
         note += " No model decisions in this run."
-    return [note, "", *_table(("outcome", "count"), rows)]
+    return [note, "", *table(("outcome", "count"), rows)]
 
 
 def render_notebook(
