@@ -52,6 +52,9 @@ Shared ending, appended to every prompt:
 
 ## Production plan and cost
 
+The scripts and a step-by-step handoff for the agent that generates it are in `tools/trailer/` (start with `HANDOFF.md`).
+
+
 | Item | Choice |
 |---|---|
 | Model | `google/veo-3.1` via OpenRouter, the strongest video model on the platform for realism and native sound |
