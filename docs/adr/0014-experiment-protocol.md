@@ -38,7 +38,8 @@ Aimpire's results are claims about how models behave. A 2025 review of 35 papers
 - Every statement by a mind that it believes it is in a test or a game is counted.
 
 ### 5. Reporting
-- **Pre-registration:** `docs/experiments/<id>/prereg.md` holds the hypothesis, the primary metric, seeds, models and budget. It is merged before the run.
+- **Pre-registration:** `docs/experiments/<id>/prereg.md`, or a single file `docs/experiments/<id>-preregistration.md` (as E0 uses; amended 2026-10-06), holds the hypothesis, the primary metric, seeds, models and budget. It is merged before the run.
+- **Reference ensembles** (rule minds, one run per seed, `kind: reference`) are the one case where a condition may be run without model replicates; they describe the world, not a model (amended 2026-10-06).
 - **One outcome per decision** (ADR-0013 categories), with all rates reported. Refusals are counted, never silently replaced.
 - **Uncertainty:** distributions, medians and intervals from bootstrap or exact methods. No normal-approximation intervals on small samples.
 - **Language:** rates under stated conditions ("raided in 4 of 20 worlds once food fell below 10 days"), never traits ("aggressive").

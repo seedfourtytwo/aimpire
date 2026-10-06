@@ -1,6 +1,6 @@
 # ADR-0021: Native mind track: start after M0, generated corpus, constrained replies
 
-- **Status:** Proposed
+- **Status:** Accepted (creator, 2026-10-06)
 - **Date:** 2026-10-04
 - **Deciders:** creator (+ planning session)
 - **Amends:** ADR-0018 section 5 (timing and corpus rules)
