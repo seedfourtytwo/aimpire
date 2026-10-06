@@ -41,6 +41,8 @@ factors come from the roadmap row for M0:
 | `grid-disclosed` | grid | disclosed | the grid, plus the rule text |
 | `baselines` | places | hidden | the four rule baselines (they read the typed observation; the text is unused) |
 
+**Known property of the grid arms (accepted by the creator, 2026-10-06).** The grid renderer draws every place, with unseen ones as `?`, so a mind in a grid arm can count how many places the map has. The places arms do not show this. It is accepted for E0 and stated here so H4 is read with it in mind; a grid that hides the count is a later change.
+
 **The disclosed rule** is appended to the system prompt by `cognition.disclosed.disclosure_text`
 from the rules data, so it is exactly what the baselines know: the regrowth rule with its two
 numbers, a person's daily need, and how much a worker brings home from a place `d` days away.

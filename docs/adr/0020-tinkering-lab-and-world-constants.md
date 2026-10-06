@@ -1,6 +1,6 @@
 # ADR-0020: The Tinkering Lab and world constants
 
-- **Status:** Proposed
+- **Status:** Accepted (creator, 2026-10-06)
 - **Date:** 2026-10-04
 - **Deciders:** creator (+ planning session)
 - **Supersedes / Superseded by:** —
