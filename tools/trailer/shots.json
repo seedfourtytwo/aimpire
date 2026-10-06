@@ -1,0 +1,50 @@
+[
+ {
+  "id": "s1",
+  "name": "Worlds",
+  "prompt": "A slow, steady camera push through deep space past four small planets, each a different world: one red and cratered, one ringed and amber, one white with ice, one violet with glowing seas. The camera glides between them toward a blue-green planet with oceans, one large river delta and swirling white clouds, which grows to fill the frame. Stars, soft nebula haze. Audio: a deep, slow ambient hum, faint shimmering tones, no music, no voices. Style: a premium modern god-game render, like a high-end remake of a 1990s god game. Miniature living world, high three-quarter god's-eye camera, tilt-shift depth of field, soft global illumination, hand-crafted low-poly terrain with a subtle pixel texture, warm earth tones with cool night blues, crisp readable silhouettes. Cinematic, calm, awe-filled. No text, no letters, no user interface, no logos, no watermarks, no subtitles.",
+  "seed": 4201
+ },
+ {
+  "id": "s2",
+  "name": "The camp",
+  "prompt": "God's-eye camera slowly orbiting a tiny riverside camp at dusk on a grassy floodplain. A small group of about twenty tiny people in ochre clothing carry baskets of berries and fish to a central campfire; two people scrape hides; children run between low reed shelters. Smoke curls up; the river glints orange with the last light; a dense grove stands to the east. The people are small and seen from far above, like a living diorama. Audio: crackling fire, a gentle river, distant birds, soft indistinct murmur of voices, no music. Style: a premium modern god-game render, like a high-end remake of a 1990s god game. Miniature living world, high three-quarter god's-eye camera, tilt-shift depth of field, soft global illumination, hand-crafted low-poly terrain with a subtle pixel texture, warm earth tones with cool night blues, crisp readable silhouettes. Cinematic, calm, awe-filled. No text, no letters, no user interface, no logos, no watermarks, no subtitles.",
+  "seed": 4202
+ },
+ {
+  "id": "s3",
+  "name": "A sign",
+  "prompt": "God's-eye view over a dry, cracked valley beside green hills. A single dark storm cloud forms quickly in the clear sky directly above the valley, and a narrow column of rain falls only on the valley while the sun still lights the hills around it. The cracked earth darkens; a few tiny people in ochre clothing at the valley edge stop working and look up at the sky, one raising an arm. Audio: rising wind, a low roll of thunder, the hiss of rain arriving, no music. Style: a premium modern god-game render, like a high-end remake of a 1990s god game. Miniature living world, high three-quarter god's-eye camera, tilt-shift depth of field, soft global illumination, hand-crafted low-poly terrain with a subtle pixel texture, warm earth tones with cool night blues, crisp readable silhouettes. Cinematic, calm, awe-filled. No text, no letters, no user interface, no logos, no watermarks, no subtitles.",
+  "seed": 4203
+ },
+ {
+  "id": "s4",
+  "name": "The voice",
+  "prompt": "Night by a riverside camp, closer god's-eye view from above and to one side. Everyone sleeps around low glowing embers except one woman in an ochre cloak who wakes and sits up, alone. The tall reeds around her bend in a slow wave though nothing else moves, and a faint warm golden light falls on her face from above. She looks up, listening, startled and calm. Blue moonlight, soft fog over the water. Audio: near silence, crickets, a soft rush of wind through reeds, one deep resonant hum that swells and fades, no words, no music. Style: a premium modern god-game render, like a high-end remake of a 1990s god game. Miniature living world, high three-quarter god's-eye camera, tilt-shift depth of field, soft global illumination, hand-crafted low-poly terrain with a subtle pixel texture, warm earth tones with cool night blues, crisp readable silhouettes. Cinematic, calm, awe-filled. No text, no letters, no user interface, no logos, no watermarks, no subtitles.",
+  "seed": 4204
+ },
+ {
+  "id": "s5",
+  "name": "The council",
+  "prompt": "Night, god's-eye view slowly descending toward a large campfire where about twenty tiny people in ochre clothing sit in a circle. The woman in the ochre cloak stands, speaking with her hands; some listeners nod, two men argue and shake their heads, an elder stands and points across the dark river to the far bank. Firelight flickers on faces, sparks rise. Audio: the fire, overlapping murmured voices in an unintelligible invented language, a raised voice, no music. Style: a premium modern god-game render, like a high-end remake of a 1990s god game. Miniature living world, high three-quarter god's-eye camera, tilt-shift depth of field, soft global illumination, hand-crafted low-poly terrain with a subtle pixel texture, warm earth tones with cool night blues, crisp readable silhouettes. Cinematic, calm, awe-filled. No text, no letters, no user interface, no logos, no watermarks, no subtitles.",
+  "seed": 4205
+ },
+ {
+  "id": "s6",
+  "name": "Generations",
+  "prompt": "High god's-eye time-lapse over the same river valley: days and seasons flash past as light sweeps across the land. The riverside camp grows into a village of round huts with fields; a ring of standing stones rises on a hill, carved with simple symbols; a second camp with teal banners appears across the river and grows too; paths, a small bridge and smoke from many fires spread over the valley. Snow comes and goes, the river changes course slightly. Audio: a slow rising wash of wind and distant crowd sounds, a deep pulse, no music. Style: a premium modern god-game render, like a high-end remake of a 1990s god game. Miniature living world, high three-quarter god's-eye camera, tilt-shift depth of field, soft global illumination, hand-crafted low-poly terrain with a subtle pixel texture, warm earth tones with cool night blues, crisp readable silhouettes. Cinematic, calm, awe-filled. No text, no letters, no user interface, no logos, no watermarks, no subtitles.",
+  "seed": 4206
+ },
+ {
+  "id": "s7",
+  "name": "The filter",
+  "prompt": "View from low orbit over the night side of a blue-green planet: coastlines and river valleys traced by clusters of warm city lights, a thin bright line of atmosphere at the horizon. The camera descends through thin clouds to find a single rocket climbing on a brilliant pillar of fire, its exhaust lighting the clouds orange. Audio: a distant deep roar that builds, wind, a low ominous swell, no music, no voices. Style: a premium modern god-game render, like a high-end remake of a 1990s god game. Miniature living world, high three-quarter god's-eye camera, tilt-shift depth of field, soft global illumination, hand-crafted low-poly terrain with a subtle pixel texture, warm earth tones with cool night blues, crisp readable silhouettes. Cinematic, calm, awe-filled. No text, no letters, no user interface, no logos, no watermarks, no subtitles.",
+  "seed": 4207
+ },
+ {
+  "id": "s8",
+  "name": "The hub",
+  "prompt": "A slow, wide pull-back revealing a dark cosmic void filled with dozens of small glowing planets floating at different depths, each a different colour and climate, like jewels hung in space, gently rotating. Between two of them, two thin trails of light from tiny ships curve toward each other and meet in a soft flash. Audio: a vast airy ambient tone, faint chimes, a soft resolving swell, no music, no voices. Style: a premium modern god-game render, like a high-end remake of a 1990s god game. Miniature living world, high three-quarter god's-eye camera, tilt-shift depth of field, soft global illumination, hand-crafted low-poly terrain with a subtle pixel texture, warm earth tones with cool night blues, crisp readable silhouettes. Cinematic, calm, awe-filled. No text, no letters, no user interface, no logos, no watermarks, no subtitles.",
+  "seed": 4208
+ }
+]

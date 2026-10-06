@@ -1,3 +1,6 @@
+!!! info "Historical intent"
+    The creator's original handoff of 2026-10-04, under the working title *Great Filter*. It remains the source of the core intent, but it is not binding: the [vision](../vision.md) holds current intent, and the [ADRs](../adr/README.md) and [roadmap](../plan/roadmap.md) win wherever they differ (name, client stack, build order).
+
 # Original specification (creator handoff, 2026-10-04)
 
 > Verbatim copy of the creator's handoff document. This is the source of intent for the project.

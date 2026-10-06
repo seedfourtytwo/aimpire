@@ -35,3 +35,9 @@ One line per decision or assumption: date, item, source. Architecturally signifi
 | 2026-10-04 | **Tinkering Lab** requested: a workshop to tweak world, rules, minds, tribes and physics. Planned as a Lab track with world constants and derived scaling laws (ADR-0020, proposed; research note 90) | creator |
 | 2026-10-04 | **F5c leak fixes** ("use your best judgment"): place names live only in each civilization's own `names` map, never on the shared place entity; travel times shown to a mind use only routes through places it knows plus its camp, falling back to the centroid Manhattan distance (a lower bound from known geometry) when those do not connect. `travel_ticks` stays the true distance for physics | creator |
 | 2026-10-04 | First tests use a regular pretrained model; the self-trained small model (native mind, A3) moves up to start after M0 (ADR-0021, proposed) | creator |
+| 2026-10-06 | **ADR-0020 (Tinkering Lab) and ADR-0021 (native minds) accepted**; ADR-0014 amended for E0 | creator |
+| 2026-10-06 | First real-model run goes on local Ollama (`qwen3:8b`), before any paid API | creator |
+| 2026-10-06 | **Tagline:** "Untrained AI sandbox. Tribes evolving in an infinitely generative universe." "Untrained" means native minds (arm A3); pretrained runs are labelled as such | creator; wording rule from review |
+| 2026-10-06 | Long-term vision recorded: generated physics and life seeds, three levels of control, a hub of parallel worlds, emergent multiplayer after spacefaring, language emergence. All marked as vision, not commitments (`docs/vision.md`) | creator brainstorm |
+| 2026-10-06 | Not adopted from the brainstorm: Mesa and Pymunk as the core, Godot as the client (the in-house deterministic core and ADR-0002 stand); the unverified competitor list | review |
+| 2026-10-06 | Documentation reorganised: one vision page, a start-here home page, research and history indexes; brainstorm originals archived in `docs/history/` | creator request |

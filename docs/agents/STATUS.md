@@ -3,12 +3,13 @@
 > Every agent session reads this first and updates it last.
 
 **Phase:** foundation done (F1–F6). M0 "petri dish" is built and playable with rule minds; next is running experiment E0 with real models, then M1.
-**Last updated:** 2026-10-04 by the planning session (end of day). Handoff: [`handoff-2026-10-04.md`](handoff-2026-10-04.md).
+**Last updated:** 2026-10-06 (documentation reorganised; vision and tagline recorded). Handoff: [`handoff-2026-10-04.md`](handoff-2026-10-04.md).
 
 ## Current state
 - **Goal:** emergence. See what civilizations, political orders and beliefs arise when the models decide for themselves (ADR-0019).
 - **Order (ADR-0015):** F1–F6, then M0 petri dish, M1 seasons and a voice, M2 two tribes, M3 generations, M4 living world, M5 knowledge, M6–M8 society. Side tracks: the **Lab** (ADR-0020) and **native minds** (ADR-0021).
-- **ADR status:** 0001–0019 accepted. **0020 (Tinkering Lab) and 0021 (native minds) are Proposed** and await the creator, though W0, LAB0 and LAB1 were built at his request.
+- **ADR status:** 0001–0021 accepted (0020 and 0021 on 2026-10-06).
+- **Vision and tagline:** [`docs/vision.md`](../vision.md). Long-term ideas there are vision, not plan.
 - **Tests:** about 470, all green; `just check` is what CI runs (about 2 minutes).
 - **Repo settings:** `main` is protected (PR required, `ci-ok` required, squash only). The admin bypass and the `protected-change` environment still need the creator (see Known blockers).
 
@@ -46,7 +47,7 @@ Minds: `rule:random|greedy|half_full|msy`, `mock`, or a profile (`profiles/ollam
   - spending: $20 a month, providers OpenRouter, Anthropic and Ollama (#18).
 
 ## Next up
-- [ ] **Creator:** see the handoff note: accept or amend ADR-0020 and ADR-0021; the GitHub settings; add keys; decide the open items.
+- [ ] **Creator:** the GitHub settings and keys from the handoff note; the open questions in `docs/plan/open-questions.md`.
 - [ ] **E0 pilot:**
   - qualify Ollama `qwen3:8b` on the creator's laptop, then the Ollama pilot file (free);
   - then Haiku, about $5 realistic and under $12 worst case, per `docs/experiments/e0-preregistration.md`.

@@ -4,12 +4,14 @@
 
 **Strategy.** Logic first, dots before graphics (ADR-0010). Build a thin slice of the whole loop early, then deepen it (ADR-0015). Author physics and primitives, never institutions (ADR-0019).
 
-The order below was accepted by the creator on 2026-10-04. It replaces the L0 to L8 ladder order. Detailed issue specs for the first steps are in [`backlog.md`](backlog.md).
+The order below was accepted by the creator on 2026-10-04. It replaces the L0 to L8 ladder order. Detailed issue specs for the first steps are in [`backlog.md`](backlog.md). The intent behind it, and the long arc beyond M8, are in the [vision](../vision.md).
+
+**Where we are (2026-10-06):** foundation done; M0 built and playable; Lab steps W0 to LAB1 built; experiment E0 with real models is next, starting on local Ollama. Live detail: [`STATUS.md`](../agents/STATUS.md).
 
 ## Phase 0 — Planning ✅
 Spec, research, ADRs 0001–0010, CI skeleton, agent conventions. Then the planning review and ADRs 0011–0019.
 
-## Phase 1 — Foundation
+## Phase 1 — Foundation ✅
 No live model is needed until F6. Tests are written first (ADR-0016).
 
 | Epic | Deliverable | Gate |
@@ -29,7 +31,7 @@ Each milestone is a named preset (`m0`, `m1`, …). It is done when its physics 
 
 | Milestone | Adds | Gate on rule baselines | AI experiment |
 |---|---|---|---|
-| **M0 Petri dish** | one group, one regrowing food, named places | an empty map settles at the predicted stock; a harvest sweep peaks near half-full stock | harvest policy against random, greedy and optimal rules; regrowth rule disclosed or hidden; places or grid |
+| **M0 Petri dish** (built; E0 next) | one group, one regrowing food, named places | an empty map settles at the predicted stock; a harvest sweep peaks near half-full stock | harvest policy against random, greedy and optimal rules; regrowth rule disclosed or hidden; places or grid |
 | **M1 Seasons and a voice** | terrain, river, seasons, storage, spoilage, weather; signs, omens, a voice heard by one person, prayer (ADR-0017); journal and chronicle; run store with branching; minimal web console | drought changes executed work against a control; a voice message cannot bypass validation | unexplained drought; true, false and harmful messages from the voice; coincidence against intervention; what they pray for |
 | **M2 Two tribes** | a second group on another model; contact, messages, gifts, barter, raids, territory | shuffling proposal order leaves the hash unchanged; ordinary fights kill under 10% | mixed-model pairings with seats rotated; a scarcity sweep; promises kept or broken |
 | **M3 Generations** | births, aging, death, inheritance, succession; households; knowledge carriers, teaching, records, loss; dictation and inscription | the population plateau scales with food; growth slows as numbers rise; losing every carrier of a skill blocks it and a surviving record restores it | population policy; what survives a leader's death; how a message drifts over generations; first runs with household minds |
@@ -43,14 +45,14 @@ M2 and M3 do not depend on each other. M2 comes first by default; swap them if p
 
 M6 to M8 are designed in detail when M5 closes, around primitives and not named institutions.
 
-## Lab track — the Tinkering Lab (ADR-0020, proposed)
+## Lab track — the Tinkering Lab (ADR-0020)
 A workshop for "what if" questions: change one thing (gravity, rain, a mind's settings, a tribe's size) and compare against the same world on the same seeds. World rates are derived from a few fundamental constants, so a small change in gravity moves walking speed, carry load, river speed and tree height together. Design: [`research/90`](../research/90-tinkering-lab-and-world-physics.md).
 
 | Step | Lands with | Deliverable |
 |---|---|---|
-| **W0** World constants | M0a | `rules/v1/world.yaml`; integer scaling laws; identity at Earth |
-| **LAB0** Knobs | M0a | knob registry, schema export, `--set`, `beyond-model` tag |
-| **LAB1** Twin worlds | M0b | `aimpire lab twin` with a first-divergence report |
+| **W0** World constants ✅ | M0a | `rules/v1/world.yaml`; integer scaling laws; identity at Earth |
+| **LAB0** Knobs ✅ | M0a | knob registry, schema export, `--set`, `beyond-model` tag |
+| **LAB1** Twin worlds ✅ | M0b | `aimpire lab twin` with a first-divergence report |
 | **LAB2** Sweeps | M0d | `aimpire lab sweep`, phase-diagram small multiples |
 | **LAB3** Forks and world events | M1 | branch from a checkpoint; scheduled knob changes |
 | **LAB4** Workshop page | M1 web console | sliders, derived-value preview, run queue, gallery |
@@ -77,8 +79,17 @@ Lab runs are exploratory. A finding counts only after a pre-registered re-run (A
 | L7 Belief | the voice in M1; the rest in M7 |
 | L8 Politics | M8 |
 
-## First sprint
-1. **Creator:** merge the planning change; answer the open questions; push the CI path check from G1.
-2. **Strong model:** G1, then acceptance tests for F1 and F2.
-3. **Implementing agents:** F1, then F2 in the order given in the backlog.
-4. Once F3 lands: F4 and F5 in parallel sessions.
+## Next
+1. **E0:** qualify a local model, run the Ollama pilot, then the paid arms within budget (`docs/experiments/e0-preregistration.md`).
+2. **Small fixes** listed in [`STATUS.md`](../agents/STATUS.md).
+3. **Specify M1** in the backlog once the E0 pilot is read; LAB2 sweeps and native minds N0–N1 can run alongside.
+
+## Beyond M8 — the long arc (vision, not planned)
+Not designed and not scheduled. Recorded so that today's formats do not rule them out. See the [vision](../vision.md) and questions Q22 to Q27.
+
+| Stage | Idea |
+|---|---|
+| **The Great Filter** | Interacting existential hazards that arise from implemented causal systems: escalating war, ecological collapse, dangerous technology |
+| **Beyond the planet** | A surviving society leaves its world; reaching space does not end every risk |
+| **The hub** | Many worlds running in parallel under one god's view, with an observer model keeping the record |
+| **Emergent multiplayer** | Spacefaring civilizations from different worlds meet: trade, alliance or war |

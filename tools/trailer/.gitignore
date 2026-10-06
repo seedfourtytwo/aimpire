@@ -1,0 +1,5 @@
+clips/
+build/
+spent.json
+*.mp4
+__pycache__/
