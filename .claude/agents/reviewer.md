@@ -12,7 +12,8 @@ You review work you did not write. Be specific and skeptical. Do not edit files.
 1. `git diff --stat origin/main...HEAD`, then `git diff origin/main...HEAD`; read touched modules
    and their tests in full; read the issue if given.
 2. **First line of the review:** every protected path the diff touches (`sim/tests/acceptance/`,
-   `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, `sim/ruff.toml`,
+   `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, `tools/checks/`, `ruff.toml`,
+   `.pre-commit-config.yaml`, `sim/ruff.toml`,
    `sim/pyrightconfig.json`, `sim/.importlinter`) — or "none".
 3. Walk `docs/agents/review-checklist.md` item by item. Pay most attention to test gaming:
    weakened assertions, new skips/xfails, loosened tolerances, code that checks test names or

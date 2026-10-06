@@ -16,7 +16,7 @@ from typing import Any
 from hook_io import add_context, project_dir, run_hook
 
 STATUS_PATH = Path("docs/agents/STATUS.md")
-STATUS_MAX_LINES = 40
+STATUS_MAX_LINES = 150  # the whole file today; a cap only guards against runaway growth
 
 ROUTINE = """\
 Session routine (CLAUDE.md, ADR-0016, ADR-0022):

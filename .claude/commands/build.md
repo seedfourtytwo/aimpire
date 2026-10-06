@@ -10,8 +10,9 @@ Implement issue #$ARGUMENTS. The issue body is the spec; its acceptance tests al
    own unit/property tests first and cannot touch protected paths.
 3. If it reports that a test contradicts the issue or an ADR: stop. Do not change the test. Put the
    explanation in the PR (or ask the creator) and wait.
-4. When the acceptance tests pass, remove their `xfail` marks and nothing else (needs a session with
-   `AIMPIRE_ALLOW_PROTECTED=1`; otherwise list the marks to remove in the PR for the creator).
+4. When the acceptance tests pass, remove their `xfail` marks yourself and change nothing else in
+   those files (start `/build` sessions with `AIMPIRE_ALLOW_PROTECTED=1` so you can; the implementer
+   stays blocked either way). Without it, list the marks in the PR for the creator.
 5. Run `just check` and read the real output. Delegate a review to `reviewer` (Opus, fresh context);
    add `ui-auditor` if output or `client/` changed. Route fixes back through `implementer`; re-review
    until `approve`.

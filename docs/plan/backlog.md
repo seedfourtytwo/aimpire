@@ -4,7 +4,7 @@ Work items for the foundation and the first milestone, in build order. Each beco
 
 **Tiers** (ADR-0016): **S** = strongest model, writes the acceptance tests and reviews. **I** = implementing model. **C** = creator only.
 
-**Rule for every item:** the S-tier session writes the acceptance tests first, under `sim/tests/acceptance/`, marked as expected failures. The I-tier session makes them pass and removes the mark. It never edits the tests. If a test seems wrong, stop and report.
+**Rule for every item:** the S-tier session writes the acceptance tests first, under `sim/tests/acceptance/`, marked as expected failures. The I-tier session makes them pass; the S-tier orchestrator (or the creator) then removes the mark, since acceptance files are protected (ADR-0022 amends ADR-0016 §3). It never edits the tests. If a test seems wrong, stop and report.
 
 Verification for every item is `just check`, plus the named tests.
 
@@ -19,9 +19,9 @@ Verification for every item is `just check`, plus the named tests.
 | G1c | S | `sim/tests/acceptance/README.md` (the read-only rule and the expected-failure convention). |
 | G1d | C | Optional: a pull-request review workflow or routine pinned to a stronger model, using the checklist in [`review-checklist.md`](../agents/review-checklist.md). |
 | G1e | C | Add an always-on `repo` job to `ci.yml` (sketch below) and to `ci-ok.needs`, so pull requests that touch only `tools/`, `.claude/` or docs also run `just check-repo` (ADR-0022). Until then it runs inside `check-sim`. |
-| G2a | S | Split the two acceptance files listed in `tools/checks/hygiene-baseline.txt` below 500 lines, then delete their baseline entries. |
+| G1f | S | Split the two acceptance files listed in `tools/checks/hygiene-baseline.txt` below 500 lines, then delete their baseline entries. |
 
-Protected paths: `sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, and the config files `sim/ruff.toml`, `sim/pyrightconfig.json` and `sim/.importlinter`. They are kept out of `pyproject.toml` so that dependency changes stay unprotected.
+Protected paths: `sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, the config files `sim/ruff.toml`, `sim/pyrightconfig.json` and `sim/.importlinter`, and the repo gates `tools/checks/`, `ruff.toml` and `.pre-commit-config.yaml` (ADR-0022). They are kept out of `pyproject.toml` so that dependency changes stay unprotected.
 
 Sketch for G1a (the creator adapts and pushes it; agents do not edit workflows):
 
@@ -43,7 +43,7 @@ Sketch for G1a (the creator adapts and pushes it; agents do not edit workflows):
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
-          pattern='^(sim/tests/acceptance/|fixtures/golden/|\.github/|\.claude/|docs/adr/|CLAUDE\.md$|sim/ruff\.toml$|sim/pyrightconfig\.json$|sim/\.importlinter$)'
+          pattern='^(sim/tests/acceptance/|fixtures/golden/|\.github/|\.claude/|docs/adr/|CLAUDE\.md$|sim/ruff\.toml$|sim/pyrightconfig\.json$|sim/\.importlinter$|tools/checks/|ruff\.toml$|\.pre-commit-config\.yaml$)'
           if git diff --name-only "$BASE" "$HEAD" | grep -Eq "$pattern"; then
             echo "touched=true" >> "$GITHUB_OUTPUT"
           else

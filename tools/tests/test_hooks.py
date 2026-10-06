@@ -6,6 +6,8 @@ runs are in `test_hook_scripts.py`.
 
 from __future__ import annotations
 
+import re
+import subprocess
 from pathlib import Path
 
 import hook_io
@@ -102,3 +104,40 @@ def test_handoff_slug_flattens_branch_names() -> None:
 )
 def test_post_edit_formats_only_repo_tooling(rel_path: str | None, expected: bool) -> None:
     assert post_edit_check.should_format(rel_path) is expected
+
+
+def test_session_context_includes_whole_status_sections(tmp_path: Path) -> None:
+    status = tmp_path / "docs" / "agents" / "STATUS.md"
+    status.parent.mkdir(parents=True)
+    filler = "\n".join(f"- line {n}" for n in range(60))
+    status.write_text(f"# Project status\n{filler}\n## Known blockers\n- the last one\n")
+    assert "- the last one" in session_start.build_context(tmp_path, branch="main")
+
+
+def test_project_dir_prefers_the_git_checkout_of_the_event_cwd(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Agent worktrees: CLAUDE_PROJECT_DIR names the main checkout, the event cwd the worktree.
+    worktree = tmp_path / "worktree"
+    (worktree / "sub").mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", str(worktree)], check=True)
+    monkeypatch.setenv("CLAUDE_PROJECT_DIR", str(tmp_path / "main-checkout"))
+    root = hook_io.project_dir({"cwd": str(worktree / "sub")})
+    assert root == worktree.resolve()
+
+
+def test_project_dir_falls_back_to_claude_project_dir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("CLAUDE_PROJECT_DIR", str(tmp_path))
+    assert hook_io.project_dir({}) == tmp_path
+
+
+def test_ruff_pin_is_identical_everywhere() -> None:
+    repo = Path(__file__).resolve().parents[2]
+    pins = {
+        "justfile": re.findall(r"ruff@[\d.]+", (repo / "justfile").read_text()),
+        "pre-commit": re.findall(r"ruff@[\d.]+", (repo / ".pre-commit-config.yaml").read_text()),
+        "hook": [post_edit_check.RUFF],
+    }
+    assert len({p for found in pins.values() for p in found}) == 1, pins

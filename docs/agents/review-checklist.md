@@ -3,7 +3,7 @@
 For the model or person reviewing a pull request (ADR-0016). Review in a fresh session, with a stronger model than the one that wrote the change. Report gaps, not style preferences.
 
 ## First line of the review
-List every protected path the diff touches: `sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, lint and type-check settings. If there are none, say so.
+List every protected path the diff touches: `sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, lint and type-check settings, and the repo gates (`tools/checks/`, `ruff.toml`, `.pre-commit-config.yaml`). If there are none, say so.
 
 ## Tests
 - [ ] No acceptance test was edited, weakened, skipped or deleted.

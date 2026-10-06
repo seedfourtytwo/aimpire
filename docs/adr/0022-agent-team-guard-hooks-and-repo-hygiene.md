@@ -3,7 +3,7 @@
 - **Status:** Proposed
 - **Date:** 2026-10-06
 - **Deciders:** creator (proposed by the standards session)
-- **Supersedes / Superseded by:** — (extends ADR-0016; amends nothing it decided)
+- **Supersedes / Superseded by:** — (extends ADR-0016; **amends ADR-0016 §3** on who removes the expected-failure mark)
 
 ## Context
 The creator asked for rules that keep the project on track from start to end (architecture, workflow,
@@ -31,14 +31,20 @@ or `inherit`), `effort` (`low` … `max`) and agent-scoped `hooks`; project sett
    `/spec <backlog id>` (S tier, acceptance tests first) and `/build <issue>` (implement, then review).
 2. **The implementer can never edit protected paths.** Its frontmatter hook runs `protect-paths.py`
    with `AIMPIRE_ALLOW_PROTECTED=0`, overriding the session. It may write its own unit and property
-   tests (ADR-0016 §3).
+   tests (ADR-0016 §3). **Amends ADR-0016 §3:** the implementer no longer removes an acceptance
+   test's expected-failure mark; the S-tier orchestrator does, in an `AIMPIRE_ALLOW_PROTECTED=1`
+   session, changing nothing else, and the reviewer checks that the acceptance diff is only mark
+   removals. Without such a session the PR lists the marks for the creator.
+   The repo gates themselves (`tools/checks/`, root `ruff.toml`, `.pre-commit-config.yaml`) join the
+   protected paths, so the ratchet baseline and lint limits cannot be loosened by an implementer.
 3. **Bash guard** (`.claude/hooks/guard_bash.py`, `git_rules.py`, `shell_words.py`): parses commands
    (quotes, heredocs, chains, wrappers, substitutions, `bash -c`, `eval`) and denies pushes to `main`,
    `--all`/`--mirror`, remote branch deletion, tag pushes, unsafe force-pushes, skipped hooks,
    discarding work, `.env` reads and printed or literal credentials, PR merge/approve, `gh api`
    writes, `gh workflow run`, releases and visibility changes. **`git push --force-with-lease` to a
    feature branch is allowed**, so a rebased PR can be updated (workflow.md already asks for rebases).
-   `permissions` are narrowed to match (no `gh pr merge`, pinned `uvx` tools).
+   `permissions` are narrowed to match (no `gh pr merge`, pinned `uvx` tools); `gh pr edit`,
+   `gh pr comment`, `gh pr checkout` and `git worktree remove` now ask first.
 4. **Repo hygiene** (`tools/checks/repo_hygiene.py`): source files ≤ 500 lines (target 300), every
    file ≤ 500 KB, no run databases, weights, logs, saves, exports, keys or `.env` (golden run data
    excepted). Files already over the limit are listed in `tools/checks/hygiene-baseline.txt` with a
@@ -61,6 +67,9 @@ or `inherit`), `effort` (`low` … `max`) and agent-scoped `hooks`; project sett
   review and no separation between test author and implementer. Kept as a personal option.
 - **Hard limit with no baseline:** would fail CI today on two protected acceptance files that only an
   S-tier session may split.
+- **`fable` instead of `opus` for the S tier:** ADR-0016 says "strongest available model". Opus is
+  the default the creator's plan reliably has and costs less usage; switch the S-tier agents to
+  `fable` if usage allows (one line per agent file).
 - **Block all force-pushes:** forces agents to delete and recreate branches after a rebase, which is
   worse.
 

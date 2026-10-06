@@ -15,7 +15,7 @@
       "Bash(uvx --from rust-just:*)",
       "Bash(uvx --from mkdocs:*)",
       "Bash(uvx prek@:*)",
-      "Bash(uvx zizmor@:*)",
+      "Bash(uvx zizmor:*)",
       "Bash(npm run:*)",
       "Bash(npx playwright:*)",
       "Bash(python3 tools/checks/:*)",

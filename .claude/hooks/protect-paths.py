@@ -28,11 +28,14 @@ from pathlib import Path
 
 # Keep this list identical to CLAUDE.md "Protected paths" and the CI check.
 PROTECTED = re.compile(
-    r"^(sim/tests/acceptance/|fixtures/golden/|\.github/|\.claude/|docs/adr/|CLAUDE\.md$)"
+    r"^(sim/tests/acceptance/|fixtures/golden/|\.github/|\.claude/|docs/adr/|tools/checks/|CLAUDE\.md$)"
 )
 # Lint, type-check and import-rule settings live in their own files so they can
 # be protected without blocking ordinary dependency changes in pyproject.toml.
-PROTECTED_FILES = {"sim/ruff.toml", "sim/pyrightconfig.json", "sim/.importlinter"}
+PROTECTED_FILES = {
+    "sim/ruff.toml", "sim/pyrightconfig.json", "sim/.importlinter",
+    "ruff.toml", ".pre-commit-config.yaml",  # repo-tooling lint and hooks (ADR-0022)
+}
 NEW_FILE_OK = re.compile(r"^docs/adr/\d{4}-[a-z0-9-]+\.md$")
 
 

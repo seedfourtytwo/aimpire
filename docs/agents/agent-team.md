@@ -59,8 +59,9 @@ flowchart LR
   the implementing issue opens. Writing them needs `AIMPIRE_ALLOW_PROTECTED=1`.
 - **`/build`** runs in a normal session. The `implementer`'s own hook forces
   `AIMPIRE_ALLOW_PROTECTED=0`, so it cannot touch protected paths even if the session allows them.
-  Removing an `xfail` mark is done by the orchestrator in an allowed session, or listed in the PR
-  for the creator.
+  Start `/build` sessions with `AIMPIRE_ALLOW_PROTECTED=1` so the Opus orchestrator can remove the
+  `xfail` marks once the tests pass (and nothing else); the reviewer checks that the acceptance diff
+  is only mark removals. This amends ADR-0016 §3, which had the implementer remove them.
 
 ## Escalation and judgement calls
 - **Implementer stuck** (same failure twice, or it reports a test contradicts the spec): the

@@ -57,7 +57,8 @@ FORBIDDEN_GLOBS = (
     "*.pem",
     "*.key",
     # run outputs: databases, blobs, saves, exports, logs (CLAUDE.md "Small files")
-    "runs/*",  # root-level run data only; source folders named `runs/` are fine
+    "runs/*",  # run output at the root (`--out ../runs`) ...
+    "sim/runs/*",  # ... and the CLI default `--out runs` run from sim/
     "exports/*",
     "saves/*",
     "*.log",

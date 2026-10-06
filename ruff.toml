@@ -3,7 +3,7 @@
 # Verified against ruff docs, 2026-10-04: https://docs.astral.sh/ruff/settings/
 
 line-length = 100
-target-version = "py313"   # repo tooling runs on system python; sim/ has its own sim/ruff.toml
+target-version = "py312"   # hooks run on system python3 (3.12 on ubuntu-24.04 runners)
 
 [format]
 # Protected (ADR-0016) and formatted before this config existed; do not reformat it here.

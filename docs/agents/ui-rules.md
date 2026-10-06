@@ -19,8 +19,9 @@ Universal Design*; WCAG 2.2. Full list in [references](../references.md).
   point is the magnitude itself.
 - **Show variation, not anecdotes.** Results across seeds show the distribution (median plus IQR band,
   or all runs as faint lines) and state `n`. A single run is labelled as a single run.
-- **Context on every chart:** units, rules version, scenario, seed set, model profile(s), and the
-  provenance label (`LIVE`, `RECORDED`, `FIXTURE`, `BASELINE`).
+- **Context on every chart:** units, rules version, preset, seed set, and the **mind label** exactly
+  as the run store records it (`rule:half_full`, `mock`, `recorded:<run_id>`, or a profile name), so
+  a rule baseline, a replay of stored decisions and a live model are never confused.
 - **Same quantity, same scale** across panels that are meant to be compared.
 - **Display conversion only at the edge:** authoritative integers (milli-units, ppm) are
   converted for display in one formatting module, never stored back.
@@ -32,16 +33,18 @@ Universal Design*; WCAG 2.2. Full list in [references](../references.md).
 - **Direct labels** at line ends beat legends. **Range frames** (axes drawn only across the data
   range) beat full boxes.
 - **Small multiples** with shared scales for comparing civilizations, seeds or models.
-- **Sparklines** (word-sized trend lines) inside tables and the inspector for population, food,
-  health and knowledge carriers.
+- **Sparklines** (word-sized trend lines) inside tables and panels for population, food, health and
+  whatever later milestones add.
 - Prefer a well-set table to a chart when there are fewer than ~20 numbers.
 - **Tables:** right-aligned numbers, `font-variant-numeric: tabular-nums`, consistent precision per
   column, units in the header not the cells, thin or no rules, zebra striping only if rows are wide.
 
 ## 3. Traceability (Aimpire-specific)
 
-- Every number and event on screen opens its source: event → evidence → claim/belief →
-  observation → decision → task → consequence (the Link Tracer).
+- Every number and event on screen can be traced to its source: today, the council panel shows the
+  mind's verbatim journal next to the orders it produced and their result; as milestones add
+  evidence and beliefs, the trace extends event → what a group perceived → what it concluded →
+  observation → council → orders → consequence.
 - **Truth, evidence and belief are visually distinct everywhere:**
   - *truth* (observer only): solid marks, upright labels;
   - *evidence* (what a civilization perceived): outlined marks;
@@ -71,7 +74,8 @@ Universal Design*; WCAG 2.2. Full list in [references](../references.md).
 - Inspection lives in **side panels**, not modal dialogs. The map stays visible while inspecting.
 - Dense but calm: align to a grid, consistent spacing scale, no decorative chrome.
 - **Keyboard:** every action reachable; visible focus; documented shortcuts for pause/step/scrub.
-- Respect `prefers-reduced-motion`: weather and divine effects degrade to static indicators.
+- Respect `prefers-reduced-motion`: animated effects (weather, and the god's signs from M1 on) degrade
+  to static indicators.
 - Works at 390 px wide (phone demo) with panels stacked, and at desktop widths side by side.
 - **Empty and error states tell the truth:** "no data yet", "provider timed out at tick 120". Never
   placeholder events or lorem ipsum in shipped views.
@@ -85,7 +89,8 @@ Universal Design*; WCAG 2.2. Full list in [references](../references.md).
   have distinct silhouettes, not just colours.
 - Overlays (moisture, food, ownership, belief maps) use the sequential palette with a direct-labelled
   scale, toggled explicitly, one at a time by default.
-- Divine interventions and weather are visible on the map **and** logged as events with causes.
+- From M1 on, the god's signs and the weather are visible on the map **and** logged as events with
+  causes (ADR-0017).
 - Observer labels ("chiefdom", "priest", historical-parallel tags) are visibly the observer's,
   never presented as something the simulation defined (ADR-0019).
 
@@ -93,7 +98,7 @@ Universal Design*; WCAG 2.2. Full list in [references](../references.md).
 
 - [ ] Lie factor ≈ 1; bars start at zero; scales shared where compared.
 - [ ] Distributions/uncertainty shown with `n`; single runs labelled as such.
-- [ ] Units, rules version, scenario, seeds, profiles and provenance label present.
+- [ ] Units, rules version, preset, seeds and the mind label present.
 - [ ] No chartjunk: no 3D, shadows, gradients, boxes, heavy grids, unnecessary legends.
 - [ ] Direct labels, range frames, small multiples and sparklines used where they fit.
 - [ ] Tables: right-aligned tabular numerals, consistent precision, units in headers.

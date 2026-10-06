@@ -14,7 +14,7 @@
 - **Tiers.** The strongest model writes ADRs, interfaces, acceptance tests and reviews. A mid-tier model implements one specified issue. Small models do search and mechanical edits.
 - **The issue is the spec.** Use [`task-template.md`](task-template.md). The backlog in `docs/plan/backlog.md` lists the items in build order.
 - **Acceptance tests come first.** They live in `sim/tests/acceptance/`, are written by the strong model, and are read-only for implementers.
-- **Protected paths.** `sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, lint and type-check settings. Implementing sessions do not change them.
+- **Protected paths.** `sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, lint and type-check settings, and the repo gates (`tools/checks/`, `ruff.toml`, `.pre-commit-config.yaml`). Implementing sessions do not change them.
 - **If a test seems wrong, stop and report.** Never edit a test to make it pass.
 - **Review.** Changes under `sim/`, `rules/` or `schema/` are reviewed in a fresh session by a stronger model, using [`review-checklist.md`](review-checklist.md).
 - **In one session** the tiers are subagents: `/spec` and `/build` route planning, acceptance tests and review to Opus and the coding to Sonnet. See [`agent-team.md`](agent-team.md) (ADR-0022).

@@ -21,6 +21,7 @@ site/
 
 # Runs & local data (never commit run outputs, weights or secrets; mirrors tools/checks/repo_hygiene.py)
 /runs/
+/sim/runs/
 /exports/
 /saves/
 *.log

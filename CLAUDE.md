@@ -36,7 +36,7 @@ Start with `docs/plan/roadmap.md`. The full intent is in `docs/spec/original-han
 - **Credentials never go in** saves, run dbs, blobs, exports, logs, fixtures or this repo.
 
 ## Protected paths (ADR-0016)
-`sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, and the lint, type-check and import-rule settings (`sim/ruff.toml`, `sim/pyrightconfig.json`, `sim/.importlinter`).
+`sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, the lint, type-check and import-rule settings (`sim/ruff.toml`, `sim/pyrightconfig.json`, `sim/.importlinter`), and the repo gates (`tools/checks/`, root `ruff.toml`, `.pre-commit-config.yaml`; ADR-0022).
 - Sessions meant to edit them (planning and review sessions, the creator) start Claude Code with `AIMPIRE_ALLOW_PROTECTED=1`.
 - Implementing sessions do not change these. A new **Proposed** ADR is the one exception.
 - **If a test seems to contradict the issue or an ADR: stop. Do not edit the test. Report it in the pull request.**
@@ -81,7 +81,7 @@ Unnamed subagents default to Sonnet. Details, escalation and how to change the r
 ## Engineering standards (creator)
 - **Test-driven.** Acceptance tests exist before the code. Every physics or rule change has a test that would fail without it.
 - **Clean, modular, reusable, commented.** Docstrings explain *why* and the units used (milli-units, ppm, per which period).
-- **Small files.** Keep a soft cap of about 300 lines per module; split by responsibility before you hit it. The hard limit is 500 lines and 500 KB per file (`tools/checks/repo_hygiene.py`); files over it are listed in `tools/checks/hygiene-baseline.txt` and may only shrink. Function size and complexity are lint rules (`sim/ruff.toml`; root `ruff.toml` for `tools/` and hooks).
+- **Small files.** Keep a soft cap of about 300 lines per module; split by responsibility before you hit it. The hard limit is 500 lines and 500 KB per file (`tools/checks/repo_hygiene.py`); files over it are listed in `tools/checks/hygiene-baseline.txt` and may only shrink. Function size is a lint rule: pylint defaults in `sim/ruff.toml` (5 arguments, 50 statements, 12 branches); stricter limits plus complexity ≤ 12 and docstrings in the root `ruff.toml` for `tools/` and hooks.
 - **Logic before graphics** (ADR-0010, ADR-0015). One milestone at a time. Each is a preset with physics tests, an AI experiment and a replay. Visuals are dots plus charts until the logic earns more.
 - **Tufte-style output.** Charts and UI use high data-ink, small multiples and direct labels, with no chart junk. The full rules and the review checklist are in `docs/agents/ui-rules.md`.
 - **Never commit** run databases, weights, logs, saves, exports or `.env` files (`repo_hygiene.py` and `.gitignore`); golden fixtures are the one exception.

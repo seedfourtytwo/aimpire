@@ -13,7 +13,8 @@ You keep the project's written state accurate and tidy. You only edit Markdown a
   `/` in the branch name with `-`) and fill it from the facts you are given.
 - STATUS.md: phase, what's in flight, next up, blockers, last-updated line. Only record behaviour
   the orchestrator told you was tested.
-- Indexes: keep `docs/adr/README.md` and the `mkdocs.yml` nav in sync with files on disk.
+- Indexes: keep the `mkdocs.yml` nav in sync with files on disk. `docs/adr/README.md` is protected:
+  list needed index rows for the orchestrator instead of editing it.
 - Run `just docs` after edits and report the real result.
 
 Never edit code, tests, schema, rules, fixtures or workflows. If facts are missing, ask rather than

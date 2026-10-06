@@ -72,6 +72,8 @@ def test_forbidden_artifacts_are_errors(tmp_path: Path) -> None:
         "weights.safetensors",
         "debug.log",
         "exports/run1.csv",
+        "sim/runs/r1/replay.json",
+        "sim/runs/r1/notebook.md",
     ):
         _write(tmp_path, rel, "x")
         assert _rules(rh.check_paths(tmp_path, [rel])) == {"forbidden-file"}, rel
@@ -106,6 +108,8 @@ def test_golden_exemption_covers_run_data_only(tmp_path: Path, rel: str) -> None
         ("fixtures/golden/r/blobs/a.json.zst", False),
         ("fixtures/golden/key.pem", True),
         ("runs/r1/run.db", True),
+        ("sim/runs/r1/replay.json", True),
+        ("sim/runs/r1/notebook.md", True),
         ("sim/src/aimpire/api/runs/router.py", False),
     ],
 )
@@ -198,4 +202,6 @@ def test_repository_baseline_entries_are_still_needed() -> None:
         assert path.is_file(), f"baseline lists missing file {rel}"
         lines = sum(1 for _ in path.open("rb"))
         assert lines > rh.SOURCE_LINE_HARD_LIMIT, f"{rel} is back under the limit; remove its entry"
-        assert lines <= max_lines
+        assert lines == max_lines, (
+            f"{rel}: lower its baseline to {lines} (the ratchet only tightens)"
+        )

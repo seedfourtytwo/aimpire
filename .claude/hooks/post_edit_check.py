@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from hook_io import emit, project_dir, run_hook, tool_input
+from hook_io import emit, git_toplevel, project_dir, run_hook, tool_input
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools" / "checks"))
 import repo_hygiene  # noqa: E402  (path set up above)
@@ -69,8 +69,9 @@ def handle(event: dict[str, Any]) -> None:
     raw = str(tool_input(event).get("file_path", ""))
     if not raw:
         return
-    root = project_dir(event)
-    path = Path(raw) if Path(raw).is_absolute() else root / raw
+    base = project_dir(event)
+    path = Path(raw) if Path(raw).is_absolute() else base / raw
+    root = git_toplevel(path) or base  # the file's own checkout (agent worktrees)
     rel_path = _relative(path, root)
     if should_format(rel_path):
         _format_python(path)

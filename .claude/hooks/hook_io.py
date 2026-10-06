@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -38,9 +39,37 @@ def tool_input(event: dict[str, Any]) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+def git_toplevel(near: Path) -> Path | None:
+    """The git checkout containing `near` (a file or directory), or None."""
+    directory = near if near.is_dir() else near.parent
+    while not directory.is_dir() and directory != directory.parent:
+        directory = directory.parent
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(directory), "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=5,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    top = result.stdout.strip()
+    return Path(top).resolve() if result.returncode == 0 and top else None
+
+
 def project_dir(event: dict[str, Any]) -> Path:
-    """Project root: $CLAUDE_PROJECT_DIR, else the event cwd, else the process cwd."""
-    return Path(os.environ.get("CLAUDE_PROJECT_DIR") or event.get("cwd") or Path.cwd())
+    """Checkout the event happened in: git toplevel of the event `cwd`, else $CLAUDE_PROJECT_DIR.
+
+    In agent worktrees (`.claude/worktrees/<id>/`) CLAUDE_PROJECT_DIR still names the main
+    checkout, so the event's own working directory is tried first (as protect-paths.py does).
+    """
+    cwd = event.get("cwd")
+    if isinstance(cwd, str) and cwd:
+        top = git_toplevel(Path(cwd))
+        if top:
+            return top
+    return Path(os.environ.get("CLAUDE_PROJECT_DIR") or cwd or Path.cwd())
 
 
 def emit(payload: dict[str, Any]) -> None:

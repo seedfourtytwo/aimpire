@@ -19,8 +19,8 @@ Loop:
 1. Run the named acceptance tests and confirm they fail.
 2. For each piece of behaviour: write a unit or property test in `sim/tests/unit/` or
    `sim/tests/property/` first, see it fail, then write the minimum code to pass it.
-3. When the acceptance tests pass, remove their expected-failure mark (the only change allowed in
-   an acceptance file — the hook may block it; if so, report and the orchestrator does it).
+3. When the acceptance tests pass (strict xfail turns them into "XPASS" failures), stop and list
+   them. Never touch acceptance files — not even the mark; the orchestrator removes it.
 4. Refactor with everything green: names from CLAUDE.md "Words used here", small functions,
    module docstring (purpose, layer, must-never), docstrings with units and the *why*.
 5. Run `just test-fast`, then `just check-sim`, and read the real output.

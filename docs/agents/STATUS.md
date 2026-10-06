@@ -62,7 +62,8 @@ Minds: `rule:random|greedy|half_full|msy`, `mock`, or a profile (`profiles/ollam
 - `agent/agent-team-and-guards`: agent team and model routing, Bash guard, repo hygiene ratchet, UI rules (ADR-0022, proposed; open question Q19).
 
 ## Known blockers
-- `.github/workflows/` is the creator's alone (ADR-0016). The G1a protected-path CI job is ready as a file; the creator adds it after creating the `protected-change` environment.
+- `.github/workflows/` is the creator's alone (ADR-0016). Also pending: the always-on `repo` job (backlog G1e, ADR-0022); until it exists, `just check-repo` runs in CI only when the `python` job runs, so PRs touching only `tools/`, `.claude/` or docs skip it.
+- The G1a protected-path CI job is ready as a file; the creator adds it after creating the `protected-change` environment.
 - The `main` ruleset admin bypass must be removed by the creator in GitHub settings.
 - No API keys yet. Live runs need `ANTHROPIC_API_KEY` or `OPENROUTER_API_KEY` as environment variables, or a local Ollama.
 - `ci.yml`, `dependabot.yml` and the feature issue template still say "E1" and "E5" in comments.
