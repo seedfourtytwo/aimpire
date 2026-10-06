@@ -24,7 +24,7 @@ _PROTECTED = re.compile(
     r"|-snapshots/"  # Playwright visual baselines
     r"|(^|/)test_[^/]*\.py$|_test\.py$|(^|/)conftest\.py$"  # pytest
     r"|\.(test|spec)\.[cm]?[jt]sx?$"  # vitest / playwright specs
-    r"|(^|/)(vitest|playwright|vite|eslint)\.config\.[cm]?[jt]s$"  # runner/lint config"
+    r"|(^|/)(vitest|playwright|vite|eslint)\.config\.[cm]?[jt]s$"  # runner and lint config
     r"|(^|/)package\.json$|(^|/)\.coveragerc$"  # test scripts and coverage settings
     r"|^\.claude/|^\.github/|^ci/|^tools/checks/"  # the guardrails themselves
     r"|^(ruff\.toml|justfile|AGENTS\.md|CLAUDE\.md|\.pre-commit-config\.yaml|\.gitignore)$"

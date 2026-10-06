@@ -61,7 +61,6 @@ FORBIDDEN_GLOBS = (
     "*.log",
     "*.zst",
 )
-# Golden fixtures are committed recorded runs (ADR-0004/0006); size limits still apply.
 # Golden fixtures are committed recorded runs (ADR-0004/0006): run data only, size limits apply.
 FORBIDDEN_EXCEPTIONS = (
     ".env.example",
