@@ -66,3 +66,13 @@ def test_remote_profiles_are_not_contacted() -> None:
         raise AssertionError("a remote endpoint must not be probed")
 
     check_reachable(resolve_mind(str(haiku), REPO), transport=_transport(boom))
+
+
+def test_bare_model_name_matches_its_latest_tag(tmp_path: Path) -> None:
+    profile = tmp_path / "p.toml"
+    profile.write_text(OLLAMA.read_text().replace("qwen3:8b", "mymodel"))
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(200, json={"data": [{"id": "mymodel:latest"}]})
+
+    check_reachable(resolve_mind(str(profile), tmp_path), transport=_transport(handler))
