@@ -32,6 +32,11 @@ def _model_ids(body: Any) -> list[str] | None:
     return [i for i in ids if isinstance(i, str)]  # pyright: ignore[reportUnknownVariableType]
 
 
+def _has_model(ids: list[str], model: str) -> bool:
+    """True if ``model`` is served: Ollama lists ``name:latest`` for a bare ``name``."""
+    return model in ids or (":" not in model and f"{model}:latest" in ids)
+
+
 def check_reachable(mind: MindSpec, *, transport: httpx2.BaseTransport | None = None) -> None:
     """Raise ``ProviderUnreachable`` if ``mind`` is a local model that cannot answer now.
 
@@ -56,7 +61,7 @@ def check_reachable(mind: MindSpec, *, transport: httpx2.BaseTransport | None = 
         ids = _model_ids(response.json())
     except ValueError:
         ids = None
-    if ids is not None and profile.model not in ids:
+    if ids is not None and not _has_model(ids, profile.model):
         raise ProviderUnreachable(
             f"the server is up but has no model {profile.model!r} "
             f"(it has: {', '.join(sorted(ids)) or 'none'}). "
