@@ -81,7 +81,51 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
       - run: uvx --from rust-just just lint-workflows
 
-  # Activates automatically once sim/ exists (epic E1). Recipes are defined in the justfile by E1.
+  # Protected paths (ADR-0016, backlog G1a). Pull requests that touch them wait
+  # for the creator's approval in the `protected-change` environment.
+  # Keep the pattern identical to .claude/hooks/protect-paths.py and CLAUDE.md.
+  protected-paths:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 5
+    outputs:
+      touched: ${{ steps.diff.outputs.touched }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - id: diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          pattern='^(sim/tests/acceptance/|fixtures/golden/|\.github/|\.claude/|docs/adr/|CLAUDE\.md$|sim/ruff\.toml$|sim/pyrightconfig\.json$|sim/\.importlinter$)'
+          files="$(git diff --name-only "$BASE...$HEAD")"
+          # New ADR files are allowed without approval (any agent may propose one).
+          added_adrs="$(git diff --name-only --diff-filter=A "$BASE...$HEAD" | grep -E '^docs/adr/[0-9]{4}-[a-z0-9-]+\.md$' || true)"
+          protected="$(printf '%s\n' "$files" | grep -E "$pattern" | grep -vxF -f <(printf '%s\n' "$added_adrs") || true)"
+          if [ -n "$protected" ]; then
+            echo "Protected paths changed:"
+            printf '%s\n' "$protected"
+            echo "touched=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "touched=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  protected-approval:
+    needs: protected-paths
+    if: needs.protected-paths.outputs.touched == 'true'
+    runs-on: ubuntu-latest
+    environment: protected-change # required reviewer: the creator
+    permissions: {}
+    timeout-minutes: 5
+    steps:
+      - run: echo "Protected paths changed and the creator approved this run."
+
+  # Activates automatically once sim/ exists (F1). Recipes are defined in the justfile.
   python:
     needs: changes
     if: needs.changes.outputs.sim == 'true'
@@ -116,7 +160,7 @@ jobs:
   # The ONLY required status check for branch protection.
   ci-ok:
     if: always()
-    needs: [changes, docs, workflows-lint, python, client]
+    needs: [changes, docs, workflows-lint, python, client, protected-paths, protected-approval]
     runs-on: ubuntu-latest
     permissions: {}
     steps:
