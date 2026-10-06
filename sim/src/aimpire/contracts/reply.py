@@ -81,7 +81,14 @@ class Order(Closed):
         description=f"One of: {words(ORDER_KINDS)}.", json_schema_extra=one_of(ORDER_KINDS)
     )
     place: str = Field(description="A place id from the observation.")
-    target: str = Field(description="An entity id, or empty when not used.")
+    # No m0 order kind takes a target, so the m0 schema allows only "". A small
+    # model filled it with a place id on every order in a live year (all rejected
+    # UNKNOWN_ENTITY); the validator still rejects a non-empty target from a
+    # provider that does not constrain decoding (acceptance test F5d).
+    target: str = Field(
+        description="Not used by any order in this contract; leave empty.",
+        json_schema_extra=one_of(frozenset({""})),
+    )
     qty: int = Field(description="Number of people, or 0 when not used.")
     text: str = Field(description="A short note, or empty.")
 

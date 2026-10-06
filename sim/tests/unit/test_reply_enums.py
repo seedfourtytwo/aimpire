@@ -23,3 +23,8 @@ def test_python_type_stays_open_so_the_validator_reports_a_closed_reason() -> No
     order = Order(kind="move", place="PL04", target="", qty=3, text="")
     assert order.kind == "move"
     assert Commitment(kind="x", place="", qty=0, by_council=1).kind == "x"
+
+
+def test_m0_order_target_can_only_be_empty_in_the_schema() -> None:
+    assert _defs()["Order"]["properties"]["target"]["enum"] == [""]
+    assert Order(kind="FORAGE", place="PL04", target="PL04", qty=1, text="").target == "PL04"
