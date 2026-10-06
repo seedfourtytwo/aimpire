@@ -28,11 +28,13 @@ def test_check_reports_drift_and_missing(tmp_path: Path):
     assert main(["--check", str(tmp_path)]) == 1
 
 
-def test_kinds_are_plain_strings_in_reply_schema():
-    """Kinds are validated later (UNKNOWN_ACTION), so the schema must not pin them."""
+def test_kinds_are_listed_in_reply_schema_but_open_in_python():
+    """The schema lists kinds so constrained decoding cannot invent one (Ollama sent
+    "move" and "collect" without it); parsing stays open so an unconstrained
+    provider's unknown kind is still rejected later as UNKNOWN_ACTION."""
     schema = MindReply.model_json_schema()
     order = schema["$defs"]["Order"]["properties"]["kind"]
-    assert order["type"] == "string" and "enum" not in order
+    assert order["type"] == "string" and order["enum"] == sorted(ORDER_KINDS)
     assert all(kind in order["description"] for kind in ORDER_KINDS)
 
 

@@ -6,6 +6,10 @@
       "properties": {
         "activity": {
           "description": "One of: FORAGE, SCOUT.",
+          "enum": [
+            "FORAGE",
+            "SCOUT"
+          ],
           "title": "Activity",
           "type": "string"
         },
