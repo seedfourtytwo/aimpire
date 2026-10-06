@@ -35,6 +35,7 @@ from aimpire.cognition.budget import Caps
 from aimpire.cognition.disclosed import load_disclosed
 from aimpire.cognition.minds import MindSpec, build_provider, resolve_mind
 from aimpire.cognition.protocol import Provider
+from aimpire.cognition.reachability import check_reachable
 from aimpire.cognition.render import system_prompt
 from aimpire.cognition.runner import run_with_councils
 from aimpire.cognition.seats import Renderer, Seat, seats_for
@@ -161,6 +162,8 @@ def play(
         month=month,
         echo=echo,
     )
+    if provider is None:
+        check_reachable(mind)  # a dead local server stops here, not after a whole run
     provider = provider or _provider(mind, opts.rules_dir)
     run_id = run_id_for(opts, mind, resolved)
     if resolved.tags:

@@ -31,6 +31,7 @@ from aimpire.cognition.budget import Caps
 from aimpire.cognition.council import SeatCall, Settled, hold_council
 from aimpire.cognition.minds import MindSpec, build_provider, resolve_mind
 from aimpire.cognition.protocol import Provider
+from aimpire.cognition.reachability import check_reachable
 from aimpire.cognition.render import render_places, system_prompt
 from aimpire.cognition.seats import request_for, seat_from_observation
 from aimpire.contracts.mind import Observation
@@ -146,6 +147,8 @@ def run_qualify(  # noqa: PLR0913 (each is a separate input file or folder)
     worst = len(cases.cases) * mind.worst_case_call_micro_usd
     plan = CostPlan(worst, worst, mind.run_cap_micro_usd)
     check_budget(plan, runs_root=runs_root, month=month, echo=echo)
+    if mind.kind == "profile":
+        check_reachable(mind)  # before the cases, so FAIL always means the model, not the server
     mocks = {c.observation.decision_id: c.mock for c in cases.cases}
     provider = build_provider(mind, mocks)
     spent_month = spent_this_month(runs_root, month)
@@ -164,6 +167,10 @@ def run_qualify(  # noqa: PLR0913 (each is a separate input file or folder)
     )
     md, js = _write_report(run_dir, data)
     echo(f"{'PASS' if data['passed'] else 'FAIL'}: {mind.label}; report {md}")
+    if metrics.outcomes.get("PROVIDER_ERROR", 0) == metrics.cases:
+        echo(
+            "every call failed with PROVIDER_ERROR: a provider problem, not a verdict on the model"
+        )
     return QualifyResult(run_id, run_dir, mind.label, metrics, checks, data["passed"], md, js)
 
 

@@ -86,4 +86,9 @@ def summary_lines(
     councils = sum(outcomes.values())
     shown = ", ".join(f"{name} {count}" for name, count in sorted(outcomes.items()) if count)
     lines.append(f"councils {councils}: {shown or 'none'}")
+    if councils and outcomes.get("PROVIDER_ERROR", 0) == councils:
+        lines.append(
+            "WARNING: every council failed with PROVIDER_ERROR, so no mind steered this run. "
+            "This is the provider, not the model: see the notebook for the error text."
+        )
     return [*lines, *footer]
