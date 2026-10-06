@@ -19,11 +19,27 @@ test-results/
 # Docs
 site/
 
-# Runs & local data (never commit run outputs or secrets)
-runs/
+# Runs & local data (never commit run outputs, weights or secrets; mirrors tools/checks/repo_hygiene.py)
+/runs/
+/exports/
+/saves/
+*.log
+*.zst
+*.sqlite
+*.sqlite3
+*.gguf
+*.safetensors
+*.ckpt
+*.pt
+*.onnx
+*.pem
+*.key
 *.db
 *.db-wal
 *.db-shm
+# Golden fixtures are committed recorded runs (ADR-0004): re-include run data only.
+!/fixtures/golden/**/*.db
+!/fixtures/golden/**/*.zst
 .env
 .env.*
 !.env.example

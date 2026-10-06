@@ -31,5 +31,6 @@ We use MADR-lite records: one file per decision, `NNNN-kebab-title.md`, copied f
 | [0019](0019-emergence-first.md) | Emergence first: primitives, not institutions | Accepted |
 | [0020](0020-tinkering-lab-and-world-constants.md) | The Tinkering Lab and world constants | Accepted |
 | [0021](0021-native-mind-track.md) | Native mind track: after M0, generated corpus, constrained replies | Accepted |
+| [0022](0022-agent-team-guard-hooks-and-repo-hygiene.md) | Agent team, guard hooks and repo hygiene | Proposed |
 
 Background research for each decision lives in `docs/research/` (listed on the [docs home page](../index.md)).

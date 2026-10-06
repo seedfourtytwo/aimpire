@@ -1,0 +1,5 @@
+# Grandfathered files over the 500-line hard limit (CLAUDE.md "Small files", ADR-0022).
+# Format: path  max_lines  reason. A listed file may not grow; remove the entry once it is split.
+# Both are protected acceptance tests: splitting them needs an S-tier session (ADR-0016).
+sim/tests/acceptance/test_f5e_council.py 575 predates the limit; split by an S-tier session
+sim/tests/acceptance/test_f6ab_adapters.py 535 predates the limit; split by an S-tier session

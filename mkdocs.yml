@@ -70,6 +70,7 @@ nav:
       - "0019 Emergence first": adr/0019-emergence-first.md
       - "0020 Tinkering Lab": adr/0020-tinkering-lab-and-world-constants.md
       - "0021 Native minds": adr/0021-native-mind-track.md
+      - "0022 Agent team & guards": adr/0022-agent-team-guard-hooks-and-repo-hygiene.md
   - Research:
       - Brief: research/00-brief.md
       - Client & rendering: research/10-client-rendering.md
@@ -87,3 +88,7 @@ nav:
       - Handoff template: agents/handoff-template.md
       - Task template: agents/task-template.md
       - Review checklist: agents/review-checklist.md
+      - Agent team & models: agents/agent-team.md
+      - UI rules: agents/ui-rules.md
+      - Tooling limitations: limitations.md
+      - References: references.md

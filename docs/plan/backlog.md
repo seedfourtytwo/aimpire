@@ -18,6 +18,8 @@ Verification for every item is `just check`, plus the named tests.
 | G1b | S | `.claude/hooks/protect-paths.sh` and a `PreToolUse` hook on the Edit and Write tools in `.claude/settings.json`. The script exits 2 with a clear message when the target matches a protected path, unless `AIMPIRE_ALLOW_PROTECTED=1`. Add a `Stop` hook that lists protected files changed in the working tree. |
 | G1c | S | `sim/tests/acceptance/README.md` (the read-only rule and the expected-failure convention). |
 | G1d | C | Optional: a pull-request review workflow or routine pinned to a stronger model, using the checklist in [`review-checklist.md`](../agents/review-checklist.md). |
+| G1e | C | Add an always-on `repo` job to `ci.yml` (sketch below) and to `ci-ok.needs`, so pull requests that touch only `tools/`, `.claude/` or docs also run `just check-repo` (ADR-0022). Until then it runs inside `check-sim`. |
+| G2a | S | Split the two acceptance files listed in `tools/checks/hygiene-baseline.txt` below 500 lines, then delete their baseline entries. |
 
 Protected paths: `sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, and the config files `sim/ruff.toml`, `sim/pyrightconfig.json` and `sim/.importlinter`. They are kept out of `pyproject.toml` so that dependency changes stay unprotected.
 
@@ -56,6 +58,22 @@ Sketch for G1a (the creator adapts and pushes it; agents do not edit workflows):
     permissions: {}
     steps:
       - run: echo "Protected paths changed and the creator approved."
+```
+
+Sketch for G1e (the creator adapts and pushes it):
+
+```yaml
+  repo:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - run: uvx --from rust-just==1.58.0 just check-repo
 ```
 
 ---

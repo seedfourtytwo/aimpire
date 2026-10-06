@@ -1,0 +1,23 @@
+# Local git hooks, run by prek (pre-commit compatible; ADR-0006).
+# Install once per clone:  just hooks-install
+# Local hooks only, so no third-party hook repos need pinning; CI runs the same checks via `just`.
+repos:
+  - repo: local
+    hooks:
+      - id: repo-hygiene
+        name: repo hygiene (sizes, line limits, forbidden files)
+        entry: python3 tools/checks/repo_hygiene.py
+        language: system
+        pass_filenames: true
+      - id: ruff-check-tools
+        name: ruff check (tools, hooks)
+        entry: uvx ruff@0.16.10 check
+        language: system
+        types: [python]
+        files: ^(tools|\.claude/hooks)/
+      - id: ruff-format-tools
+        name: ruff format --check (tools, hooks)
+        entry: uvx ruff@0.16.10 format --check
+        language: system
+        types: [python]
+        files: ^(tools|\.claude/hooks)/

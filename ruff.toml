@@ -1,0 +1,52 @@
+# Repo-tooling ruff config: code-shape limits from CLAUDE.md "Engineering standards".
+# Applies to tools/ and .claude/hooks/ only; sim/ keeps its own protected sim/ruff.toml.
+# Verified against ruff docs, 2026-10-04: https://docs.astral.sh/ruff/settings/
+
+line-length = 100
+target-version = "py313"   # repo tooling runs on system python; sim/ has its own sim/ruff.toml
+
+[format]
+# Protected (ADR-0016) and formatted before this config existed; do not reformat it here.
+exclude = [".claude/hooks/protect-paths.py"]
+
+[lint]
+select = [
+  "E", "W", "F",      # pycodestyle, pyflakes
+  "I",                # import order
+  "B",                # bugbear
+  "UP",               # pyupgrade
+  "SIM",              # simplify
+  "C90",              # mccabe complexity
+  "PLR0911", "PLR0912", "PLR0913", "PLR0915",  # returns, branches, args, statements
+  # nesting depth (PLR1702) is preview-only in ruff; enforced in review until stable
+  "D",                # docstrings (Google convention)
+  "ERA",              # no commented-out code
+  "T20",              # no print() outside CLIs
+  "S",                # bandit security checks
+  "PLR2004",          # no magic numbers (CLAUDE.md engineering standards)
+  "TD003",            # every TODO links an issue
+  "ANN",              # full type hints
+]
+ignore = [
+  "D105", "D107",     # magic methods / __init__ documented on the class
+  "D203", "D213",     # Google style: summary on first line
+]
+
+[lint.mccabe]
+max-complexity = 12          # hard limit; target ≤ 8
+
+[lint.pylint]
+max-args = 6                 # beyond this, pass a params model
+max-statements = 40          # ≈ 60-line hard limit per function
+max-branches = 12
+max-returns = 6
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.per-file-ignores]
+"**/tests/**" = ["D", "S101", "PLR2004", "S603", "S607"]  # asserts, literal numbers, subprocess of our own hooks
+"tools/checks/*.py" = ["T20", "S603", "S607"]  # CLI output; fixed git argv, no shell
+".claude/hooks/*.py" = ["S603", "S607"]        # fixed argv, no shell
+# Predates ADR-0022 and is protected (ADR-0016): writes its block message to stderr by design.
+".claude/hooks/protect-paths.py" = ["S603", "S607", "D103", "T201"]

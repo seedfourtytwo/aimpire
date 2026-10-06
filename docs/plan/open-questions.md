@@ -10,6 +10,7 @@ Defaults are applied until answered. Answers go into `decision-log.md`, and into
 | Q8 | **Historical parallels:** label patterns only, or also seed scenarios from real geographies (a Nile-like basin)? | Label only, generic geography (ADR-0019) | Observer layer |
 | Q9 | **Local model server:** will your Ollama machine be reachable for runs launched from the cloud? | Local models run on your machine, launched by you | Optional |
 | Q17 | **Name.** AIMPIRE is a registered US trademark for consumer electronics, and the word sounds like "Empire AI". | Keep it for the repo; get a clearance check before any store release | A store release |
+| Q19 | **Accept ADR-0022** (agent team, Bash guard, repo hygiene)? It routes planning, acceptance tests and review to Opus and coding to Sonnet inside one session, and allows `--force-with-lease` to feature branches. | Accept; revisit the tiers on first-pass CI and review evidence | — |
 
 ## Answered
 

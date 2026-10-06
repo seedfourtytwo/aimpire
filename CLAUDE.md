@@ -59,14 +59,32 @@ docs/           spec, research, adr, architecture, plan, agents, experiments
 ## Commands
 Run `just --list` to see them all. Use `just check` before every PR; it is exactly what CI runs.
 - `just docs` builds the docs site (strict). `just docs-serve` previews it.
-- Python recipes arrive with F1: `lint`, `typecheck`, `test`, `test-fast`, `check-sim`. Later: `golden`, `schema-check`, `client-*`.
+- Python: `lint`, `typecheck`, `test`, `test-fast`, `check-sim`, `schema-check`. Client: `check-client`.
+- Repo-wide gates: `just check-repo` (file sizes, forbidden files, tooling and hook tests). It also runs inside `check-sim`.
+- Slash commands: `/spec <backlog id>` (S-tier: plan the issue, write acceptance tests first), `/build <issue>` (implement and review), `/fresh-review`, `/ui-review`, `/adr`, `/dod`, `/handoff`.
+
+## Agent team and model routing (ADR-0016, ADR-0022)
+The main session is the **orchestrator**: Opus at `high` effort by default (`.claude/settings.json`). It plans and decides, and hands bulk work to subagents in `.claude/agents/`, each pinned to the ADR-0016 tier:
+
+| Agent | Model / effort | Tier | Does |
+|---|---|---|---|
+| `architect` | opus / xhigh | S | turns a backlog item into an issue (task template), drafts Proposed ADRs |
+| `test-writer` | opus / high | S | writes acceptance tests first (strict xfail) and interface stubs |
+| `implementer` | sonnet / medium | I | makes them pass, writing its own unit tests first; **can never edit protected paths**, even in an `AIMPIRE_ALLOW_PROTECTED=1` session |
+| `reviewer` | opus / high | S | fresh-context review with `docs/agents/review-checklist.md` |
+| `ui-auditor` | sonnet / medium | I | Tufte and accessibility audit (`docs/agents/ui-rules.md`) |
+| `researcher` | sonnet / medium | I | verifies versions, APIs, prices and model IDs, with URLs and dates |
+| `scribe` | haiku / low | small | STATUS, handoffs, logs, doc indexes |
+
+Unnamed subagents default to Sonnet. Details, escalation and how to change the routing: `docs/agents/agent-team.md`.
 
 ## Engineering standards (creator)
 - **Test-driven.** Acceptance tests exist before the code. Every physics or rule change has a test that would fail without it.
 - **Clean, modular, reusable, commented.** Docstrings explain *why* and the units used (milli-units, ppm, per which period).
-- **Small files.** Keep a soft cap of about 300 lines per module; split by responsibility before you hit it.
+- **Small files.** Keep a soft cap of about 300 lines per module; split by responsibility before you hit it. The hard limit is 500 lines and 500 KB per file (`tools/checks/repo_hygiene.py`); files over it are listed in `tools/checks/hygiene-baseline.txt` and may only shrink. Function size and complexity are lint rules (`sim/ruff.toml`; root `ruff.toml` for `tools/` and hooks).
 - **Logic before graphics** (ADR-0010, ADR-0015). One milestone at a time. Each is a preset with physics tests, an AI experiment and a replay. Visuals are dots plus charts until the logic earns more.
-- **Tufte-style output.** Charts and UI use high data-ink, small multiples and direct labels, with no chart junk.
+- **Tufte-style output.** Charts and UI use high data-ink, small multiples and direct labels, with no chart junk. The full rules and the review checklist are in `docs/agents/ui-rules.md`.
+- **Never commit** run databases, weights, logs, saves, exports or `.env` files (`repo_hygiene.py` and `.gitignore`); golden fixtures are the one exception.
 
 ## Working rules
 - One issue, one fresh session, one branch (`agent/<issue>-<slug>`), one small PR. Conventional Commit titles; scopes are listed in `.github/workflows/pr-title.yml`.
@@ -75,3 +93,13 @@ Run `just --list` to see them all. Use `just check` before every PR; it is exact
 - **Architecture changes** need a Proposed ADR (`/adr`). The creator accepts it.
 - **Verify versions and APIs** against current primary docs before adding dependencies. Never invent model IDs.
 - **Show evidence.** Put the `just check` output in the PR. Never mark a partial feature complete.
+
+## Git and GitHub safety (ADR-0022)
+A Bash hook (`.claude/hooks/guard_bash.py`) blocks, without the creator's approval in the conversation: pushing to `main` (also implicitly while on `main`), `--all`/`--mirror`, deleting remote branches, tag pushes, force-pushes other than `--force-with-lease` to your own branch, skipping hooks, discarding work (`reset --hard`, `clean -f`, `checkout -- .`, …), reading `.env` or printing credentials, merging or approving PRs, `gh api` writes, `gh workflow run`, releases and visibility changes. It fails open; CI and review remain the real gates. If it blocks something the creator approved, say so and ask the creator to run it.
+
+## Hooks (`.claude/hooks/`, tested in `tools/tests/`)
+- **SessionStart:** injects the branch, the session routine, the branch handoff note and the head of `STATUS.md`.
+- **PreToolUse:** `protect-paths.py` on edits (ADR-0016); `guard_bash.py` on shell commands.
+- **PostToolUse:** formats edited Python in `tools/` and hooks with the pinned ruff and flags files over the hard limit.
+- **Stop:** lists protected paths changed (`protect-paths.py stop`) and reminds once to update `STATUS.md` or a handoff note.
+

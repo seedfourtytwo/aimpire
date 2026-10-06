@@ -59,7 +59,7 @@ Minds: `rule:random|greedy|half_full|msy`, `mock`, or a profile (`profiles/ollam
 - [ ] **M1:** seasons and a voice (backlog to be specified after E0's pilot). **LAB2** sweeps with M0d machinery. **Native minds** N0–N1 can start now (M0 transcripts exist).
 
 ## In flight
-_None._
+- `agent/agent-team-and-guards`: agent team and model routing, Bash guard, repo hygiene ratchet, UI rules (ADR-0022, proposed; open question Q19).
 
 ## Known blockers
 - `.github/workflows/` is the creator's alone (ADR-0016). The G1a protected-path CI job is ready as a file; the creator adds it after creating the `protected-change` environment.

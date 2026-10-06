@@ -17,6 +17,7 @@
 - **Protected paths.** `sim/tests/acceptance/`, `fixtures/golden/`, `.github/`, `.claude/`, `docs/adr/`, `CLAUDE.md`, lint and type-check settings. Implementing sessions do not change them.
 - **If a test seems wrong, stop and report.** Never edit a test to make it pass.
 - **Review.** Changes under `sim/`, `rules/` or `schema/` are reviewed in a fresh session by a stronger model, using [`review-checklist.md`](review-checklist.md).
+- **In one session** the tiers are subagents: `/spec` and `/build` route planning, acceptance tests and review to Opus and the coding to Sonnet. See [`agent-team.md`](agent-team.md) (ADR-0022).
 
 ## Hot files: one PR at a time, never mixed with feature work
 - `schema/`: the generated contracts. Make a schema-first PR, and merge it before dependent work.
@@ -26,10 +27,10 @@
 
 ## Parallel agents
 - **Split along module seams:** `sim/fields`, `sim/agents`, `sim/knowledge`, `cognition`, `persistence`, `client`. Inside a milestone, split into physics, observation and prompt, experiment and report.
-- **Rebase on `main` before opening a PR.** Never force-push to `main`.
+- **Rebase on `main` before opening a PR.** Update a pushed branch with `git push --force-with-lease`, the only force-push allowed (ADR-0022). Never push to `main`.
 
 ## Definition of done
-- [ ] `just check` passes.
+- [ ] `just check` passes (it includes `check-repo`: file limits, forbidden files, hook tests).
 - [ ] Tests are added: unit tests, plus property tests for anything that bears an invariant.
 - [ ] Determinism impact is declared. Golden hashes are unchanged, or the regeneration is justified.
 - [ ] The schema is regenerated if contracts changed, and the client is updated.
