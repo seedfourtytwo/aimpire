@@ -8,7 +8,7 @@
 5. **PR:**
    - The title is a Conventional Commit, e.g. `feat(sim): counter-based RNG`.
    - Fill in the template, including the determinism and schema impact lines.
-6. **Hand off:** update `STATUS.md`. If work remains, add `docs/agents/handoff-<slug>.md`, where the slug is the branch name with `/` → `-` (copy `handoff-template.md`). Edit `STATUS.md` only in the PR's final commit, own lines only.
+6. **Hand off:** if work remains, add `docs/agents/handoff-<slug>.md`, where the slug is the branch name with `/` → `-` (copy `handoff-template.md`). Edit `STATUS.md` only in the PR's final commit, own lines only, and delete the handoff note there.
 
 ## Hot files: one PR at a time, never mixed with feature work
 - `schema/`: the generated contracts. Make a schema-first PR, and merge it before dependent work.

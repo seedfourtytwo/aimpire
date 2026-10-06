@@ -272,7 +272,7 @@ Claude Code wiring for these roles: `docs/agents/agent-team.md` and `.claude/age
 - Never, without the creator's explicit approval in the current conversation: push to `main`,
   force-push (except `--force-with-lease` to your own feature branch), delete remote branches,
   `reset --hard`/`clean -f`/discard working-tree changes, skip hooks (`--no-verify`, `commit -n`),
-  read `.env` or print credentials, put keys in commands, merge or approve PRs, publish releases,
+  read `.env` or print credentials, put keys in commands, merge or approve PRs, push tags or publish releases,
   change repo visibility, run live/paid evals. (Enforced as far as practical by
   `.claude/hooks/guard_bash.py` and `permissions.deny`.)
 - Never bypass validation "temporarily", weaken a test to pass, or regenerate goldens to hide a

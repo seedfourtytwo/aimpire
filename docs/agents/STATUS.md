@@ -11,7 +11,7 @@
 - **Agent team:** `.claude/agents/` holds architect, test-writer, implementer, reviewer, ui-auditor, researcher and scribe. Model routing is in `docs/agents/agent-team.md` (ADR-0010).
 - **Enforcement:**
   - `tools/checks/repo_hygiene.py` and root `ruff.toml`.
-  - Claude Code hooks in `.claude/hooks/`, tested by `tools/tests/` (221 tests, including end-to-end script runs).
+  - Claude Code hooks in `.claude/hooks/`, tested by `tools/tests/` (241 tests, including end-to-end script runs).
   - `just check-repo`, plus a prek pre-commit config.
 - **CI:**
   - The `repo` job (always on), plus the `docs` and `workflows-lint` jobs, are defined in `ci/workflows/ci.yml`.

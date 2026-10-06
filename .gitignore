@@ -34,11 +34,12 @@ site/
 *.onnx
 *.pem
 *.key
-# Golden fixtures are committed recorded runs (ADR-0004); keep them trackable.
-!fixtures/golden/**
 *.db
 *.db-wal
 *.db-shm
+# Golden fixtures are committed recorded runs (ADR-0004): re-include run data only.
+!/fixtures/golden/**/*.db
+!/fixtures/golden/**/*.zst
 .env
 .env.*
 !.env.example

@@ -17,6 +17,7 @@ Policy encoded here:
 from __future__ import annotations
 
 import posixpath
+import re
 from collections.abc import Callable
 
 BranchLookup = Callable[[], str | None]
@@ -29,10 +30,12 @@ MAIN = "Never push to main; open a PR from a feature branch (AGENTS.md §7)."
 DELETE = "Deleting remote branches needs the creator's approval (AGENTS.md §7)."
 NO_VERIFY = "Hooks and checks must not be skipped (AGENTS.md §5)."
 DESTRUCTIVE = "Discarding work or history needs the creator's approval (AGENTS.md §7)."
+TAGS = "Pushing tags is part of releasing, which is the creator's call (AGENTS.md §6)."
 
 _GIT_OPTS_WITH_VALUE = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namespace"})
 _SAFE_FORCE = ("--force-with-lease", "--force-if-includes")
 _IMPLICIT_REFS = frozenset({"HEAD", "@"})
+_TAG_REF = re.compile(r"(refs/tags/|v\d)")
 _MIN_NO_VERIFY_PREFIX = len("--no-v")  # shortest unambiguous abbreviation git accepts here
 # Short options whose value may be attached (`-m"msg"`, `-o"skip-ci"`): letters after them are data.
 _PUSH_VALUE_LETTERS = frozenset("o")
@@ -81,25 +84,38 @@ def split_git(argv: list[str]) -> tuple[list[str], str, list[str]] | None:
 
 
 def _push_reason(args: list[str], current_branch: BranchLookup) -> str | None:
-    refs = [a for a in args if not a.startswith("-")]
-    targets = refs[1:]  # refs[0] is the remote
+    """First matching push rule, checked in priority order."""
+    options = set(args)
+    targets = [a for a in args if not a.startswith("-")][1:]  # first positional is the remote
     flags = short_flags(args, _PUSH_VALUE_LETTERS)
-    if any(_is_no_verify(a) for a in args):
-        return NO_VERIFY
-    if any(t.lstrip("+") == "main" or t.endswith((":main", "refs/heads/main")) for t in targets):
-        return MAIN
-    if {"--all", "--mirror"} & set(args):
-        return MAIN
     unsafe_force = [a for a in args if a.startswith("--force") and not a.startswith(_SAFE_FORCE)]
-    if unsafe_force or "f" in flags or any(t.startswith("+") for t in targets):
-        return FORCE
-    if (
-        {"--delete", "--prune"} & set(args)
-        or "d" in flags
-        or any(t.startswith(":") for t in targets)
-    ):
-        return DELETE
     implicit = not targets or any(t in _IMPLICIT_REFS for t in targets)
+    checks: tuple[tuple[bool, str], ...] = (
+        (any(_is_no_verify(a) for a in args), NO_VERIFY),
+        (
+            any(
+                t.lstrip("+") == "main" or t.endswith((":main", "refs/heads/main")) for t in targets
+            ),
+            MAIN,
+        ),
+        (bool({"--all", "--mirror"} & options), MAIN),
+        (bool(unsafe_force) or "f" in flags or any(t.startswith("+") for t in targets), FORCE),
+        (
+            bool({"--tags", "--follow-tags"} & options)
+            or any(_TAG_REF.match(t.lstrip("+")) for t in targets),
+            TAGS,
+        ),
+        (
+            bool({"--delete", "--prune"} & options)
+            or "d" in flags
+            or any(t.startswith(":") for t in targets),
+            DELETE,
+        ),
+    )
+    for matched, reason in checks:
+        if matched:
+            return reason
+    # Only now ask git which branch is checked out (costs a subprocess).
     return MAIN if implicit and current_branch() == "main" else None
 
 
@@ -115,9 +131,12 @@ def _discards_work(sub: str, args: list[str]) -> bool:
     long_flags = set(args)
     checks = {
         "reset": "--hard" in long_flags,
-        "clean": "--force" in long_flags or "f" in flags,
+        "clean": ("--force" in long_flags or "f" in flags)
+        and not ("n" in flags or "--dry-run" in long_flags),
         "checkout": "--force" in long_flags or "f" in flags or "--" in args or "." in args,
-        "restore": "--staged" not in long_flags or "--worktree" in long_flags or "W" in flags,
+        "restore": not ("--staged" in long_flags or "S" in flags)
+        or "--worktree" in long_flags
+        or "W" in flags,
         "stash": args[:1] == ["clear"],
         "branch": "D" in flags
         or (

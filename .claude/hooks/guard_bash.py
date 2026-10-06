@@ -93,8 +93,8 @@ def _secret_reason(argv: list[str]) -> str | None:
         name == "printenv" and (not names or any(_SECRET_NAME.fullmatch(a) for a in names))
     ):
         return LEAK
-    if any(_SECRET_VAR.search(a) for a in argv):
-        return LEAK
+    if name not in {"test", "["} and any(_SECRET_VAR.search(a) for a in argv):
+        return LEAK  # `test -n "$KEY"` only checks presence and prints nothing
     for arg in _env_file_args(argv):
         base = posixpath.basename(arg)
         if (
@@ -105,12 +105,15 @@ def _secret_reason(argv: list[str]) -> str | None:
 
 
 def _nested_script(argv: list[str]) -> str | None:
-    """The script string run by `bash -c STR` or `eval STR`, if any."""
+    """The script string run by `bash -c STR` (also `-lc`, `-ec`, ...) or `eval STR`."""
     name = posixpath.basename(argv[0])
     if name == "eval":
         return " ".join(argv[1:])
-    if name in _SHELLS and "-c" in argv[1:-1]:
-        return argv[argv.index("-c") + 1]
+    if name not in _SHELLS:
+        return None
+    for index, arg in enumerate(argv[1:-1], start=1):
+        if arg.startswith("-") and not arg.startswith("--") and "c" in arg[1:]:
+            return argv[index + 1]
     return None
 
 

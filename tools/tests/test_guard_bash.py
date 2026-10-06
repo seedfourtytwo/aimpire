@@ -97,6 +97,11 @@ DENIED = [
     "cat <.env",
     "cat .env*",
     "cp .env backup.txt",
+    # review round 3
+    "bash -lc 'git push --force'",
+    "git push --tags",
+    "git push origin v0.1.0",
+    "git push origin refs/tags/v0.1.0",
     # chains still checked segment by segment
     "just check && git push origin main",
     "git status\ngit push --force",
@@ -153,6 +158,11 @@ ALLOWED = [
     "gh api -X GET repos/seedfourtytwo/aimpire/pulls -f state=open",
     "gh api graphql -f query='query { viewer { login } }'",
     "echo task-" + "sk-0123456789abcdefghij0123",
+    # review round 3 false positives
+    "git restore -S sim/a.py",
+    "git clean -fdn",
+    'test -n "$ANTHROPIC_API_KEY" && echo set',
+    '[ -z "${OPENROUTER_API_KEY}" ] || echo set',
 ]
 
 

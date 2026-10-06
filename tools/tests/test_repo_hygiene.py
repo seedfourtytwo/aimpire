@@ -90,6 +90,31 @@ def test_source_folders_named_like_run_data_are_allowed(tmp_path: Path, rel: str
     assert rh.check_paths(tmp_path, [rel]) == []
 
 
+@pytest.mark.parametrize(
+    "rel",
+    ["fixtures/golden/key.pem", "fixtures/golden/r/.env", "fixtures/golden/m.gguf"],
+)
+def test_golden_exemption_covers_run_data_only(tmp_path: Path, rel: str) -> None:
+    _write(tmp_path, rel, "x")
+    assert _rules(rh.check_paths(tmp_path, [rel])) == {"forbidden-file"}
+
+
+@pytest.mark.parametrize(
+    ("rel", "ignored"),
+    [
+        ("fixtures/golden/r/run.db", False),
+        ("fixtures/golden/r/blobs/a.json.zst", False),
+        ("fixtures/golden/key.pem", True),
+        ("runs/r1/run.db", True),
+        ("sim/src/aimpire/api/runs/router.py", False),
+    ],
+)
+def test_gitignore_matches_hygiene_policy(rel: str, ignored: bool) -> None:
+    repo = Path(__file__).resolve().parents[2]
+    result = subprocess.run(["git", "check-ignore", "-q", "--no-index", rel], cwd=repo, check=False)
+    assert (result.returncode == 0) == ignored, rel
+
+
 def test_golden_fixtures_may_hold_run_artifacts(tmp_path: Path) -> None:
     for rel in (
         "fixtures/golden/shared_river/run.db",

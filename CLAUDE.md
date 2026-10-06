@@ -67,7 +67,7 @@ Loaded automatically when you read or edit matching files: `sim-core.md` (sim, r
   substitutions, `bash -c`/`eval`) and blocks
   pushes to `main`, force-push other than `--force-with-lease`, remote branch deletion, skipped
   hooks, discarding work, `.env` reads, printed or literal credentials, PR merge/approve, `gh api`
-  writes, `gh workflow run`, releases and visibility changes. Rules live in `guard_bash.py` and
+  writes, `gh workflow run`, tag pushes, releases and visibility changes. Rules live in `guard_bash.py` and
   `git_rules.py`; tests list every allowed and denied example.
 - **PostToolUse(Edit|Write)** — formats in-project Python with the pinned ruff (`uvx ruff@…`, if uv
   is installed) and flags files over the 500-line limit.

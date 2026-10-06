@@ -62,7 +62,13 @@ FORBIDDEN_GLOBS = (
     "*.zst",
 )
 # Golden fixtures are committed recorded runs (ADR-0004/0006); size limits still apply.
-FORBIDDEN_EXCEPTIONS = (".env.example", "*/.env.example", "fixtures/golden/*")
+# Golden fixtures are committed recorded runs (ADR-0004/0006): run data only, size limits apply.
+FORBIDDEN_EXCEPTIONS = (
+    ".env.example",
+    "*/.env.example",
+    "fixtures/golden/*.db",
+    "fixtures/golden/*.zst",
+)
 
 
 @dataclass(frozen=True)
