@@ -41,6 +41,7 @@ from aimpire.cognition.runner import run_with_councils
 from aimpire.cognition.seats import Renderer, Seat, seats_for
 from aimpire.experiments.m0_world import build_m0_run
 from aimpire.experiments.preflight import CostPlan, Echo, check_budget, spent_this_month, usd
+from aimpire.experiments.progress import ProgressSink
 from aimpire.experiments.worlds import World
 from aimpire.lab.variant import ResolvedVariant, resolve_variant
 from aimpire.persistence.spend import current_month
@@ -188,6 +189,7 @@ def play(
             store=store,
             watch=watch,
             spent_month=spent_month,
+            echo=echo if mind.kind == "profile" else None,
         )
         decisions = store.decisions()
         outcomes = Counter(str(row["outcome"]) for row in decisions)
@@ -219,7 +221,11 @@ def _drive(  # noqa: PLR0913 (one run's parts)
     store: RunStore,
     watch: _Watch,
     spent_month: int,
+    echo: Echo | None = None,
 ) -> None:
+    """Play every tick; with ``echo`` (live minds only), print a line per council."""
+    councils = -(-opts.ticks // opts.council_every)
+    sink = store if echo is None else ProgressSink(store, councils=councils, echo=echo)
     build = seats_for(
         [seat],
         calendar=world.calendar,
@@ -237,7 +243,7 @@ def _drive(  # noqa: PLR0913 (one run's parts)
             checkpoint_every=world.calendar.ticks_per_season,
             seats_for=build,
             gate=store.budget_guard(spent_month),
-            sink=store,
+            sink=sink,
             on_tick=watch,
         )
     )
