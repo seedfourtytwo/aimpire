@@ -1,6 +1,18 @@
 # Architecture overview
 
-Status: planning baseline, 2026-10-04. Derived from ADRs 0002–0009.
+Planning baseline of 2026-10-04 (ADRs 0002–0009), with the state of the code as of 2026-10-06.
+
+## What exists today
+
+| Part | State |
+|---|---|
+| `sim/` deterministic core: calendar, fixed-point, draws, ids, state hash, scheduler, ledger, M0 world | Built |
+| `cognition/`: providers (mock, rule, recorded, Anthropic, OpenAI-compatible), observation and renderers, validator, council barrier, budgets | Built |
+| `persistence/`: SQLite run store, blobs, snapshots, replay | Built |
+| `experiments/`, `lab/`, `cli/`: `aimpire run`, `qualify`, `batch`, `lab twin`, reports | Built |
+| `client/replay/`: static replay player with charts, map overlay and council panel | Built |
+| `api/` (FastAPI) and the web console | Not yet: arrives with M1 |
+| Godot or PixiJS map client | Deferred (ADR-0002, ADR-0010) |
 
 !!! note "Changes since this baseline"
     The planning review added ADRs 0011–0019. Where they differ from this page, they win: time and council cadence (ADR-0011), draws and arithmetic (ADR-0012), what a mind sees and returns (ADR-0013), experiments (ADR-0014), build order (ADR-0015), the god's channels (ADR-0017), knowledge arms (ADR-0018) and the rule against pre-baked institutions (ADR-0019). In the diagrams below, read "cognition round" as "council" and "proposal" as "reply".

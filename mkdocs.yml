@@ -1,5 +1,5 @@
 site_name: Aimpire
-site_description: Retro civilization research simulator with AI civilizations and god-game interventions
+site_description: Untrained AI sandbox. Tribes evolving in an infinitely generative universe.
 repo_url: https://github.com/seedfourtytwo/aimpire
 edit_uri: edit/main/docs/
 docs_dir: docs
@@ -32,20 +32,17 @@ markdown_extensions:
           format: !!python/name:pymdownx.superfences.fence_code_format
 
 nav:
-  - Home: index.md
-  - Guide:
-      - Play M0: guide/play-m0.md
-  - Experiments:
-      - M0 reference bands: experiments/m0-reference.md
-      - E0 pre-registration: experiments/e0-preregistration.md
-      - E0 report template: experiments/e0-report-template.md
-  - Specification: spec/original-handoff.md
-  - Architecture: architecture/overview.md
+  - Start here: index.md
+  - Vision: vision.md
   - Plan:
       - Roadmap: plan/roadmap.md
-      - Backlog: plan/backlog.md
+      - Status: agents/STATUS.md
       - Open questions: plan/open-questions.md
       - Decision log: plan/decision-log.md
+      - Backlog: plan/backlog.md
+  - Guide:
+      - Play M0: guide/play-m0.md
+  - Architecture: architecture/overview.md
   - ADRs:
       - Index: adr/README.md
       - "0000 Template": adr/0000-template.md
@@ -70,7 +67,19 @@ nav:
       - "0019 Emergence first": adr/0019-emergence-first.md
       - "0020 Tinkering Lab": adr/0020-tinkering-lab-and-world-constants.md
       - "0021 Native minds": adr/0021-native-mind-track.md
-  - Research:
+  - Experiments:
+      - M0 reference bands: experiments/m0-reference.md
+      - E0 pre-registration: experiments/e0-preregistration.md
+      - E0 report template: experiments/e0-report-template.md
+  - Pitch:
+      - Concept trailer: pitch/trailer.md
+  - Working with agents:
+      - Workflow: agents/workflow.md
+      - Task template: agents/task-template.md
+      - Review checklist: agents/review-checklist.md
+      - Handoff template: agents/handoff-template.md
+  - Background:
+      - Research notes: research/index.md
       - Brief: research/00-brief.md
       - Client & rendering: research/10-client-rendering.md
       - Backend & data: research/20-backend-data.md
@@ -81,9 +90,9 @@ nav:
       - Planning review: research/80-plan-review-2026-10-04.md
       - Tinkering Lab & world physics: research/90-tinkering-lab-and-world-physics.md
       - Native minds: research/91-native-minds.md
-  - Agents:
-      - Status: agents/STATUS.md
-      - Workflow: agents/workflow.md
-      - Handoff template: agents/handoff-template.md
-      - Task template: agents/task-template.md
-      - Review checklist: agents/review-checklist.md
+      - Predator-prey inspiration: research/92-predator-prey-inspiration.md
+      - History: history/index.md
+      - Original specification: spec/original-handoff.md
+      - Handoff 2026-10-04: agents/handoff-2026-10-04.md
+      - Cahier de charge 2026-10-06: history/2026-10-06-cahier-de-charge.md
+      - Expansion ideas 2026-10-06: history/2026-10-06-expansion-ideas.md

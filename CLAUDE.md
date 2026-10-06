@@ -10,7 +10,7 @@ Aimpire is a deterministic civilization research simulator and god game. Model-d
 
 **The goal** is emergence: to see what kind of civilization, political order and belief arises when the models decide for themselves, and to trace parallels with real history. Nothing that is supposed to emerge may be written into the code.
 
-Start with `docs/plan/roadmap.md`. The full intent is in `docs/spec/original-handoff.md`; the reasoning behind the plan is in `docs/research/80-plan-review-2026-10-04.md`.
+Start with `docs/plan/roadmap.md`. The intent and the long arc are in `docs/vision.md` (it marks what is decided, planned or only vision; build only what the roadmap and ADRs commit to). The original handoff is `docs/spec/original-handoff.md`; the reasoning behind the plan is in `docs/research/80-plan-review-2026-10-04.md`.
 
 ## Words used here
 - **Mind:** one model-driven decision maker. **Council:** one decision turn of a mind.
