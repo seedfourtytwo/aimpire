@@ -18,7 +18,8 @@ text, which providers show to the model. They are therefore short, neutral
 lives in this module docstring and in ``#`` comments.
 """
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, JsonValue
+from pydantic.config import JsonDict
 
 from aimpire.contracts.vocabulary import (
     ACTIVITIES,
@@ -36,6 +37,20 @@ from aimpire.contracts.vocabulary import (
 )
 
 
+def one_of(words_: frozenset[str]) -> JsonDict:
+    """Schema extra that lists the allowed words as a JSON-schema ``enum``.
+
+    Why: a description in prose does not bind a model. With the ``enum`` in the
+    schema, providers that constrain decoding to the schema (Ollama, OpenAI,
+    Anthropic structured output) can only produce a listed word. The Python type
+    stays ``str`` on purpose: a word from a provider that does not constrain is
+    still reported by the validator as ``UNKNOWN_ACTION``, a closed reason
+    (ADR-0013), not as a schema failure.
+    """
+    allowed: list[JsonValue] = list(sorted(words_))
+    return {"enum": allowed}
+
+
 class Closed(BaseModel):
     """Base for every contract model: closed, strict, immutable."""
 
@@ -45,7 +60,9 @@ class Closed(BaseModel):
 class Allocation(Closed):
     """A standing share of the workers given to one activity at one place."""
 
-    activity: str = Field(description=f"One of: {words(ACTIVITIES)}.")
+    activity: str = Field(
+        description=f"One of: {words(ACTIVITIES)}.", json_schema_extra=one_of(ACTIVITIES)
+    )
     place: str = Field(description="A place id from the observation, such as PL07.")
     share: int = Field(description="Permille of workers, 0 to 1000.")
 
@@ -60,7 +77,9 @@ class Policy(Closed):
 class Order(Closed):
     """A one-off task."""
 
-    kind: str = Field(description=f"One of: {words(ORDER_KINDS)}.")
+    kind: str = Field(
+        description=f"One of: {words(ORDER_KINDS)}.", json_schema_extra=one_of(ORDER_KINDS)
+    )
     place: str = Field(description="A place id from the observation.")
     target: str = Field(description="An entity id, or empty when not used.")
     qty: int = Field(description="Number of people, or 0 when not used.")
@@ -77,7 +96,10 @@ class Message(Closed):
 class Commitment(Closed):
     """A promise the world can check by a given council."""
 
-    kind: str = Field(description=f"One of: {words(COMMITMENT_KINDS)}.")
+    kind: str = Field(
+        description=f"One of: {words(COMMITMENT_KINDS)}.",
+        json_schema_extra=one_of(COMMITMENT_KINDS),
+    )
     place: str = Field(description="A place id, or empty when not used.")
     qty: int = Field(description="Amount in whole units, or 0 when not used.")
     by_council: int = Field(description="Council number by which it should hold.")

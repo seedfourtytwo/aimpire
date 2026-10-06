@@ -6,6 +6,10 @@
       "properties": {
         "activity": {
           "description": "One of: FORAGE, SCOUT.",
+          "enum": [
+            "FORAGE",
+            "SCOUT"
+          ],
           "title": "Activity",
           "type": "string"
         },
@@ -64,6 +68,10 @@
         },
         "kind": {
           "description": "One of: BE_AT, STOCK_AT_LEAST.",
+          "enum": [
+            "BE_AT",
+            "STOCK_AT_LEAST"
+          ],
           "title": "Kind",
           "type": "string"
         },
@@ -137,6 +145,11 @@
       "properties": {
         "kind": {
           "description": "One of: FORAGE, MOVE_CAMP, SCOUT.",
+          "enum": [
+            "FORAGE",
+            "MOVE_CAMP",
+            "SCOUT"
+          ],
           "title": "Kind",
           "type": "string"
         },
