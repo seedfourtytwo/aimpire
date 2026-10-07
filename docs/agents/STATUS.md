@@ -3,7 +3,7 @@
 > Every agent session reads this first and updates it last.
 
 **Phase:** foundation done (F1–F6). M0 "petri dish" is built and playable with rule minds; next is running experiment E0 with real models, then M1.
-**Last updated:** 2026-10-06 by the planning session (evening). Handoff: [`handoff-e0-pilot.md`](handoff-e0-pilot.md).
+**Last updated:** 2026-10-07 by the E0 pilot session. Notes: [`e0-pilot-notes.md`](../experiments/e0-pilot-notes.md).
 
 ## Current state
 - **Goal:** emergence. See what civilizations, political orders and beliefs arise when the models decide for themselves (ADR-0019).
@@ -47,10 +47,8 @@ Minds: `rule:random|greedy|half_full|msy`, `mock`, or a profile (`profiles/ollam
 
 ## Next up
 - [ ] **Creator:** see the handoff note: accept or amend ADR-0020 and ADR-0021; the GitHub settings; add keys; decide the open items.
-- [ ] **E0 pilot** (next; runs on the creator's laptop, see [`handoff-e0-pilot.md`](handoff-e0-pilot.md)):
-  - build `qwen3-8b-8k` from `profiles/qwen3-8b-8k.Modelfile`, qualify `profiles/ollama-8k.toml`, run `e0-ollama-pilot.yaml` (about 11 h at the measured 40–130 s a council);
-  - apply the pilot's seed rule (pre-registration section 8), then `e0-ollama.yaml` (about 2½ days);
-  - then Haiku, about $5 realistic and under $12 worst case.
+- [x] **E0 Ollama pilot (2026-10-07):** ran `e0-ollama-pilot.yaml` with `qwen3:8b`, 8k context, thinking off (about 4 h). Qualify FAILED on order validity (26 %); run anyway as an exploratory exception. Survival 0 of 30 in every model arm; seed rule: stay at 10 seeds. Notes: [`docs/experiments/e0-pilot-notes.md`](../experiments/e0-pilot-notes.md).
+- [ ] **E0 next (creator decides):** whether `qwen3:8b` is the model for `e0-ollama.yaml` (about 2½ days with thinking on; far less with it off), then Haiku, about $5 realistic and under $12 worst case.
 - [x] **E0 setup fix (2026-10-06):** plain `qwen3:8b` at Ollama's default context truncates replies; the E0 Ollama files and the pre-registration now name `profiles/ollama-8k.toml` (8,192-token context, 6,144-token output cap). No E0 run existed before this change. The dry run passes.
 - [ ] **Small fixes found on the way** (any session):
   - cache place data per tick; about 60 % of run time goes to rebuilding it;
