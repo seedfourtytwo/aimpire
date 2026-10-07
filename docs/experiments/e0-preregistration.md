@@ -76,6 +76,14 @@ ADR-0019 section 6.
 | `e0-haiku-check.yaml` | Claude Haiku 4.5 | the same | the one check: rule disclosed |
 | `e0-openrouter.yaml` (optional) | chosen before its first run | `profiles/openrouter-e0.toml`, made from the template | breadth: a second family at low cost |
 
+The Ollama profile runs qwen3:8b with thinking off (`effort = "none"`, sent as
+`reasoning_effort`). With thinking on, a council reply took a median 96 s and the model
+failed `aimpire qualify` on JSON validity and latency; with it off, replies take about 6 s.
+`aimpire qualify` still reports FAIL on order validity (26 %, mark 80 %, 2026-10-07): the model
+allocates more workers than it has. The creator chose to run the pilot anyway as an
+exploratory exception: it is free, and how the model fails is part of what E0 measures. The
+thresholds and the prompt are unchanged. No live E0 run existed when this was written.
+
 Model settings are pinned in the profiles; nothing is left to a provider default except where
 a profile says so. The Haiku E0 profile differs from `anthropic-haiku-4-5.toml` only in its
 planning limits (6,000 input and 2,048 output tokens a call; a council is estimated at about

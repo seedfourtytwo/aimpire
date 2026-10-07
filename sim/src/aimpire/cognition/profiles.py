@@ -237,8 +237,6 @@ def _from_raw(raw: dict[str, Any], name: str) -> Profile:
         raise ProfileError(f"{where}: a remote endpoint needs a price (only loopback is free)")
     if not profile.is_local and not api_key_env:
         raise ProfileError(f"{where}: a remote endpoint needs api_key_env")
-    if kind == "openai_compat" and profile.effort is not None:
-        raise ProfileError(f"{where}: effort is not supported by the openai_compat adapter yet")
     return profile
 
 
