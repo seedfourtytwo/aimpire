@@ -20,7 +20,10 @@ api_key_env = ""
 structured_output = "json_schema"
 timeout_s = 300.0
 max_output_tokens = 6144
-# effort is not sent by the openai_compat adapter; temperature is sent only when set here.
+# Thinking off. With it on, qwen3:8b spent 1,500-4,300 tokens per council reasoning
+# (median reply 96 s) and still failed `aimpire qualify` on 2026-10-07. Ollama reads
+# reasoning_effort = "none" as thinking off. Temperature is sent only when set here.
+effort = "none"
 
 [price]
 input_micro_usd_per_mtok = 0

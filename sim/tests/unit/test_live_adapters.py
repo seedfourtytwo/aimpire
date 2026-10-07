@@ -143,6 +143,16 @@ def test_fallback_modes_put_the_schema_in_the_system_message(mode: str):
     assert body["max_tokens"] == 500  # the smaller of request (1000) and profile (500)
 
 
+def test_openai_compat_sends_reasoning_effort_only_when_set():
+    """Ollama maps ``reasoning_effort = "none"`` to thinking off; unset sends nothing."""
+    base = LOCAL.format(mode="json_schema", price_in=0, price_out=0)
+    plain = OpenAICompatProvider(parse_profile(base, name="p")).request_body(_request())
+    assert "reasoning_effort" not in plain
+    with_effort = base.replace("[price]", 'effort = "none"\n[price]')
+    body = OpenAICompatProvider(parse_profile(with_effort, name="p")).request_body(_request())
+    assert body["reasoning_effort"] == "none"
+
+
 def test_refusal_and_truncation_keep_their_usage():
     result = _run(OpenAICompatProvider(_local(), transport=_respond(_choice(None, refusal="no"))))
     assert (result.status, result.raw_text, result.usage.input_tokens) == ("refusal", "no", 10)
@@ -259,7 +269,6 @@ max_input_tokens_per_call = 10
         ('structured_output = "json_schema"', 'structured_output = "xml"', "structured_output"),
         ("max_input_tokens_per_call = 4000", "", "max_input_tokens_per_call"),
         ('api_key_env = ""', 'api_key_env = "BAD-NAME"', "api_key_env"),
-        ("[budget]", 'effort = "high"\n[budget]', "effort"),
         ('base_url = "http://localhost:11434/v1"', 'base_url = "http://u:p@localhost/v1"', "cred"),
     ],
 )

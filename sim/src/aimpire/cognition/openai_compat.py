@@ -20,6 +20,9 @@ would change what the model was shown between two decisions of one run
 (ADR-0014). Whatever comes back goes through ``parse_reply`` and the
 validator, exactly as mock and rule replies do; nothing is repaired here.
 
+``profile.effort``, when set, is sent as ``reasoning_effort``; Ollama reads
+``"none"`` as "thinking off" for models that think (qwen3).
+
 Usage: ``prompt_tokens`` and ``completion_tokens``, with
 ``completion_tokens_details.reasoning_tokens`` as the reasoning part of the
 completion (OpenRouter returns usage on every response). Cost is
@@ -125,6 +128,9 @@ class OpenAICompatProvider:
         temperature = req.temperature if req.temperature is not None else p.temperature
         if temperature is not None:
             body["temperature"] = temperature
+        effort = req.effort if req.effort is not None else p.effort
+        if effort is not None:
+            body["reasoning_effort"] = effort
         return body
 
     async def complete(self, req: CognitionRequest) -> CognitionResult:
