@@ -71,7 +71,7 @@ ADR-0019 section 6.
 
 | file | model | profile | why |
 |---|---|---|---|
-| `e0-ollama-pilot.yaml`, `e0-ollama.yaml` | qwen3:8b, local | `profiles/ollama-example.toml` | open weights, free, anyone can re-run (ADR-0014 section 6); the full grid of arms (section 3) |
+| `e0-ollama-pilot.yaml`, `e0-ollama.yaml` | qwen3:8b with an 8,192-token context, local | `profiles/ollama-8k.toml` (model built from `profiles/qwen3-8b-8k.Modelfile`) | open weights, free, anyone can re-run (ADR-0014 section 6); the full grid of arms (section 3) |
 | `e0-haiku-primary.yaml` | Claude Haiku 4.5 | `profiles/anthropic-haiku-4-5-e0.toml` | frontier model, primary condition (ADR-0014 section 3) |
 | `e0-haiku-check.yaml` | Claude Haiku 4.5 | the same | the one check: rule disclosed |
 | `e0-openrouter.yaml` (optional) | chosen before its first run | `profiles/openrouter-e0.toml`, made from the template | breadth: a second family at low cost |

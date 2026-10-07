@@ -3,14 +3,14 @@
 > Every agent session reads this first and updates it last.
 
 **Phase:** foundation done (F1–F6). M0 "petri dish" is built and playable with rule minds; next is running experiment E0 with real models, then M1.
-**Last updated:** 2026-10-04 by the planning session (end of day). Handoff: [`handoff-2026-10-04.md`](handoff-2026-10-04.md).
+**Last updated:** 2026-10-06 by the planning session (evening). Handoff: [`handoff-e0-pilot.md`](handoff-e0-pilot.md).
 
 ## Current state
 - **Goal:** emergence. See what civilizations, political orders and beliefs arise when the models decide for themselves (ADR-0019).
 - **Order (ADR-0015):** F1–F6, then M0 petri dish, M1 seasons and a voice, M2 two tribes, M3 generations, M4 living world, M5 knowledge, M6–M8 society. Side tracks: the **Lab** (ADR-0020) and **native minds** (ADR-0021).
-- **ADR status:** 0001–0019 accepted. **0020 (Tinkering Lab) and 0021 (native minds) are Proposed** and await the creator, though W0, LAB0 and LAB1 were built at his request.
-- **Tests:** about 470, all green; `just check` is what CI runs (about 2 minutes).
-- **Repo settings:** `main` is protected (PR required, `ci-ok` required, squash only). The admin bypass and the `protected-change` environment still need the creator (see Known blockers).
+- **ADR status:** 0001–0021 accepted (0020 and 0021 by the creator on 2026-10-06).
+- **Tests:** 478, all green; `just check` is what CI runs (about 2 minutes).
+- **Repo settings:** `main` is protected (PR required, `ci-ok` required, squash only). The G1a protected-path job is in `ci.yml`; the creator reports the admin bypass removed and the `protected-change` environment created (2026-10-06).
 
 ## How to play
 [`docs/guide/play-m0.md`](../guide/play-m0.md) has the full guide. In short:
@@ -21,7 +21,7 @@ uv run aimpire run m0 --mind rule:greedy --seed 1 --years 5 --set world.gravity=
 uv run aimpire lab twin m0 --set world.gravity=900000 --mind rule:half_full --seeds 1-3 --years 2 --out ../runs/lab
 cd .. && python3 -m http.server 8000   # then open client/replay/index.html?src=/runs/<run>/replay.json
 ```
-Minds: `rule:random|greedy|half_full|msy`, `mock`, or a profile (`profiles/ollama-example.toml`, `profiles/anthropic-haiku-4-5*.toml`, the OpenRouter template). Run `aimpire qualify <profile>` before spending money.
+Minds: `rule:random|greedy|half_full|msy`, `mock`, or a profile (`profiles/ollama-8k.toml` (E0), `profiles/ollama-example.toml`, `profiles/anthropic-haiku-4-5*.toml`, the OpenRouter template). Run `aimpire qualify <profile>` before spending money.
 
 ## Done
 - [x] **F1–F3:** bootstrap, deterministic core, ledger and invariants.
@@ -47,9 +47,11 @@ Minds: `rule:random|greedy|half_full|msy`, `mock`, or a profile (`profiles/ollam
 
 ## Next up
 - [ ] **Creator:** see the handoff note: accept or amend ADR-0020 and ADR-0021; the GitHub settings; add keys; decide the open items.
-- [ ] **E0 pilot:**
-  - qualify Ollama `qwen3:8b` on the creator's laptop, then the Ollama pilot file (free);
-  - then Haiku, about $5 realistic and under $12 worst case, per `docs/experiments/e0-preregistration.md`.
+- [ ] **E0 pilot** (next; runs on the creator's laptop, see [`handoff-e0-pilot.md`](handoff-e0-pilot.md)):
+  - build `qwen3-8b-8k` from `profiles/qwen3-8b-8k.Modelfile`, qualify `profiles/ollama-8k.toml`, run `e0-ollama-pilot.yaml` (about 11 h at the measured 40–130 s a council);
+  - apply the pilot's seed rule (pre-registration section 8), then `e0-ollama.yaml` (about 2½ days);
+  - then Haiku, about $5 realistic and under $12 worst case.
+- [x] **E0 setup fix (2026-10-06):** plain `qwen3:8b` at Ollama's default context truncates replies; the E0 Ollama files and the pre-registration now name `profiles/ollama-8k.toml` (8,192-token context, 6,144-token output cap). No E0 run existed before this change. The dry run passes.
 - [ ] **Small fixes found on the way** (any session):
   - cache place data per tick; about 60 % of run time goes to rebuilding it;
   - guard against two runs writing to the same `--out` folder at once (the spend scan reads a half-created db);
@@ -62,7 +64,6 @@ Minds: `rule:random|greedy|half_full|msy`, `mock`, or a profile (`profiles/ollam
 _None._
 
 ## Known blockers
-- `.github/workflows/` is the creator's alone (ADR-0016). The G1a protected-path CI job is ready as a file; the creator adds it after creating the `protected-change` environment.
-- The `main` ruleset admin bypass must be removed by the creator in GitHub settings.
 - No API keys yet. Live runs need `ANTHROPIC_API_KEY` or `OPENROUTER_API_KEY` as environment variables, or a local Ollama.
+- Cloud sessions cannot reach the creator's Ollama; live local-model runs need a Claude Code session on the laptop.
 - `ci.yml`, `dependabot.yml` and the feature issue template still say "E1" and "E5" in comments.
