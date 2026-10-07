@@ -1,6 +1,7 @@
 # Experiment E0, confirmatory: the full grid of arms on a local open-weight model (free).
 #
-# Run by hand only, after the pilot, on a machine with Ollama and qwen3:8b.
+# Run by hand only, after the pilot, on a machine with Ollama and qwen3-8b-8k
+# (qwen3:8b with an 8,192-token context: profiles/qwen3-8b-8k.Modelfile).
 # This is E0's open-weight arm that anyone can re-run (ADR-0014 section 6),
 # and the only file with all four arms (ADR-0014 section 3: the full grid of
 # variants runs on open-weight models). Hypotheses H1 to H5 of
@@ -40,22 +41,22 @@ arms:
     renderer: places
     rules: hidden
     prompt: base
-    models: [../profiles/ollama-example.toml]
+    models: [../profiles/ollama-8k.toml]
   - id: places-disclosed
     knowledge_arm: A0
     renderer: places
     rules: disclosed
     prompt: base
-    models: [../profiles/ollama-example.toml]
+    models: [../profiles/ollama-8k.toml]
   - id: grid-hidden
     knowledge_arm: A0
     renderer: grid
     rules: hidden
     prompt: base
-    models: [../profiles/ollama-example.toml]
+    models: [../profiles/ollama-8k.toml]
   - id: grid-disclosed
     knowledge_arm: A0
     renderer: grid
     rules: disclosed
     prompt: base
-    models: [../profiles/ollama-example.toml]
+    models: [../profiles/ollama-8k.toml]

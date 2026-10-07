@@ -1,0 +1,13 @@
+# qwen3:8b with an 8,192-token context window, for profiles/ollama-8k.toml (E0).
+#
+# Why: a council reply from qwen3:8b runs to 1,500-4,300 tokens (most of it thinking)
+# on top of a 400-1,200-token prompt. At Ollama's default context the reply is cut
+# off and counted as TRUNCATED. Measured on seed 1, 2026-10-06.
+#
+# Build it once on the machine that runs Ollama:
+#   ollama pull qwen3:8b
+#   ollama create qwen3-8b-8k -f profiles/qwen3-8b-8k.Modelfile
+# Nothing else differs from qwen3:8b; sampling stays at the model's own defaults.
+
+FROM qwen3:8b
+PARAMETER num_ctx 8192

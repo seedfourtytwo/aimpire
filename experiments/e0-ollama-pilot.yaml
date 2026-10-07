@@ -1,6 +1,7 @@
 # Experiment E0, pilot (exploratory). Local model through Ollama: free.
 #
-# Run by hand only, on a machine with Ollama and `ollama pull qwen3:8b` done.
+# Run by hand only, on a machine with Ollama and the qwen3-8b-8k model built
+# (profiles/qwen3-8b-8k.Modelfile; the commands are in profiles/ollama-8k.toml).
 # Two seeds outside the confirmatory set, every arm. Its results are
 # exploratory: they size the confirmatory runs (the rule in
 # docs/experiments/e0-preregistration.md, "Seeds and stopping") and shake out
@@ -36,22 +37,22 @@ arms:
     renderer: places
     rules: hidden
     prompt: base
-    models: [../profiles/ollama-example.toml]
+    models: [../profiles/ollama-8k.toml]
   - id: places-disclosed
     knowledge_arm: A0
     renderer: places
     rules: disclosed
     prompt: base
-    models: [../profiles/ollama-example.toml]
+    models: [../profiles/ollama-8k.toml]
   - id: grid-hidden
     knowledge_arm: A0
     renderer: grid
     rules: hidden
     prompt: base
-    models: [../profiles/ollama-example.toml]
+    models: [../profiles/ollama-8k.toml]
   - id: grid-disclosed
     knowledge_arm: A0
     renderer: grid
     rules: disclosed
     prompt: base
-    models: [../profiles/ollama-example.toml]
+    models: [../profiles/ollama-8k.toml]

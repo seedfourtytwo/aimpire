@@ -1,0 +1,33 @@
+# qwen3:8b on Ollama with an 8,192-token context: the E0 open-weight profile
+# (ADR-0005, ADR-0014 section 6; docs/experiments/e0-preregistration.md section 3).
+#
+# Same endpoint and adapter as ollama-example.toml (base URL checked 2026-10-04 at
+# https://docs.ollama.com/api/openai-compatibility). The model is a local build, not a
+# registry tag: qwen3:8b plus `num_ctx 8192`, from profiles/qwen3-8b-8k.Modelfile:
+#   ollama pull qwen3:8b
+#   ollama create qwen3-8b-8k -f profiles/qwen3-8b-8k.Modelfile
+#
+# Output limit: 6,144 tokens. At 4,096, one council in 24 was cut off on seed 1
+# (2026-10-06); prompts stay under about 1,200 tokens, so 6,144 still fits in 8,192.
+#
+# Keys never go in a profile. api_key_env names an environment variable; "" means no key.
+
+kind = "openai_compat"
+model = "qwen3-8b-8k:latest"
+base_url = "http://localhost:11434/v1"
+api_key_env = ""
+# json_schema, or json_object / prompt (the schema goes in the system message instead).
+structured_output = "json_schema"
+timeout_s = 300.0
+max_output_tokens = 6144
+# effort is not sent by the openai_compat adapter; temperature is sent only when set here.
+
+[price]
+input_micro_usd_per_mtok = 0
+output_micro_usd_per_mtok = 0
+source = "local model: no charge"
+as_of = "2026-10-06"
+
+[budget]
+# Planning worst case per call for `aimpire qualify` and `aimpire batch`.
+max_input_tokens_per_call = 8000
